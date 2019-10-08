@@ -9,6 +9,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
 
+
         self.dateBooking = []
         self.dateAirbb = []
         self.datePrivati = []
@@ -19,8 +20,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.infoModel = Od(d)
         r = {"nome": '', "cognome": '', "data partenza": ''}
         self.infoModelRedux = Od(r)
-
+        ### init gui
         self.setupUi(self)
+        self.statusbar.showMessage('Ready!!!!')
         self.initDatabase()
         self.calendario = MyCalend(self.dateAirbb, self.dateBooking, self.datePrivati, self.datePulizie,
                                    parent=self.frame_calendar)
@@ -30,7 +32,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         self.calendario.clicked.connect(self.getInfoFromDate)
         self.calendario.selectionChanged.connect(self.setDateEdit)
-
+        self.tabWidget.currentChanged.connect(self.pulisci_campi_prenotazioni)
+        # self.calendario.currentPageChanged.connect(self.riportapagina)
+        self.lastMonth = None
         self.current_date = None
         self.giornoCorrente = self.calendario.selectedDate()
         self.setDateEdit()
@@ -39,6 +43,28 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_salva.clicked.connect(self.salvaInfo)
         self.bot_checkDisp.clicked.connect(self.botFuncCheckAval)
         self.bot_cancella.clicked.connect(self.cancellaprenot)
+
+        # STATUS BAR
+        # self.statusbar.setT
+
+    def pulisci_campi_prenotazioni(self):
+        """ prende le info da inserire nei campi della prenotazione a partire dalle info nel box nella pagina
+            del calendario"""
+        _nome = self.tableWidget_info_ospite.item(0, 0)
+        if _nome is not None:
+            nome = _nome.text()
+        else:
+            nome = None
+        print(nome)
+        pass
+
+    def set_status_msg(self, st=''):
+        self.statusbar.showMessage(st)
+        return
+
+    def riportapagina(self, a, m):
+        """fa in modo che non cambi la pagina se viene selzionato un giorno di un altro mese"""
+        print('riporta la pagina ', self.calendario.selectedDate())
 
     def cancellaprenot(self):
         """cancella la prenotazione nella data selezionata nel calendario"""
@@ -67,10 +93,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.leggiDatabase(dtb)
                 self.calendario.updateCells()
                 Dtbm.salvaDatabase(a, dtb)
-
+                self.set_status_msg('Cancellazione eseguita con successo')
 
 
         except:
+            self.set_status_msg('Cancellazione non eseguita')
             print('non individuato')
     def correggiPartenza(self, d):
         print(d)
@@ -90,6 +117,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return info
 
     def getInfoFromDate(self, data):
+        # meseattuale = self.calendario.cu
         self.get_date(data)
         # listaInfo = {'nome':'','cognome':''}
         a, m, g = self.dataParser(data)
@@ -126,8 +154,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def get_date(self, d):
         # a = self.calendarWidget.dateTextFormat()
+        # self.calendario.set
         self.current_date_label = d.toString('ddd dd/MM/yyyy')
         self.current_date = d
+        if self.lastMonth != self.current_date.month():
+            self.lastMonth = self.current_date.month()
+        # print(d.month(),'<<<<',self.calendario.month())
         print("selection changed", self.current_date_label)
         self.label_data.setText(self.current_date_label)
         return self.current_date
@@ -226,7 +258,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.leggiDatabase(database)
                 self.calendario.setDates(booking=self.dateBooking, air=self.dateAirbb, privati=self.datePrivati,
                                          pulizie=self.datePulizie)
+                self.set_status_msg('Prenotazione eseguita con successo')
+                self.tabWidget.setCurrentIndex(0)
         else:
+            self.set_status_msg('Le date selezionate sono occupate')
             print("date non disponibili")
 
 
@@ -275,9 +310,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     if database[anno][mese][giorno]['checkOut']['nome'] != '' or \
                             database[anno][mese][giorno]['checkOut']['cognome'] != '':
                         self.datePulizie.append(QtCore.QDate(int(anno), numeriMesi[mese], int(giorno)))
-                    else:
-                        print('anomalia per le date pulizia ', giorno)
-                        print(database[anno][mese][giorno]['checkOut'])
+
+                        # print('anomalia per le date pulizia ', giorno)
+                        # print(database[anno][mese][giorno]['checkOut'])
 
         print("leggi database completato: \nnumero di date occupate: \n\t booking {0}\n\t airbb {1}\n\t privato {2}"
               "\n numero di giorni di pulizia: {3}\n*******".format(self.dateBooking, self.dateAirbb, self.datePrivati,
@@ -388,6 +423,10 @@ class MyCalend(QtWidgets.QCalendarWidget):
         self.pen = QtGui.QPen()
         self.pen.setColor(self.pulizie)
 
+    # def showPreviousMonth(self) -> None:
+    #     pass
+    # def showNextMonth(self) -> None:
+    #     pass
     def paintCell(self, painter, rect, date):
         # calling original paintCell to draw the actual calendar
         QtWidgets.QCalendarWidget.paintCell(self, painter, rect, date)
