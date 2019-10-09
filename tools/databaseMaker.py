@@ -1,7 +1,6 @@
 import pickle
 from PyQt5 import QtCore, QtWidgets, QtGui
 from collections import OrderedDict as Od
-from pyexcel_ods import save_data
 
 
 class DbMaker(object):
