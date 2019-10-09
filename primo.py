@@ -191,7 +191,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         d = self.calendario.selectedDate()
         a = d.addDays(1)
         # print("type giornocorrente", type(self.giornoCorrente))
-        self.dateEdit_dal.setMinimumDate(self.giornoCorrente)
+        # todo rimuovere il commento a:
+        # self.dateEdit_dal.setMinimumDate(self.giornoCorrente)
         self.dateEdit_al.setMinimumDate(self.giornoCorrente.addDays(1))
         self.dateEdit_dal.setDate(d)
         self.dateEdit_al.setDate(a)
