@@ -97,8 +97,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         domani = data.addDays(1)
         print("domani: ", domani)
         print("giorno selezionato_after: ", data)
-        # self.get_date(data)
-        # listaInfo = {'nome':'','cognome':''}
         a, m, g = self.dataParser(data)
         ad, md, gd = self.dataParser(domani)
         info = self.getInfo(a, m, g)
@@ -256,14 +254,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 data = dal.addDays(1)
                 for i in range(giorniPermanenza):
                     a, m, g = self.dataParser(data)
-                    # print(g,":",m,":",a)
-                    # print("database[a][m][g]['checkIn']['nome']: ",database[a][m][g]['checkIn']['nome'])
                     database[a][m][g]["checkIn"] = self.infoModel.copy()
                     database[a][m][g]["checkIn"] = info.copy()
-                    # database[a][m][g]['checkIn']['nome'] = nome
-                    # database[a][m][g]['checkIn']['cognome'] = cognome
-                    # database[a][m][g]['checkIn']['platform'] = platform
-                    # # database[a][m][g]['checkIn'] = self.infoModel.copy()
                     database[a][m][g]["checkOut"] = self.infoModelRedux.copy()
                     database[a][m][g]["checkOut"]["data partenza"] = al.toString(
                         "dd MMM yyyy"
@@ -533,9 +525,6 @@ class MyCalend(QtWidgets.QCalendarWidget):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    MainWindow = QtWidgets.QMainWindow()
     ui = EvInterface()
     ui.show()
-    # ui.setupUi(MainWindow)
-    # MainWindow.show()
     sys.exit(app.exec_())
