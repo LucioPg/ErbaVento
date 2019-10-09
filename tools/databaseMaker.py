@@ -4,7 +4,10 @@ from collections import OrderedDict as Od
 
 
 class DbMaker(object):
-
+    """ classe che si occupa di creare il file serializzato con pickle come base per il database
+        ha un template infomodel per il checkIn e uno infoModelRedux per il checkOut
+        la classe fornisce anche un metodo per salvare il database, così come per richiamarlo in modalità
+        incapsulata, in modo da non sovrascriverlo per sbaglio"""
     def __init__(self,data,info=None):
         self.infoModel = {"nome": "", "cognome": "", "telefono": None, "platform": "", "data arrivo": None,
                           "data partenza": None,
@@ -21,6 +24,8 @@ class DbMaker(object):
         self.dataBase = Od()
 
     def bisestileCheck(self,anno):
+        """controlla che l'anno sia bisestile,
+            retorna il dizionario dei mesi corrispondenti"""
         anno = int(anno)
         if anno % 4 == 0 or anno % 100 == 0:
             self.bisestile = True
@@ -33,14 +38,16 @@ class DbMaker(object):
         return numeriGiorni
 
     def setData(self,d):
+        """setta la data in formato Pqt5.QtCore.QDate"""
         self.data = d
         return self.data
 
     def stampa(self):
-        print("databasMaker: ",self.data)
+        """funzione che stampa la data"""
+        print("data: ", self.data)
 
     def makeDataBase(self,anno=None,info=None):
-
+        """ crea il database da zero"""
         if  anno is None:
             if type(self.anno) is not int:
                 nome = self.anno
@@ -103,6 +110,7 @@ class DbMaker(object):
         #     print(m, " ", n)
 
     def checkFile(self,anno,info=None):
+        """ controlla che il file del database esista per l'anno indicato come arg"""
         if type(anno) is not int:
             nome=anno+".pkl"
         else:
@@ -120,6 +128,7 @@ class DbMaker(object):
 
 
     def salvaDatabase(self,anno,fileDb):
+        """ salva il database per l'anno indicato"""
         if type(anno) is not str:
             anno = str(anno)
         nome = anno + ".pkl"
