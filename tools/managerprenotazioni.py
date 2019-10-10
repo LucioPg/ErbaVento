@@ -44,7 +44,6 @@ class ManagerPreno(object):
             self._cognome = None
         self.occupate = []
         self.DataBase = deepc(self.getDb(self._dataIn))
-        print("cosa è DataBAse ", type(self.DataBase))
         self.counter = 0
         # self.DataBase = Od()
         self.dateBooking = []

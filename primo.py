@@ -75,12 +75,58 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             della prenotazione a partire dalle info
             nel box nella pagina
             del calendario"""
+        info = deepc(self.infoTemp)
+        self.lineEdit_nome.setText(info['nome'])
+        self.lineEdit_cognome.setText(info['cognome'])
+        self.lineEdit_telefono.setText(info['telefono'])
+        self.spinBox_ospiti.setValue(int(info['numero ospiti']))
+        self.spinBox_bambini.setValue(int(info['bambini']))
+        platform = info['platform']
+        if platform == 'privato':
+            self.radio_privato.setChecked(True)
+        elif platform == 'booking':
+            self.radio_booking.setChecked(True)
+        elif platform == 'airBB':
+            self.radio_air.setChecked(True)
+        else:
+            print(platform)
+        self.plainTextEdit_note.clear()
+        self.plainTextEdit_note.insertPlainText(info['note'])
+        # todo aggiungere funzione di calcolo importo
+
+    def pulisci_campi_prenotazioni_old(self):
+        """ prende le info da inserire nei campi
+            della prenotazione a partire dalle info
+            nel box nella pagina
+            del calendario"""
+        listaItems = self.tableWidget_info_ospite.rowCount()
+        diz = {}
+        for i in range(0, listaItems):
+            if i < (listaItems - 2):
+                campo = self.tableWidget_info_ospite.item(i, 0).text()
+                nome = self.tableWidget_info_ospite.verticalHeaderItem(i).text()
+                zid = {nome: campo}
+            else:
+                campo_dal = self.tableWidget_info_ospite.item(i, 0).text()
+                campo_al = self.tableWidget_info_ospite.item(i, 1)
+                if campo_al is None:
+                    item = QtWidgets.QTableWidgetItem('che cazzo')
+                    self.tableWidget_info_ospite.setItem(i, 1, item)
+                    campo2 = self.tableWidget_info_ospite.item(i, 1).text()
+                else:
+                    campo2 = campo_al.text()
+                nome1 = 'checkIn'
+                nome2 = "checkOut"
+                zid = {nome1: campo_dal, nome2: campo2}
+            diz.update(zid)
+        print(diz)
         _nome = self.tableWidget_info_ospite.item(0, 0)
         if _nome is not None:
             nome = _nome.text()
         else:
-            nome = None
-        print(nome)
+            nome = ''
+        self.lineEdit_nome.setText(nome)
+        print("pulisci_campi_prenotazioni ", nome)
         pass
 
     def set_status_msg(self, st=""):
@@ -95,42 +141,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def cancellaprenot(self):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
-
         manager = Manager(info=self.infoTemp)
         manager.canc()
         database = self.getDatabase(self.infoTemp['data arrivo'].year())
         # self.leggiDatabase(manager.DataBase)
         self.leggiDatabase(database)
         self.calendario.updateCells()
-        # data = self.current_date
-        # print("giorno selezionato: ", data)
-        # domani = data.addDays(1)
-        # print("domani: ", domani)
-        # print("giorno selezionato_after: ", data)
-        # a, m, g = self.dataParser(data)
-        # ad, md, gd = self.dataParser(domani)
-        # info = self.getInfo(a, m, g)
-        #
-        # try:
-        #     # print(info)
-        #     if info["data arrivo"] is None:
-        #         print("nessuna prenotazione presente")
-        #     else:
-        #         print("prenotazione in lista di cancellazione")
-        #         Dtbm = dbm(data)
-        #         dtb = self.getDatabase(a)
-        #         dtb[a][m][g]["checkIn"] = self.infoModel.copy()
-        #         print("checkOut", dtb[a][m][g]["checkOut"])
-        #         dtb[ad][md][gd]["checkOut"] = self.infoModelRedux.copy()
-        #         self.leggiDatabase(dtb)
-        #         self.calendario.updateCells()
-        #         Dtbm.salvaDatabase(a, dtb)
-        #         self.set_status_msg("Cancellazione eseguita con successo")
-        #
-        # except BaseException:
-        #     self.set_status_msg("Cancellazione non eseguita")
-        #     print("non individuato")
-        pass
+        self.set_status_msg('Cancellazione effettuata')
 
     def correggiPartenza(self, d):
         """
