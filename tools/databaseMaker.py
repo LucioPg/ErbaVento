@@ -1,6 +1,6 @@
 import pickle
 
-# from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets, QtGui
 from collections import OrderedDict as Od
 
 
@@ -11,9 +11,7 @@ class DbMaker(object):
         la classe fornisce anche un metodo per salvare il database,
         così come per richiamarlo in modalità
         incapsulata, in modo da non sovrascriverlo per sbaglio"""
-
-    def __init__(self, data, info=None):
-        self.infoModel = {
+    INFOMODEL = {
             "nome": "",
             "cognome": "",
             "telefono": None,
@@ -30,7 +28,11 @@ class DbMaker(object):
             "netto": 0,
             "note": "",
         }
-        self.infoModelRedux = {"nome": "", "cognome": "", "data partenza": ""}
+    INFOMODELREDUX = {"nome": "", "cognome": "", "data partenza": ""}
+
+    def __init__(self, data, info=None):
+        self.infoModel = self.INFOMODEL.copy()
+        self.infoModelRedux = self.INFOMODELREDUX.copy()
         self.infoModel = Od(self.infoModel)
         self.info = info
         self.data = data
@@ -40,7 +42,10 @@ class DbMaker(object):
         self.bisestileCheck(self.anno)
         self.dataBase = Od()
 
-    def bisestileCheck(self, anno):
+    def __getitem__(self, item):
+        return item
+
+    def bisestileCheck_old(self, anno):
         """controlla che l'anno sia bisestile,
             retorna il dizionario dei mesi corrispondenti"""
         anno = int(anno)
@@ -78,6 +83,24 @@ class DbMaker(object):
             }
         return numeriGiorni
 
+    def bisestileCheck(self, anno):
+        """
+        controlla che l'anno sia bisestile,
+                retorna il dizionario dei mesi corrispondenti
+        :param anno:
+        :return:
+        """
+        anno = int(anno)
+        giorni = [31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+        if anno % 4 == 0 or anno % 100 == 0:
+            self.bisestile = True
+        else:
+            self.bisestile = False
+            giorni[1] = 28
+        numeriGiorni = {x: v for x, v in zip(range(1, 13), giorni)}
+
+        return numeriGiorni
+
     def setData(self, d):
         """setta la data in formato Pqt5.QtCore.QDate"""
         self.data = d
@@ -90,75 +113,73 @@ class DbMaker(object):
     def makeDataBase(self, anno=None, info=None):
         """ crea il database da zero"""
         if anno is None:
-            if type(self.anno) is not int:
-                nome = self.anno
-                # nomeFile = self.anno + ".pkl"
-                database = Od()
-                database[nome] = Od()
-                anno = int(self.anno)
+            if type(self.anno) is int:
+                anno = self.anno
             else:
-                nome = str(self.anno)
-                # nomeFile = str(self.anno) + ".pkl"
-                database = Od()
-                database[nome] = Od()
+                anno = int(self.anno)
+            database = Od()
+            database[anno] = Od()
 
             numeroGiorni = self.bisestileCheck(self.anno)
             for k in numeroGiorni.keys():
-                database[nome][k] = Od()
+                database[anno][k] = Od()
                 for v in range(1, numeroGiorni[k] + 1):
                     # database[nome][k][v] = Od()
-                    database[nome][k][v] = Od()
+                    database[anno][k][v] = Od()
                     if info is None:
 
-                        database[nome][k][v]["checkIn"] = self.infoModel
-                        database[nome][k][v]["checkOut"] = self.infoModelRedux
+                        database[anno][k][v]["checkIn"] = self.infoModel
+                        database[anno][k][v]["checkOut"] = self.infoModelRedux
                     else:
-                        database[nome][k][v]["checkIn"] = info
-                        database[nome][k][v]["checkOut"] = self.infoModelRedux
+                        database[anno][k][v]["checkIn"] = info
+                        database[anno][k][v]["checkOut"] = self.infoModelRedux
         else:
             if type(anno) is not int:
-                nome = anno
+
                 # nomeFile = anno + ".pkl"
-                database = Od()
-                database[nome] = Od()
                 anno = int(anno)
+                database = Od()
+                database[anno] = Od()
             else:
-                nome = str(anno)
+
                 # nomeFile = str(anno) + ".pkl"
                 database = Od()
-                database[nome] = Od()
+                database[anno] = Od()
 
             numeroGiorni = self.bisestileCheck(anno)
             for k in numeroGiorni.keys():
-                database[nome][k] = Od()
+                database[anno][k] = Od()
                 for v in range(1, numeroGiorni[k] + 1):
-                    database[nome][k][v] = Od()
+                    database[anno][k][v] = Od()
                     if info is None:
-                        database[nome][k][v]["checkIn"] = self.infoModel
-                        database[nome][k][v]["checkOut"] = self.infoModelRedux
+                        database[anno][k][v]["checkIn"] = self.infoModel
+                        database[anno][k][v]["checkOut"] = self.infoModelRedux
                     else:
 
                         # c = info.copy()
-                        database[nome][k][v]["checkOut"] = Od()
-                        database[nome][k][v]["checkOut"]["nome"] = database[nome][k][v][
+                        database[anno][k][v]["checkOut"] = Od()
+                        database[anno][k][v]["checkOut"]["nome"] = database[anno][k][v][
                             "checkIn"
                         ]["nome"]
-                        database[nome][k][v]["checkOut"]["cognome"] = database[nome][k][
+                        database[anno][k][v]["checkOut"]["cognome"] = database[anno][k][
                             v
                         ]["checkIn"]["cognome"]
-                        database[nome][k][v]["checkOut"]["data partenza"] = database[
-                            nome
+                        database[anno][k][v]["checkOut"]["data partenza"] = database[
+                            anno
                         ][k][v]["checkIn"]["data partenza"]
 
         return database
 
-    def checkFile(self, anno, info=None):
+    def checkFile(self, anno, info=None, shortcut=''):
         """ controlla che il file del database
             esista per l'anno indicato come arg"""
-        if type(anno) is not int:
-            nome = anno + ".pkl"
+        if shortcut != '':
+            nome = '../' + str(anno) + ".pkl"
         else:
-            nome = str(anno) + ".pkl"
+            if type(anno) is not str:
+                nome = str(anno) + ".pkl"
+            else:
+                nome = anno + ".pkl"
         try:
             with open(nome, "rb") as f:
                 fileDb = pickle.load(f)
