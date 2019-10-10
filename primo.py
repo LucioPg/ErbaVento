@@ -92,34 +92,35 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def cancellaprenot(self):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
-        data = self.current_date
-        print("giorno selezionato: ", data)
-        domani = data.addDays(1)
-        print("domani: ", domani)
-        print("giorno selezionato_after: ", data)
-        a, m, g = self.dataParser(data)
-        ad, md, gd = self.dataParser(domani)
-        info = self.getInfo(a, m, g)
-
-        try:
-            # print(info)
-            if info["data arrivo"] is None:
-                print("nessuna prenotazione presente")
-            else:
-                print("prenotazione in lista di cancellazione")
-                Dtbm = dbm(data)
-                dtb = self.getDatabase(a)
-                dtb[a][m][g]["checkIn"] = self.infoModel.copy()
-                print("checkOut", dtb[a][m][g]["checkOut"])
-                dtb[ad][md][gd]["checkOut"] = self.infoModelRedux.copy()
-                self.leggiDatabase(dtb)
-                self.calendario.updateCells()
-                Dtbm.salvaDatabase(a, dtb)
-                self.set_status_msg("Cancellazione eseguita con successo")
-
-        except BaseException:
-            self.set_status_msg("Cancellazione non eseguita")
-            print("non individuato")
+        # data = self.current_date
+        # print("giorno selezionato: ", data)
+        # domani = data.addDays(1)
+        # print("domani: ", domani)
+        # print("giorno selezionato_after: ", data)
+        # a, m, g = self.dataParser(data)
+        # ad, md, gd = self.dataParser(domani)
+        # info = self.getInfo(a, m, g)
+        #
+        # try:
+        #     # print(info)
+        #     if info["data arrivo"] is None:
+        #         print("nessuna prenotazione presente")
+        #     else:
+        #         print("prenotazione in lista di cancellazione")
+        #         Dtbm = dbm(data)
+        #         dtb = self.getDatabase(a)
+        #         dtb[a][m][g]["checkIn"] = self.infoModel.copy()
+        #         print("checkOut", dtb[a][m][g]["checkOut"])
+        #         dtb[ad][md][gd]["checkOut"] = self.infoModelRedux.copy()
+        #         self.leggiDatabase(dtb)
+        #         self.calendario.updateCells()
+        #         Dtbm.salvaDatabase(a, dtb)
+        #         self.set_status_msg("Cancellazione eseguita con successo")
+        #
+        # except BaseException:
+        #     self.set_status_msg("Cancellazione non eseguita")
+        #     print("non individuato")
+        pass
 
     def correggiPartenza(self, d):
         print(d)
@@ -134,15 +135,20 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         pass
 
     def getInfo(self, a, m, g):
-        database = self.getDatabase(a)
-        info = database[a][m][g]["checkIn"]
+        try:
+            database = self.getDatabase(a)
+            info = database[a][m][g]["checkIn"]
+        except KeyError:
+            print(database[2019][10])
+            info = None
         return info
 
     def getInfoFromDate(self, data):
         # meseattuale = self.calendario.cu
         self.get_date(data)
         # listaInfo = {'nome':'','cognome':''}
-        a, m, g = self.dataParser(data)
+        # a, m, g = self.dataParser(data)
+        a, m, g = self.amg(data)
         info = self.getInfo(a, m, g)
         nome = info["nome"]
         cognome = info["cognome"]
@@ -151,7 +157,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         ospiti = info["numero ospiti"]
         bambini = info["bambini"]
         checkIn = info["data arrivo"]
+        if type(checkIn) is QtCore.QDate:
+            checkIn = info["data arrivo"].toString("ddd dd/MM/yyyy")
         checkOut = info["data partenza"]
+        if type(checkOut) is QtCore.QDate:
+            checkOut = info["data partenza"].toString("ddd dd/MM/yyyy")
         item = QtWidgets.QTableWidgetItem(nome)
         self.tableWidget_info_ospite.setItem(0, 0, item)
         item = QtWidgets.QTableWidgetItem(cognome)
@@ -212,8 +222,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             a["platform"] = "privato"
         else:
             a["platform"] = "sconosciuta"
-        a["data arrivo"] = self.dateEdit_dal.date().toString("dd MMM yyyy")
-        a["data partenza"] = self.dateEdit_al.date().toString("dd MMM yyyy")
+        # a["data arrivo"] = self.dateEdit_dal.date().toString("dd MMM yyyy")
+        a["data arrivo"] = self.dateEdit_dal.date()
+        # a["data partenza"] = self.dateEdit_al.date().toString("dd MMM yyyy")
+        a["data partenza"] = self.dateEdit_al.date()
         a["numero ospiti"] = self.spinBox_ospiti.text()
         a["bambini"] = self.spinBox_bambini.text()
         a["spese"] = self.addSpese()
@@ -243,7 +255,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if len(listaDisponibili):
             info = self.compilaInfo()
 
-            a, m, g = self.dataParser(dal)
+            a, m, g = self.amg(dal)
             contatoreGiorni = giorniPermanenza - g + 1
             database[a][m][g]["checkIn"] = info.copy()
             # database[a][m][g]['checkOut'] = self.infoModelRedux.copy()
@@ -254,7 +266,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             if dal in listaDisponibili:
                 data = dal.addDays(1)
                 for i in range(giorniPermanenza):
-                    a, m, g = self.dataParser(data)
+                    a, m, g = self.amg(data)
                     database[a][m][g]["checkIn"] = self.infoModel.copy()
                     database[a][m][g]["checkIn"] = info.copy()
                     database[a][m][g]["checkOut"] = self.infoModelRedux.copy()
@@ -289,7 +301,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def initDatabase(self, anno=None):
         # anno = self.calendario.yearShown()
         if anno is None:
-            anno = QtCore.QDate().currentDate().toString("yyyy")
+            anno = QtCore.QDate().currentDate().year()
         database = self.getDatabase(anno)
         self.leggiDatabase(database)
         print("initDatabase ", anno)
@@ -323,10 +335,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         for anno in database.keys():
             for mese in database[anno].keys():
+                if mese == 10:
+                    print("controllo mensile ", database[anno][mese][30]["checkIn"])
                 for giorno in database[anno][mese].keys():
                     # for ci in database[anno][mese][giorno]['checkIn'].keys():
                     nome = database[anno][mese][giorno]["checkIn"]["nome"]
-                    # print(nome)
+
                     if (
                             database[anno][mese][giorno]["checkIn"]["nome"] != ""
                             or database[anno][mese][giorno]["checkIn"]["cognome"] != ""
@@ -336,14 +350,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                                 == "Booking.com"
                         ):
                             self.dateBooking.append(
-                                QtCore.QDate(int(anno), numeriMesi[mese], int(giorno))
+                                QtCore.QDate(anno, mese, giorno)
                             )
                             print("data aggiunta a booking")
                         elif (
                                 database[anno][mese][giorno]["checkIn"]["platform"] == "airBB"
                         ):
                             self.dateAirbb.append(
-                                QtCore.QDate(int(anno), numeriMesi[mese], int(giorno))
+                                QtCore.QDate(anno, mese, giorno)
                             )
                             print("data aggiunta a airbnb")
                         elif (
@@ -351,7 +365,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                                 == "privato"
                         ):
                             self.datePrivati.append(
-                                QtCore.QDate(int(anno), numeriMesi[mese], int(giorno))
+                                QtCore.QDate(anno, mese, giorno)
                             )
                             print("data aggiunta a privati")
 
@@ -361,7 +375,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                             or database[anno][mese][giorno]["checkOut"]["cognome"] != ""
                     ):
                         self.datePulizie.append(
-                            QtCore.QDate(int(anno), numeriMesi[mese], int(giorno))
+                            QtCore.QDate(anno, mese, giorno)
                         )
 
                         # print('anomalia per le date pulizia ', giorno)
@@ -383,6 +397,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         mese = data.toString("MMM")
         giorno = int(data.toString("dd"))
         return anno, mese, giorno
+
+    def amg(self, data=QtCore.QDate):
+        """
+        anno mese giorno
+        :param data: QtCore.QDate
+        :return: a,m,g
+        """
+        a = data.year()
+        m = data.month()
+        g = data.day()
+
+        return a, m, g
 
     def botFuncCheckAval(self):
         dal = self.dateEdit_dal.date()
@@ -408,7 +434,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             data = dal
             for i in range(1, giorniPermanenza + 1):
                 # if aval:
-                a, m, g = self.dataParser(data)
+                # a, m, g = self.dataParser(data)
+                a, m, g = self.amg(data)
                 database = self.getDatabase(a)
                 info = database[a][m][g]["checkIn"].copy()
                 if info["nome"] != "" or info["cognome"] != "":
