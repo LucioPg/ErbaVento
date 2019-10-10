@@ -9,7 +9,7 @@ import sys
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
     """Classe per la creazione gui del gestionale per case vacanze"""
-
+    MAXOSPITI = 5
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
 
@@ -17,6 +17,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateAirbb = []
         self.datePrivati = []
         self.datePulizie = []
+        self.listaImporti = [72, 74, 92, 111, 130]
         d = {
             "nome": "",
             "cognome": "",
@@ -66,9 +67,37 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_salva.clicked.connect(self.salvaInfo)
         self.bot_checkDisp.clicked.connect(self.botFuncCheckAval)
         self.bot_cancella.clicked.connect(self.cancellaprenot)
+        self.spinBox_ospiti.valueChanged.connect(self.totOspitiAdj)
+        self.spinBox_bambini.valueChanged.connect(self.totOspitiAdj)
 
         # STATUS BAR
         # self.statusbar.setT
+
+    def totOspitiAdj(self, p):
+        sender = self.sender()
+        widget = sender.objectName()
+        widgetItself = None
+        print("valore ", p)
+        if widget == 'spinBox_ospiti':
+            print("sender spinBox_ospiti")
+            other = self.spinBox_bambini.value()
+            widgetItself = self.spinBox_ospiti
+        else:
+            print("sender spinBox_bambini")
+            other = self.spinBox_ospiti.value()
+            widgetItself = self.spinBox_bambini
+        tot = p + other
+        if tot == EvInterface.MAXOSPITI + 1:
+            print(tot)
+            widgetItself.blockSignals(True)
+            widgetItself.setValue(p - 1)
+            widgetItself.blockSignals(False)
+
+    def importAdj(self, p):
+        if type(p) is not int:
+            p = int(p)
+        self.spinBox_importo.setValue(self.listaImporti[p - 1])
+
 
     def pulisci_campi_prenotazioni(self):
         """ prende le info da inserire nei campi
@@ -92,6 +121,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             print(platform)
         self.plainTextEdit_note.clear()
         self.plainTextEdit_note.insertPlainText(info['note'])
+        self.radio_colazione.setChecked(info['colazione'] == 'True')
+        self.spinBox_importo.setValue(int(info['importo']))
         # todo aggiungere funzione di calcolo importo
 
     def pulisci_campi_prenotazioni_old(self):
