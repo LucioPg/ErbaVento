@@ -1,3 +1,4 @@
+from copy import deepcopy as deepc
 from PyQt5 import QtGui, QtCore, QtWidgets
 from gui import Ui_MainWindow as mainwindow
 from tools.databaseMaker import DbMaker as dbm
@@ -34,6 +35,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             "note": "",
         }
         self.infoModel = Od(d)
+        self.infoTemp = Od(d)
         r = {"nome": "", "cognome": "", "data partenza": ""}
         self.infoModelRedux = Od(r)
         #  init gui
@@ -51,7 +53,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         cal_layout.addWidget(self.calendario)
         self.frame_calendar.setLayout(cal_layout)
 
-        self.calendario.clicked.connect(self.getInfoFromDate)
+        self.calendario.clicked.connect(self.getInfoFromCalendar)
         self.calendario.selectionChanged.connect(self.setDateEdit_dal)
         self.tabWidget.currentChanged.connect(self.pulisci_campi_prenotazioni)
         # self.calendario.currentPageChanged.connect(self.riportapagina)
@@ -93,6 +95,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def cancellaprenot(self):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
+
+        manager = Manager(info=self.infoTemp)
+        manager.canc()
+        self.leggiDatabase(manager.DataBase)
+        self.calendario.updateCells()
         # data = self.current_date
         # print("giorno selezionato: ", data)
         # domani = data.addDays(1)
@@ -152,13 +159,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             info = None
         return info
 
-    def getInfoFromDate(self, data):
-        # meseattuale = self.calendario.cu
-        self.get_date(data)
-        # listaInfo = {'nome':'','cognome':''}
-        # a, m, g = self.dataParser(data)
-        a, m, g = self.amg(data)
-        info = self.getInfo(a, m, g)
+    def setInfoFromDate(self, info):
         nome = info["nome"]
         cognome = info["cognome"]
         telefono = info["telefono"]
@@ -191,7 +192,22 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         self.tableWidget_info_ospite.update()
 
-    # def popolaInfoTab(self):
+    def getInfoFromDate(self, data):
+        self.get_date(data)
+        a, m, g = self.amg(data)
+        info = self.getInfo(a, m, g)
+        return info
+
+    def getInfoFromCalendar(self, data):
+
+        info = self.getInfoFromDate(data)
+        self.setInfoFromDate(info)
+        self.setInfoTemp(info)
+        return info
+
+    def setInfoTemp(self, info, data=None):
+        self.infoTemp = deepc(info)
+        return self.infoTemp
 
     def get_date(self, d):
         # a = self.calendarWidget.dateTextFormat()
@@ -206,10 +222,16 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return self.current_date
 
     def setDateEdit_dal(self):
-        # d = self.calendario.selectedDate().toString('ddd dd/MM/yyyy')
+
         d = self.calendario.selectedDate()
         a = d.addDays(1)
-        # print("type giornocorrente", type(self.giornoCorrente))
+        self.setInfoTemp(self.getInfoFromDate(d))
+        if self.infoTemp['note'] != '':
+            print(self.infoTemp['note'])
+        # print("infoTemp:\n")
+        # for k,v in self.infoTemp.items():
+        #     print(k,v,end='\t\t')
+        #     print('\n')
         # todo rimuovere il commento a:
         # self.dateEdit_dal.setMinimumDate(self.giornoCorrente)
         # self.dateEdit_al.setMinimumDate(self.giornoCorrente.addDays(1))
@@ -310,70 +332,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.datePulizie.clear()
         db = Manager()
         self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie = db.platformPulizie()
-
-    def leggiDatabase_old(self, database):
-        """legge il database per correggere le colorazioni del calendario"""
-
-        self.dateBooking.clear()
-        self.datePulizie.clear()
-        for anno in database.keys():
-            for mese in database[anno].keys():
-                # if mese == 10:
-                #     print("controllo mensile ", database[anno][mese][30]["checkIn"])
-                for giorno in database[anno][mese].keys():
-                    # for ci in database[anno][mese][giorno]['checkIn'].keys():
-                    nome = database[anno][mese][giorno]["checkIn"]["nome"]
-
-                    if (
-                            database[anno][mese][giorno]["checkIn"]["nome"] != ""
-                            or database[anno][mese][giorno]["checkIn"]["cognome"] != ""
-                    ):
-                        if (
-                                database[anno][mese][giorno]["checkIn"]["platform"]
-                                == "Booking.com"
-                        ):
-                            self.dateBooking.append(
-                                QtCore.QDate(anno, mese, giorno)
-                            )
-                            # print("data aggiunta a booking")
-                        elif (
-                                database[anno][mese][giorno]["checkIn"]["platform"] == "airBB"
-                        ):
-                            self.dateAirbb.append(
-                                QtCore.QDate(anno, mese, giorno)
-                            )
-                            # print("data aggiunta a airbnb")
-                        elif (
-                                database[anno][mese][giorno]["checkIn"]["platform"]
-                                == "privato"
-                        ):
-                            self.datePrivati.append(
-                                QtCore.QDate(anno, mese, giorno)
-                            )
-                            # print("data aggiunta a privati")
-
-                    # for co in database[anno][mese][giorno]['checkOut'].keys():
-                    if (
-                            database[anno][mese][giorno]["checkOut"]["nome"] != ""
-                            or database[anno][mese][giorno]["checkOut"]["cognome"] != ""
-                    ):
-                        self.datePulizie.append(
-                            QtCore.QDate(anno, mese, giorno)
-                        )
-
-                        # print('anomalia per le date pulizia ', giorno)
-                        # print(database[anno][mese][giorno]['checkOut'])
-
-        # print(
-        #     "leggi database completato: \n"
-        #     "numero di date occupate: \n"
-        #     "\t booking {0}\n\t airbb {1}\n"
-        #     "\t privato {2}"
-        #     "\n numero di giorni di pulizia: {3}\n"
-        #     "*******".format(
-        #         self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
-        #     )
-        # )
 
     def dataParser(self, data):
         anno = data.toString("yyyy")
