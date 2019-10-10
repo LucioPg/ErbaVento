@@ -27,14 +27,16 @@ class ManagerPreno(object):
         # opzione per correggere il percorso durante i tests
         self.shortcut = shortcut
         self._info = info
-        if self._info is not None:
+        # if self._info is not None:
+        try:
             self.info = self.getInfo
             self._dataIn = self.info['data arrivo']
             self._dataOut = self.info['data partenza']
             self._domani = self._dataIn.addDays(1)
             self._nome = self.info['nome']
             self._cognome = self.info['cognome']
-        else:
+        except AttributeError or TypeError:
+            # else:
             self._dataIn = QtCore.QDate().currentDate()
             self._domani = self._dataIn.addDays(1)
             self._dataOut = self._domani

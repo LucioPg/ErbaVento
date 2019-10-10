@@ -41,7 +41,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         #  init gui
         self.setupUi(self)
         self.statusbar.showMessage("Ready!!!!")
-        self.initDatabase()
         self.calendario = MyCalend(
             self.dateAirbb,
             self.dateBooking,
@@ -49,6 +48,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.datePulizie,
             parent=self.frame_calendar,
         )
+        self.initDatabase()
         cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
         cal_layout.addWidget(self.calendario)
         self.frame_calendar.setLayout(cal_layout)
@@ -98,7 +98,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         manager = Manager(info=self.infoTemp)
         manager.canc()
-        self.leggiDatabase(manager.DataBase)
+        database = self.getDatabase(self.infoTemp['data arrivo'].year())
+        # self.leggiDatabase(manager.DataBase)
+        self.leggiDatabase(database)
         self.calendario.updateCells()
         # data = self.current_date
         # print("giorno selezionato: ", data)
@@ -291,12 +293,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             manager.setThem()
             print("prenotazione effettuata per tutte le date richieste")
             self.leggiDatabase(manager.DataBase)
-            self.calendario.setDates(
-                booking=self.dateBooking,
-                air=self.dateAirbb,
-                privati=self.datePrivati,
-                pulizie=self.datePulizie,
-            )
+            # self.calendario.setDates(
+            #     booking=self.dateBooking,
+            #     air=self.dateAirbb,
+            #     privati=self.datePrivati,
+            #     pulizie=self.datePulizie,
+            # )
             self.set_status_msg("Prenotazione eseguita con successo")
             l = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_lordo,
                  self.lineEdit_netto, self.lineEdit_tax, self.lineEdit_telefono,
@@ -330,8 +332,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateAirbb.clear()
         self.datePrivati.clear()
         self.datePulizie.clear()
-        db = Manager()
+        db = Manager(self.infoTemp)
         self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie = db.platformPulizie()
+        self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
+        # return  self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
 
     def dataParser(self, data):
         anno = data.toString("yyyy")
