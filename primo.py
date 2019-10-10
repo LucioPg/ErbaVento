@@ -276,6 +276,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 pulizie=self.datePulizie,
             )
             self.set_status_msg("Prenotazione eseguita con successo")
+            l = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_lordo,
+                 self.lineEdit_netto, self.lineEdit_tax, self.lineEdit_telefono,
+                 self.plainTextEdit_note]
+            for w in l:
+                w.clear()
+            self.spinBox_ospiti.setValue(1)
+            self.spinBox_bambini.setValue(0)
             self.tabWidget.setCurrentIndex(0)
         else:
             self.set_status_msg("Le date selezionate sono occupate")
@@ -296,6 +303,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return database
 
     def leggiDatabase(self, database):
+
+        self.dateBooking.clear()
+        self.dateAirbb.clear()
+        self.datePrivati.clear()
+        self.datePulizie.clear()
+        db = Manager()
+        self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie = db.platformPulizie()
+
+    def leggiDatabase_old(self, database):
         """legge il database per correggere le colorazioni del calendario"""
 
         self.dateBooking.clear()

@@ -35,9 +35,9 @@ class ManagerPreno(object):
             self._nome = self.info['nome']
             self._cognome = self.info['cognome']
         else:
-            self._dataIn = None
-            self._dataOut = None
-            self._domani = None
+            self._dataIn = QtCore.QDate().currentDate()
+            self._domani = self._dataIn.addDays(1)
+            self._dataOut = self._domani
             self._nome = None
             self._cognome = None
         self.occupate = []
@@ -111,6 +111,8 @@ class ManagerPreno(object):
     def platformPulizie(self):
         # todo evitare di caricare le date passate?
         self.dateBooking.clear()
+        self.dateAirbb.clear()
+        self.datePrivati.clear()
         self.datePulizie.clear()
         a, m, g = self.amg(self._dataIn)
         partenza = self.DataBase[a][m][g]["checkIn"]['data partenza']
@@ -129,9 +131,9 @@ class ManagerPreno(object):
                     elif plat == 'privato':
                         if data not in self.datePrivati:
                             self.datePrivati.append(data)
-                    if pulizie == '':
-                        if partenza not in self.datePulizie:
-                            self.datePulizie.append(partenza)
+                    if pulizie != '':
+                        if pulizie not in self.datePulizie:
+                            self.datePulizie.append(pulizie)
 
         return self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
 
