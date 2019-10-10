@@ -51,13 +51,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.frame_calendar.setLayout(cal_layout)
 
         self.calendario.clicked.connect(self.getInfoFromDate)
-        self.calendario.selectionChanged.connect(self.setDateEdit)
+        self.calendario.selectionChanged.connect(self.setDateEdit_dal)
         self.tabWidget.currentChanged.connect(self.pulisci_campi_prenotazioni)
         # self.calendario.currentPageChanged.connect(self.riportapagina)
         self.lastMonth = None
         self.current_date = None
         self.giornoCorrente = self.calendario.selectedDate()
-        self.setDateEdit()
+        self.setDateEdit_dal()
 
         self.dateEdit_dal.dateChanged.connect(self.correggiPartenza)
         self.bot_salva.clicked.connect(self.salvaInfo)
@@ -123,16 +123,24 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         pass
 
     def correggiPartenza(self, d):
-        print(d)
+        """
+        adegua la spinbox della partenza a quella dell'arrivo
+        considerando almeno un giorno
+        :param d:
+        :return:
+        """
         al = self.dateEdit_al.date()
+        md = self.dateEdit_al.minimumDate()
+
         if al <= d:
             al = d.addDays(1)
             self.dateEdit_al.setDate(al)
-            print("correzione effettuata")
+            self.dateEdit_al.setMinimumDate(d.addDays(1))
+            print("correzione in avanti effettuata")
         else:
             print("partenza ok")
-
-        pass
+        if md >= d:
+            self.dateEdit_al.setMinimumDate(d.addDays(1))
 
     def getInfo(self, a, m, g):
         try:
@@ -196,16 +204,21 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.label_data.setText(self.current_date_label)
         return self.current_date
 
-    def setDateEdit(self):
+    def setDateEdit_dal(self):
         # d = self.calendario.selectedDate().toString('ddd dd/MM/yyyy')
         d = self.calendario.selectedDate()
         a = d.addDays(1)
         # print("type giornocorrente", type(self.giornoCorrente))
         # todo rimuovere il commento a:
         # self.dateEdit_dal.setMinimumDate(self.giornoCorrente)
-        self.dateEdit_al.setMinimumDate(self.giornoCorrente.addDays(1))
+        # self.dateEdit_al.setMinimumDate(self.giornoCorrente.addDays(1))
+        self.dateEdit_al.setMinimumDate(a)
         self.dateEdit_dal.setDate(d)
         self.dateEdit_al.setDate(a)
+
+    # def setDateEdit_al(self,a):
+    #     d = a.addDays(1)
+    #     self.dateEdit_al.setDate(a)
 
         # db.stampa()
 
@@ -424,8 +437,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         print("giorni di permanenza: ", giorniPermanenza)
         arrivo = dal
         partenza = al
-        arrivo_a, arrivo_m, arrivo_g = self.dataParser(arrivo)
-        partenza_a, partenza_m, partenza_g = self.dataParser(partenza)
+        arrivo_a, arrivo_m, arrivo_g = self.amg(arrivo)
+        partenza_a, partenza_m, partenza_g = self.amg(partenza)
         database = None
         database_partenza = None
         aval = True
@@ -440,14 +453,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 info = database[a][m][g]["checkIn"].copy()
                 if info["nome"] != "" or info["cognome"] != "":
                     finoAl = info["data partenza"]
-                    if finoAl == data.toString("dd MMM yyyy") or finoAl is None:
+                    if finoAl == data or finoAl is None:
                         listaDisponibili.append(data.toString("dd MMM yyyy"))
                         aval = True
                         data = data.addDays(1)
                     else:
                         nome = info["nome"]
                         cognome = info["cognome"]
-                        print("type data", type(data))
+                        # print("type data", type(data))
                         print(
                             "spiacente, casa non disponibile in questa data",
                             data.toString("dd MMM yyyy"),
@@ -455,7 +468,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         print(nome, "\t", cognome, "\n", "fino al: ", finoAl)
                         aval = False
                 else:
-                    listaDisponibili.append(data)
+                    listaDisponibili.append(data.toString("dd MMM yyyy"))
                     aval = True
                 data = data.addDays(1)
         # else:
