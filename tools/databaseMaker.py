@@ -190,11 +190,15 @@ class DbMaker(object):
                 pickle.dump(fileDb, f)
         return fileDb
 
-    def salvaDatabase(self, anno, fileDb):
+    def salvaDatabase(self, anno, fileDb, shortcut=0):
         """ salva il database per l'anno indicato"""
+        print("sequenza di salvataggio iniziata")
         if type(anno) is not str:
             anno = str(anno)
-        nome = anno + ".pkl"
+        if shortcut:
+            nome = '../' + anno + ".pkl"
+        else:
+            nome = anno + ".pkl"
         with open(nome, "wb") as f:
             pickle.dump(fileDb, f)
         print("salvataggio effettuato in: ", nome)
