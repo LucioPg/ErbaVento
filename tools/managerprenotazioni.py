@@ -55,6 +55,7 @@ class ManagePreno(object):
             print("NOME ANCORA PRESENTE ", self._nome)
         else:
             print("NOME non trovato ", self._nome)
+        print("hai controllato il nome e la data di checkin??")
 
     def freethem(self):
 
