@@ -8,6 +8,9 @@ from traceback import format_exc as fex
 
 import sys
 
+# todo aggiungere voci menu per settaggi vari come tasse, importi e provvigioni
+# todo come anche il settaggio del file database, se conservato in locale
+#  oppure in un server, ma anche poter scegliere se farlo in formato json
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
     """Classe per la creazione gui del gestionale per case vacanze"""
@@ -24,7 +27,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                              'AirB&B': [60, 70, 85, 100, 110],
                              'Privati': [40, 45, 75, 90, 110]}
         self.listeProvvigioni = {'Booking.com': 0.18,
-                                 'AirB&B': 0.3,
+                                 'AirB&B': 0.03,
                                  'Privati': 0}
         self.listeTasse = {'Booking.com': True,
                            'AirB&B': True,
@@ -244,7 +247,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.importAdj(self.spinBox_bambini.value() + self.spinBox_ospiti.value())
         self.dateEdit_dal.setDate(info['data arrivo'])
         self.dateEdit_al.setDate(info['data partenza'])
-        # todo aggiungere funzione di calcolo importo
 
     def set_status_msg(self, st=""):
         self.statusbar.showMessage(st)
