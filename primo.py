@@ -4,6 +4,8 @@ from gui import Ui_MainWindow as mainwindow
 from tools.databaseMaker import DbMaker as dbm
 from tools.managerprenotazioni import ManagerPreno as Manager
 from collections import OrderedDict as Od
+from traceback import format_exc as fex
+
 import sys
 
 
@@ -13,11 +15,20 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
 
+
         self.dateBooking = []
         self.dateAirbb = []
         self.datePrivati = []
         self.datePulizie = []
-        self.listaImporti = [72, 74, 92, 111, 130]
+        self.listeImporti = {'Booking.com': [72, 74, 92, 111, 130],
+                             'AirB&B': [60, 70, 85, 100, 110],
+                             'Privati': [40, 45, 75, 90, 110]}
+        self.listeProvvigioni = {'Booking.com': 0.18,
+                                 'AirB&B': 0.3,
+                                 'Privati': 0}
+        self.listeTasse = {'Booking.com': True,
+                           'AirB&B': True,
+                           'Privati': False}
         d = {
             "nome": "",
             "cognome": "",
@@ -56,22 +67,113 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         self.calendario.clicked.connect(self.getInfoFromCalendar)
         self.calendario.selectionChanged.connect(self.setDateEdit_dal)
-        self.tabWidget.currentChanged.connect(self.pulisci_campi_prenotazioni)
+        self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
         # self.calendario.currentPageChanged.connect(self.riportapagina)
         self.lastMonth = None
         self.current_date = None
         self.giornoCorrente = self.calendario.selectedDate()
         self.setDateEdit_dal()
-
+        self.spinBox_importo.setMaximum(9999)
         self.dateEdit_dal.dateChanged.connect(self.correggiPartenza)
         self.bot_salva.clicked.connect(self.salvaInfo)
         self.bot_checkDisp.clicked.connect(self.botFuncCheckAval)
         self.bot_cancella.clicked.connect(self.cancellaprenot)
         self.spinBox_ospiti.valueChanged.connect(self.totOspitiAdj)
         self.spinBox_bambini.valueChanged.connect(self.totOspitiAdj)
+        self.spinBox_importo.valueChanged.connect(self.calcLordoNetto)
+        self.radio_booking.toggled.connect(self.importAdj)
+        self.radio_air.toggled.connect(self.importAdj)
+        self.radio_privato.toggled.connect(self.importAdj)
+        self.radioCorrente = self.radio_booking
+        self.dateEdit_al.dateChanged.connect(self.calcLordoNetto)
+        self.dateEdit_dal.dateChanged.connect(self.calcLordoNetto)
 
         # STATUS BAR
         # self.statusbar.setT
+
+    def calcTax(self):
+        """
+        prende il numero di ospiti, la data "dal" e la data "al"
+        dalle spinbox
+        la tassa è di 2 euro al mese per un massimo di 3 giorni,
+        dal quarto è gratis per il mese corrente
+        compara i mesi per ricominciare il conto dei giorni
+        da pagare
+        :return:
+        """
+        try:
+            dal = self.dateEdit_dal.date()
+            mese_dal = dal.month()
+            al = self.dateEdit_al.date()
+            mese_al = al.month()
+            permanenza = dal.daysTo(al)
+            ospiti = self.spinBox_ospiti.value()
+            topay = 3
+            fee = 2
+            oggi = self.dateEdit_dal.date()
+            listaDate = []
+            flag = oggi != al
+            while flag:
+                mese = oggi.month()
+                print('mese: ', mese)
+                if mese != mese_dal:
+                    topay = 3
+                    mese_dal = mese
+                if oggi not in listaDate and topay > 0:
+                    listaDate.append(oggi)
+                topay -= 1
+                oggi = oggi.addDays(1)
+                flag = oggi != al
+            if permanenza != len(listaDate):
+                print("qualcosa non va nel conteggio delle tasse")
+            tot = len(listaDate) * ospiti * fee
+            print("tassa da pagare: ", tot)
+            return tot
+        except:
+            print(fex())
+
+    def calcLordoNetto(self):
+        """
+        calcola l'ammontare del lordo e al netto delle tasse
+        e delle provvigioni
+        :return:
+        """
+        try:
+            importo = self.spinBox_importo.value()
+            chiave = self.getPlatformKey()
+            ospiti = self.spinBox_ospiti.value() + self.spinBox_bambini.value()
+            giorni = self.dateEdit_dal.date().daysTo(self.dateEdit_al.date())
+            tassa = 0
+            if self.listeTasse[chiave]:
+                tassa = 0
+            else:
+                tassa = self.calcTax()
+                # tassa = 0
+
+            lordo = ospiti * importo * giorni
+            print("lordo: ", lordo)
+            netto = (lordo * (1 - self.listeProvvigioni[chiave])) - tassa
+            print("netto: ", netto)
+            self.lineEdit_lordo.setText(str(lordo))
+            self.lineEdit_netto.setText(str(round(netto)))
+            self.lineEdit_tax.setText(str(tassa))
+        except:
+            print(fex())
+
+    def getPlatformKey(self):
+        """
+        restituisce la chiave per i dizionari con le liste
+        self.listaProvvigioni
+        self.listaImporti
+        :return: chiave -> str
+        """
+        if self.radio_privato.isChecked():
+            chiave = 'Privati'
+        elif self.radio_air.isChecked():
+            chiave = 'AirB&B'
+        elif self.radio_booking.isChecked():
+            chiave = 'Booking.com'
+        return chiave
 
     def totOspitiAdj(self, p):
         sender = self.sender()
@@ -92,14 +194,31 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             widgetItself.blockSignals(True)
             widgetItself.setValue(p - 1)
             widgetItself.blockSignals(False)
+            tot = 5
+        self.importAdj(tot)
 
     def importAdj(self, p):
         if type(p) is not int:
             p = int(p)
-        self.spinBox_importo.setValue(self.listaImporti[p - 1])
+        chiave = self.getPlatformKey()
+        try:
 
+            sender = self.sender()
+            if sender == self.radioCorrente:
+                return
+            print("sender importAdj", sender.objectName())
+            if sender.objectName().startswith('radio'):
+                self.radioCorrente = sender
+                p = self.spinBox_bambini.value() + self.spinBox_ospiti.value()
+                if p >= 5:
+                    p = 5
+        except:
+            print(fex())
+        indice = p - 1
+        print("listaImporti: ", self.listeImporti[chiave][indice])
+        self.spinBox_importo.setValue(self.listeImporti[chiave][indice])
 
-    def pulisci_campi_prenotazioni(self):
+    def riempi_campi_prenotazioni(self):
         """ prende le info da inserire nei campi
             della prenotazione a partire dalle info
             nel box nella pagina
@@ -122,52 +241,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.plainTextEdit_note.clear()
         self.plainTextEdit_note.insertPlainText(info['note'])
         self.radio_colazione.setChecked(info['colazione'] == 'True')
-        self.spinBox_importo.setValue(int(info['importo']))
+        self.importAdj(self.spinBox_bambini.value() + self.spinBox_ospiti.value())
+        self.dateEdit_dal.setDate(info['data arrivo'])
+        self.dateEdit_al.setDate(info['data partenza'])
         # todo aggiungere funzione di calcolo importo
-
-    def pulisci_campi_prenotazioni_old(self):
-        """ prende le info da inserire nei campi
-            della prenotazione a partire dalle info
-            nel box nella pagina
-            del calendario"""
-        listaItems = self.tableWidget_info_ospite.rowCount()
-        diz = {}
-        for i in range(0, listaItems):
-            if i < (listaItems - 2):
-                campo = self.tableWidget_info_ospite.item(i, 0).text()
-                nome = self.tableWidget_info_ospite.verticalHeaderItem(i).text()
-                zid = {nome: campo}
-            else:
-                campo_dal = self.tableWidget_info_ospite.item(i, 0).text()
-                campo_al = self.tableWidget_info_ospite.item(i, 1)
-                if campo_al is None:
-                    item = QtWidgets.QTableWidgetItem('che cazzo')
-                    self.tableWidget_info_ospite.setItem(i, 1, item)
-                    campo2 = self.tableWidget_info_ospite.item(i, 1).text()
-                else:
-                    campo2 = campo_al.text()
-                nome1 = 'checkIn'
-                nome2 = "checkOut"
-                zid = {nome1: campo_dal, nome2: campo2}
-            diz.update(zid)
-        print(diz)
-        _nome = self.tableWidget_info_ospite.item(0, 0)
-        if _nome is not None:
-            nome = _nome.text()
-        else:
-            nome = ''
-        self.lineEdit_nome.setText(nome)
-        print("pulisci_campi_prenotazioni ", nome)
-        pass
 
     def set_status_msg(self, st=""):
         self.statusbar.showMessage(st)
         return
-
-    # def riportapagina(self, a, m):
-    #     """fa in modo che non cambi la pagina
-    #         se viene selzionato un giorno di un altro mese"""
-    #     print("riporta la pagina ", self.calendario.selectedDate())
 
     def cancellaprenot(self):
         """cancella la prenotazione nella data
@@ -289,12 +370,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateEdit_dal.setDate(d)
         self.dateEdit_al.setDate(a)
 
-    # def setDateEdit_al(self,a):
-    #     d = a.addDays(1)
-    #     self.dateEdit_al.setDate(a)
-
-        # db.stampa()
-
     def compilaInfo(self):
         a = self.infoModel.copy()
         a["nome"] = self.lineEdit_nome.text()
@@ -341,12 +416,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             manager.setThem()
             print("prenotazione effettuata per tutte le date richieste")
             self.leggiDatabase(manager.DataBase)
-            # self.calendario.setDates(
-            #     booking=self.dateBooking,
-            #     air=self.dateAirbb,
-            #     privati=self.datePrivati,
-            #     pulizie=self.datePulizie,
-            # )
             self.set_status_msg("Prenotazione eseguita con successo")
             l = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_lordo,
                  self.lineEdit_netto, self.lineEdit_tax, self.lineEdit_telefono,
@@ -371,11 +440,16 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def getDatabase(self, anno):
         Dbm = dbm(self.dateEdit_dal.date())
         database = Dbm.checkFile(anno)
-
         return database
 
     def leggiDatabase(self, database):
-
+        """
+        legge il database per restituire gli elenchi delle piattaforme
+        (booking, airbb, privati, pulizie)
+        per stilizzare il calendario
+        :param database:
+        :return:
+        """
         self.dateBooking.clear()
         self.dateAirbb.clear()
         self.datePrivati.clear()
@@ -407,12 +481,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         dal = self.dateEdit_dal.date()
         al = self.dateEdit_al.date()
         print(self.checkAval(dal, al))
-        # if self.checkAval(dal,al):
-        #     print("check ok")
 
     def checkAval(self, dal, al):
-        # arrivo =  self.dateEdit_dal.date()
-        # partenza = self.dateEdit_al.date()
         giorniPermanenza = dal.daysTo(al)
         print("giorni di permanenza: ", giorniPermanenza)
         arrivo = dal
@@ -426,8 +496,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if arrivo_a == partenza_a:
             data = dal
             for i in range(1, giorniPermanenza + 1):
-                # if aval:
-                # a, m, g = self.dataParser(data)
                 a, m, g = self.amg(data)
                 database = self.getDatabase(a)
                 info = database[a][m][g]["checkIn"].copy()
@@ -451,11 +519,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     listaDisponibili.append(data)
                     aval = True
                 data = data.addDays(1)
-        # else:
-        #     database = self.getDatabase(arrivo_a)
-        #     database_partenza = self.getDatabase(partenza_a)
-        #     print("inutile else checck aval")
-        # if aval:
         if giorniPermanenza == len(listaDisponibili):
             print("casa libera  tutti i giorni disponibili")
         else:
