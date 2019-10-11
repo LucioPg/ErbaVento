@@ -20,7 +20,7 @@ class DbMaker(object):
             "data partenza": None,
             "numero ospiti": 1,
             "bambini": 0,
-            "spese": {},
+        "spese": None,
             "colazione": False,
             "importo": 0,
             "lordo": 0,

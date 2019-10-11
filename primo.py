@@ -3,6 +3,7 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from gui import Ui_MainWindow as mainwindow
 from tools.databaseMaker import DbMaker as dbm
 from tools.managerprenotazioni import ManagerPreno as Manager
+from tools.ExpCsv import ExpCsv as excsv
 from collections import OrderedDict as Od
 from traceback import format_exc as fex
 
@@ -90,10 +91,20 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.radioCorrente = self.radio_booking
         self.dateEdit_al.dateChanged.connect(self.calcLordoNetto)
         self.dateEdit_dal.dateChanged.connect(self.calcLordoNetto)
+        self.bot_foglio.clicked.connect(self.exportaDb)
 
         # STATUS BAR
         # self.statusbar.setT
 
+    def exportaDb(self):
+        anno = self.giornoCorrente.year()
+        db = self.getDatabase(anno)
+        exdb = excsv(db, anno)
+        exdb.makeCsv()
+        # li = exdb.updateDiz()
+        # print("lunghezza li ",len(li))
+        # print("dal click: \n\t\t",li[9].items())
+        # exdb.checkFile()
     def calcTax(self):
         """
         prende il numero di ospiti, la data "dal" e la data "al"
@@ -245,8 +256,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.plainTextEdit_note.insertPlainText(info['note'])
         self.radio_colazione.setChecked(info['colazione'] == 'True')
         self.importAdj(self.spinBox_bambini.value() + self.spinBox_ospiti.value())
-        self.dateEdit_dal.setDate(info['data arrivo'])
-        self.dateEdit_al.setDate(info['data partenza'])
+        dataArrivo = info['data arrivo']
+        dataPartenza = info['data partenza']
+        if (dataArrivo or dataPartenza) is not None:
+            self.dateEdit_dal.setDate(dataArrivo)
+            self.dateEdit_al.setDate(dataPartenza)
+        else:
+            self.setDateEdit_dal()
+            # self.dateEdit_al.setDate(dataPartenza)
 
     def set_status_msg(self, st=""):
         self.statusbar.showMessage(st)
@@ -376,7 +393,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a = self.infoModel.copy()
         a["nome"] = self.lineEdit_nome.text()
         a["cognome"] = self.lineEdit_cognome.text()
-        a["telefono"] = self.lineEdit_telefono.text()
+        a["telefono"] = int(self.lineEdit_telefono.text())
         if self.radio_air.isChecked():
             a["platform"] = "airBB"
         elif self.radio_booking.isChecked():

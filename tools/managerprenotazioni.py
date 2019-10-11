@@ -320,7 +320,7 @@ class ManagerPreno(object):
     def getDb(self, data):
         """
         accede al database
-        :param anno:
+        :param data:
         :return: database
         """
         if data is None:
