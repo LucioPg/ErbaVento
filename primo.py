@@ -142,7 +142,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             if permanenza != len(listaDate):
                 print("qualcosa non va nel conteggio delle tasse")
             tot = len(listaDate) * ospiti * fee
-            print("tassa da pagare: ", tot)
+            # print("tassa da pagare: ", tot)
             return tot
         except:
             print(fex())
@@ -173,7 +173,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.lineEdit_netto.setText(str(round(netto)))
             self.lineEdit_tax.setText(str(tassa))
         except:
-            print(fex())
+            print("fallimento funz calcolo lordonetto")
+            # print(fex())
 
     def getPlatformKey(self):
         """
@@ -194,13 +195,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         sender = self.sender()
         widget = sender.objectName()
         widgetItself = None
-        print("valore ", p)
+        # print("valore ", p)
         if widget == 'spinBox_ospiti':
-            print("sender spinBox_ospiti")
+            # print("sender spinBox_ospiti")
             other = self.spinBox_bambini.value()
             widgetItself = self.spinBox_ospiti
         else:
-            print("sender spinBox_bambini")
+            # print("sender spinBox_bambini")
             other = self.spinBox_ospiti.value()
             widgetItself = self.spinBox_bambini
         tot = p + other
@@ -378,6 +379,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         d = self.calendario.selectedDate()
         a = d.addDays(1)
         self.setInfoTemp(self.getInfoFromDate(d))
+        if self.infoTemp['data arrivo'] is None:
+            self.bot_cancella.setEnabled(False)
+        else:
+            self.bot_cancella.setEnabled(True)
         if self.infoTemp['note'] != '':
             print(self.infoTemp['note'])
         # print("infoTemp:\n")

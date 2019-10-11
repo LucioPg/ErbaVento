@@ -1,8 +1,11 @@
 import csv
+import os
+import traceback
+import shutil
 from copy import deepcopy
 from PyQt5 import QtCore
 from collections import OrderedDict as Od
-
+import filecmp
 
 class ExpCsv(object):
     """
@@ -49,12 +52,6 @@ class ExpCsv(object):
                         chekIn['data arrivo'] = dataArrivo.toString("dd MMM yyyy")
                         chekIn['data partenza'] = dataPartenza.toString("dd MMM yyyy")
                     db[anno][mese][giorno] = deepcopy(chekIn)
-
-        try:
-            print("adjDb")
-            print(db[anno][mese][giorno])
-        except ValueError:
-            print("impossibile aprire il diz")
         return db
 
     def build_listaColonne(self, d):
@@ -63,32 +60,6 @@ class ExpCsv(object):
             if k not in li:
                 li.append(k)
         return li
-
-    def build_listaColonne_old(self):
-        for k in self._database.keys():
-            self.listaColonne = [x for x in self._database[k][1][1].keys()]
-            break
-        self.listaColonne.insert(0, 'data')
-        # self.listaColonne.insert(1, 'mese')
-        # self.listaColonne.insert(2, 'giorno')
-        print(self.listaColonne)
-        return self.listaColonne
-
-    def mergedict(self, a, b):
-        a.update(b)
-        return a
-
-    def amg(self, data=QtCore.QDate):
-        """
-        anno mese giorno
-        :param data: QtCore.QDate
-        :return: a,m,g
-        """
-        a = data.year()
-        m = data.month()
-        g = data.day()
-
-        return a, m, g
 
     def anno(self, a=None):
         if a is None:
@@ -102,10 +73,6 @@ class ExpCsv(object):
         db = deepcopy(self._database)
         form = QtCore.QDate
         listaDiz = []
-        dizFinale = Od()
-        # listaCol = ['nome',
-        #             'cognome',
-        #             'telefono']
         for anno in db.keys():
             for mese in db[anno]:
                 dizzy = Od()
@@ -126,11 +93,7 @@ class ExpCsv(object):
             lik.insert(0, 'data')
             if self.listaColonne != lik:
                 self.listaColonne = lik
-            print("lista colonne:\n\t\t", self.listaColonne)
         return listaDiz
-
-    def reformatDict(self, diz):
-        pass
 
     def getNomeCsv(self, anno, mese):
         nomeFile = './csv/' + str(anno) + mese + '.csv'
@@ -157,34 +120,36 @@ class ExpCsv(object):
             val = [diz[k][p] for p in diz[k].keys()]
             val.insert(0, k)
             vi.append(val)
-        for st in diz.keys():
-            print(diz[st].keys())
-            break
-        # print("writeCsv: ",diz.keys())
+
         with open(nomeFile, 'wt', newline='') as csv_db:
             w = csv.writer(csv_db, quoting=csv.QUOTE_NONNUMERIC)
             w.writerow(self.listaColonne)
-
-            for k in li:
-                data = k
-
-            # for k,v in zip(li,vi):
             for k in vi:
                 w.writerow(k)
 
-            # w.writerow(diz)
-        # for k, d in sorted(self._database.items()):
-        #     w.writerow(self.mergedict({'anno': k}, d))
-
-    def checkFile(self, nomeFile, diz):
+    def checkFile(self, nomeFile, diz, temp=None):
+        nomeTemporaneo = './csv/temp.csv'
         try:
+            if temp is None:
+                self.writeCsv(nomeTemporaneo, diz)
+            if not filecmp.cmp(nomeTemporaneo, nomeFile):
+                shutil.copyfile(nomeTemporaneo, nomeFile)
 
-            with open(nomeFile, 'r'):
-                pass
         except FileNotFoundError:
+            print("££££££££££££££££££££")
             print(f"csv non presente {nomeFile}, procedo alla creazione")
             self.writeCsv(nomeFile, diz)
-        else:
-            return False
+            self.checkFile(nomeFile, diz, temp=1)
+        # else:
+        #     print("**********************")
+        #     print(traceback.format_exc())
+        #     return False
         finally:
+            try:
+                os.remove(nomeTemporaneo)
+            except FileNotFoundError:
+                pass
+            else:
+                pass
+                # print(traceback.format_exc())
             return True
