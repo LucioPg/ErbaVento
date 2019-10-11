@@ -26,13 +26,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.datePrivati = []
         self.datePulizie = []
         self.listeImporti = {'Booking.com': [72, 74, 92, 111, 130],
-                             'AirB&B': [60, 70, 85, 100, 110],
-                             'Privati': [40, 45, 75, 90, 110]}
+                             'AirB&B': [64, 65, 85, 100, 117],
+                             'Privati': [72, 74, 92, 111, 130]}
         self.listeProvvigioni = {'Booking.com': 0.18,
                                  'AirB&B': 0.03,
                                  'Privati': 0}
-        self.listeTasse = {'Booking.com': True,
-                           'AirB&B': True,
+        self.listeTasse = {'Booking.com': False,
+                           'AirB&B': False,
                            'Privati': False}
         d = {
             "nome": "",
@@ -165,7 +165,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 tassa = self.calcTax()
                 # tassa = 0
 
-            lordo = ospiti * importo * giorni
+            lordo = importo * giorni + tassa
             print("lordo: ", lordo)
             netto = (lordo * (1 - self.listeProvvigioni[chiave])) - tassa
             print("netto: ", netto)
@@ -227,6 +227,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 p = self.spinBox_bambini.value() + self.spinBox_ospiti.value()
                 if p >= 5:
                     p = 5
+                self.calcLordoNetto()
         except:
             print(fex())
         indice = p - 1
