@@ -6,6 +6,7 @@ from tools.managerprenotazioni import ManagerPreno as Manager
 from tools.ExpCsv import ExpCsv as excsv
 from collections import OrderedDict as Od
 from traceback import format_exc as fex
+import os
 
 import sys
 
@@ -455,6 +456,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         database = self.getDatabase(anno)
         self.leggiDatabase(database)
         print("initDatabase ", anno)
+        csvDir = './csv'
+        if os.path.isdir(csvDir):
+            print("csv esiste")
+        else:
+            os.mkdir(csvDir)
 
     def getDatabase(self, anno):
         Dbm = dbm(self.dateEdit_dal.date())
