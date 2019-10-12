@@ -104,9 +104,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # self.statusbar.setT
 
     def retTab(self, c):
-        if c == 1:
+        anno = self.calendario.selectedDate().year()
+        if anno < 2018:
+            print("anno troppo vecchio!")
+            self.tabWidget.setCurrentIndex(0)
+        elif anno > 2028:
+            print("anno troppo avanti")
+            self.tabWidget.setCurrentIndex(0)
+        else:
             self.setDateEdit_dal()
-        self.setDateEdit_dal()
         if self.sender() is not None:
             sender = self.sender().objectName()
             print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
@@ -344,7 +350,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # print('getInfo', info)
         except KeyError:
             print("keyerr getInfo evinterf")
-            print(database[2019][10])
+
             info = None
         return info
 
@@ -391,6 +397,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # print("data ",self.current_date)
         a, m, g = self.amg(data)
         info = self.getInfo(a, m, g)
+        if info is None:
+            info = deepc(self.infoModel)
         return info
 
     def getInfoFromCalendar(self, data):
@@ -404,7 +412,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return info
 
     def setInfoTemp(self, info, data=None):
-        self.infoTemp = deepc(info)
+
+        if info is None:
+            self.infoTemp = deepc(self.infoModel)
+        else:
+            self.infoTemp = deepc(info)
         return self.infoTemp
 
     def get_date(self, d):
@@ -420,12 +432,22 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return self.current_date
 
     def aggiornaInfoData(self):
+        data = self.calendario.selectedDate()
+        domani = data.addDays(1)
+        anno = data.year()
+        if anno < 2018:
+            print("anno troppo vecchio!")
+            self.tabWidget.setCurrentIndex(0)
+        elif anno > 2028:
+            print("anno troppo avanti")
+            self.tabWidget.setCurrentIndex(0)
+        else:
+            pass
         if self.sender() is not None:
             sender = self.sender().objectName()
             print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
-        d = self.calendario.selectedDate()
-        a = d.addDays(1)
-        self.setInfoTemp(self.getInfoFromDate(d))
+
+        self.setInfoTemp(self.getInfoFromDate(data))
         if self.infoTemp['data arrivo'] is None:
             self.bot_cancella.setEnabled(False)
         else:
@@ -442,19 +464,23 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if self.sender() is not None:
             sender = self.sender().objectName()
             print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        data = self.calendario.selectedDate()
+        domani = data.addDays(1)
+        anno = data.year()
+        if anno < 2018 or anno > 2028:
+            return
         self.dateEdit_dal.blockSignals(False)
         self.dateEdit_al.blockSignals(False)
         self.dateEdit_dal.setMinimumDate(QtCore.QDate(2018, 1, 1))
-        d = self.calendario.selectedDate()
-        a = d.addDays(1)
-        if d == QtCore.QDate(2019, 7, 14):
+
+        if data == QtCore.QDate(2019, 7, 14):
             print("d, presto!")
-        self.dateEdit_dal.setDate(d)
-        self.dateEdit_al.setDate(a)
-        self.dateEdit_al.setMinimumDate(a)
+        self.dateEdit_dal.setDate(data)
+        self.dateEdit_al.setDate(domani)
+        self.dateEdit_al.setMinimumDate(domani)
         self.dateEdit_dal.blockSignals(False)
         self.dateEdit_al.blockSignals(False)
-        print(f"dal {d.toString('dd-MMM-yyyy')} al {a.toString('dd-MMM-yyyy')}")
+        print(f"dal {data.toString('dd-MMM-yyyy')} al {domani.toString('dd-MMM-yyyy')}")
     def compilaInfo(self):
         a = self.infoModel.copy()
         a["nome"] = self.lineEdit_nome.text()
