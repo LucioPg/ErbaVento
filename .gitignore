@@ -15,7 +15,7 @@ opnpkl_gen.py
 __pycache__/
 kwidget/__pycache__/
 tools/__pycache__/
-tools/__pycache__/*.pyc
+tools/__pycache__/databaseMaker.cpython-36.pyc
 saves/
 name/
 tests/
