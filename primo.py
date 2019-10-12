@@ -435,10 +435,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.setDateEdit_dal()
 
     def setDateEdit_dal(self):
-        # print("infoTemp:\n")
-        # for k,v in self.infoTemp.items():
-        #     print(k,v,end='\t\t')
-        #     print('\n')
+
         # todo rimuovere il commento a:
         # self.dateEdit_dal.setMinimumDate(self.giornoCorrente)
         # self.dateEdit_al.setMinimumDate(self.giornoCorrente.addDays(1))
