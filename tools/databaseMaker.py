@@ -191,7 +191,7 @@ class DbMaker(object):
 
         nome = 'database.pkl'
         try:
-            print(os.getcwd())
+            # print(os.getcwd())
             with open(nome, "rb") as f:
                 fileDb = pickle.load(f)
         except FileNotFoundError:

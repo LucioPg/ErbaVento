@@ -347,7 +347,7 @@ class ManagerPreno(object):
                     flag = False
                     break
 
-            self.salvaDatabase()
+            self.salvaDatabase(self.DataBase)
         except:
             import traceback
             print(traceback.format_exc())

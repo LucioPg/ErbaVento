@@ -7,7 +7,7 @@ from tools.ExpCsv import ExpCsv as excsv
 from collections import OrderedDict as Od
 from traceback import format_exc as fex
 import os
-
+import inspect
 import sys
 
 # todo aggiungere voci menu per settaggi vari come tasse, importi e provvigioni
@@ -15,7 +15,11 @@ import sys
 #  oppure in un server, ma anche poter scegliere se farlo in formato json
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
-    """Classe per la creazione gui del gestionale per case vacanze"""
+    """Classe per la creazione gui del gestionale per case vacanze
+
+        print("controllo ", inspect.stack()[0][3])
+        self.cleardisplay()
+    """
     MAXOSPITI = 5
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
@@ -72,7 +76,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.frame_calendar.setLayout(cal_layout)
 
         self.calendario.clicked.connect(self.getInfoFromCalendar)
-        self.calendario.selectionChanged.connect(self.setDateEdit_dal)
+        self.calendario.selectionChanged.connect(self.aggiornaInfoData)
         self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
         # self.calendario.currentPageChanged.connect(self.riportapagina)
         self.lastMonth = None
@@ -94,9 +98,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateEdit_al.dateChanged.connect(self.calcLordoNetto)
         self.dateEdit_dal.dateChanged.connect(self.calcLordoNetto)
         self.bot_foglio.clicked.connect(self.exportaDb)
+        self.tabWidget.currentChanged.connect(self.retTab)
 
         # STATUS BAR
         # self.statusbar.setT
+
+    def retTab(self, c):
+        if c == 1:
+            self.setDateEdit_dal()
+        self.setDateEdit_dal()
+        if self.sender() is not None:
+            sender = self.sender().objectName()
+            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
 
     def exportaDb(self):
         anno = self.giornoCorrente.year()
@@ -117,6 +130,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         da pagare
         :return:
         """
+        print("calctax ", self.sender().objectName())
         try:
             dal = self.dateEdit_dal.date()
             mese_dal = dal.month()
@@ -244,6 +258,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             della prenotazione a partire dalle info
             nel box nella pagina
             del calendario"""
+
+        # self.cleardisplay()
+        if self.sender() is not None:
+            sender = self.sender().objectName()
+            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         info = deepc(self.infoTemp)
         self.lineEdit_nome.setText(info['nome'])
         self.lineEdit_cognome.setText(info['cognome'])
@@ -266,9 +285,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         dataArrivo = info['data arrivo']
         dataPartenza = info['data partenza']
         if (dataArrivo or dataPartenza) is not None:
+            self.dateEdit_dal.blockSignals(True)
+            self.dateEdit_al.blockSignals(True)
             self.dateEdit_dal.setDate(dataArrivo)
             self.dateEdit_al.setDate(dataPartenza)
+            self.dateEdit_dal.blockSignals(False)
+            self.dateEdit_al.blockSignals(False)
         else:
+            print("else: setDateEdit_dal")
             self.setDateEdit_dal()
             # self.dateEdit_al.setDate(dataPartenza)
 
@@ -297,6 +321,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         :param d:
         :return:
         """
+
         al = self.dateEdit_al.date()
         md = self.dateEdit_al.minimumDate()
 
@@ -314,7 +339,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def getInfo(self, a, m, g):
         try:
             database = self.getDatabase()
-            print("getinfo database keys:\n", database.keys())
+            # print("getinfo database keys:\n", database.keys())
             info = database[a][m][g]["checkIn"]
             # print('getInfo', info)
         except KeyError:
@@ -356,7 +381,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         self.tableWidget_info_ospite.update()
 
+    def cleardisplay(self):
+        return os.system('cls')
+
     def getInfoFromDate(self, data):
+        # self.cleardisplay()
+        # print("controllo ", inspect.stack()[0][3])
         self.get_date(data)
         # print("data ",self.current_date)
         a, m, g = self.amg(data)
@@ -364,7 +394,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return info
 
     def getInfoFromCalendar(self, data):
-
+        # self.cleardisplay()
+        if self.sender() is not None:
+            sender = self.sender().objectName()
+            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         info = self.getInfoFromDate(data)
         self.setInfoFromDate(info)
         self.setInfoTemp(info)
@@ -386,8 +419,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.label_data.setText(self.current_date_label)
         return self.current_date
 
-    def setDateEdit_dal(self):
-
+    def aggiornaInfoData(self):
+        if self.sender() is not None:
+            sender = self.sender().objectName()
+            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         d = self.calendario.selectedDate()
         a = d.addDays(1)
         self.setInfoTemp(self.getInfoFromDate(d))
@@ -397,6 +432,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.bot_cancella.setEnabled(True)
         if self.infoTemp['note'] != '':
             print(self.infoTemp['note'])
+        self.setDateEdit_dal()
+
+    def setDateEdit_dal(self):
         # print("infoTemp:\n")
         # for k,v in self.infoTemp.items():
         #     print(k,v,end='\t\t')
@@ -404,10 +442,22 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # todo rimuovere il commento a:
         # self.dateEdit_dal.setMinimumDate(self.giornoCorrente)
         # self.dateEdit_al.setMinimumDate(self.giornoCorrente.addDays(1))
-        self.dateEdit_al.setMinimumDate(a)
+        if self.sender() is not None:
+            sender = self.sender().objectName()
+            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        self.dateEdit_dal.blockSignals(False)
+        self.dateEdit_al.blockSignals(False)
+        self.dateEdit_dal.setMinimumDate(QtCore.QDate(2018, 1, 1))
+        d = self.calendario.selectedDate()
+        a = d.addDays(1)
+        if d == QtCore.QDate(2019, 7, 14):
+            print("d, presto!")
         self.dateEdit_dal.setDate(d)
         self.dateEdit_al.setDate(a)
-
+        self.dateEdit_al.setMinimumDate(a)
+        self.dateEdit_dal.blockSignals(False)
+        self.dateEdit_al.blockSignals(False)
+        print(f"dal {d.toString('dd-MMM-yyyy')} al {a.toString('dd-MMM-yyyy')}")
     def compilaInfo(self):
         a = self.infoModel.copy()
         a["nome"] = self.lineEdit_nome.text()
@@ -583,9 +633,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             print(" casa libera nei giorni:\n")
             if len(listaDisponibili) > 0:
                 self.dateEdit_dal.setDate(listaDisponibili[0])
+                # if listaDisponibili[0] == QtCore.QDate(2019, 7, 14):
+                #     print("presto!")
+                # else:
+                #     print("il primo disp: ", listaDisponibili[0])
                 self.dateEdit_dal.update()
                 for d in listaDisponibili:
-                    print(d)
+                    print("date disponibili", d)
 
         return listaDisponibili
 
