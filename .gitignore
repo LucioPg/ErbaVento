@@ -1,0 +1,14 @@
+!gui.ui
+*.pkl
+*.csv
+*.ods
+*.ui
+.idea/
+__pycache__/
+kwidget/__pycache__/
+tools/__pycache__/
+saves/
+name/
+tests/
+buttami.py
+
