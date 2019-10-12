@@ -8,6 +8,7 @@
 *.txt
 *.ui
 *.spec
+*.pyc
 opnpkl.py
 opnpkl_gen.py
 .idea/
