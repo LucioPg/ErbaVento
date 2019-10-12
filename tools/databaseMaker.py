@@ -1,4 +1,5 @@
 import pickle
+import os
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from collections import OrderedDict as Od
@@ -21,7 +22,7 @@ class DbMaker(object):
             "numero ospiti": 1,
             "bambini": 0,
         "spese": None,
-            "colazione": False,
+        "colazione": 'No',
             "importo": 0,
             "lordo": 0,
             "tasse": 0,
@@ -30,13 +31,17 @@ class DbMaker(object):
         }
     INFOMODELREDUX = {"nome": "", "cognome": "", "data partenza": ""}
 
-    def __init__(self, data, info=None):
+    def __init__(self, data=None, info=None):
         self.infoModel = self.INFOMODEL.copy()
         self.infoModelRedux = self.INFOMODELREDUX.copy()
         self.infoModel = Od(self.infoModel)
         self.info = info
         self.data = data
-        self.anno = data.toString("yyyy")
+        if data is not None:
+            self.anno = data.toString("yyyy")
+        else:
+            self.anno = 2019
+        self.listaAnni = [x for x in range(2018, 2029)]
         # print("anno: ",self.anno)
         self.bisestile = bool
         self.bisestileCheck(self.anno)
@@ -110,7 +115,20 @@ class DbMaker(object):
         """funzione che stampa la data"""
         print("data: ", self.data)
 
-    def makeDataBase(self, anno=None, info=None):
+    def makeDataBase(self, info=None):
+        database = Od()
+        for anno in self.listaAnni:
+            database[anno] = Od()
+            numeroGiorni = self.bisestileCheck(anno)
+            for k in numeroGiorni.keys():
+                database[anno][k] = Od()
+                for v in range(1, numeroGiorni[k] + 1):
+                    database[anno][k][v] = Od()
+                    database[anno][k][v]["checkIn"] = self.infoModel
+                    database[anno][k][v]["checkOut"] = self.infoModelRedux
+        return database
+
+    def makeDataBase_old(self, anno=None, info=None):
         """ crea il database da zero"""
         if anno is None:
             if type(self.anno) is int:
@@ -127,7 +145,6 @@ class DbMaker(object):
                     # database[nome][k][v] = Od()
                     database[anno][k][v] = Od()
                     if info is None:
-
                         database[anno][k][v]["checkIn"] = self.infoModel
                         database[anno][k][v]["checkOut"] = self.infoModelRedux
                     else:
@@ -167,10 +184,24 @@ class DbMaker(object):
                         database[anno][k][v]["checkOut"]["data partenza"] = database[
                             anno
                         ][k][v]["checkIn"]["data partenza"]
-
+        # print("database creato",database)
         return database
 
-    def checkFile(self, anno, info=None, shortcut=''):
+    def checkFile(self, shortcut=''):
+
+        nome = 'database.pkl'
+        try:
+            print(os.getcwd())
+            with open(nome, "rb") as f:
+                fileDb = pickle.load(f)
+        except FileNotFoundError:
+            print("creo il database")
+            fileDb = self.makeDataBase()
+            with open(nome, "wb") as f:
+                pickle.dump(fileDb, f)
+        return fileDb
+
+    def checkFile_old(self, anno, info=None, shortcut=''):
         """ controlla che il file del database
             esista per l'anno indicato come arg"""
         if shortcut != '':
@@ -190,7 +221,18 @@ class DbMaker(object):
                 pickle.dump(fileDb, f)
         return fileDb
 
-    def salvaDatabase(self, anno, fileDb, shortcut=0):
+    def salvaDatabase(self, fileDb, shortcut=''):
+        """ salva il database per l'anno indicato"""
+        print("sequenza di salvataggio iniziata")
+        if shortcut != '':
+            nome = '../database.pkl'
+        else:
+            nome = 'database.pkl'
+        with open(nome, "wb") as f:
+            pickle.dump(fileDb, f)
+        print("salvataggio effettuato in: ", nome)
+
+    def salvaDatabase_old(self, anno, fileDb, shortcut=0):
         """ salva il database per l'anno indicato"""
         print("sequenza di salvataggio iniziata")
         if type(anno) is not str:

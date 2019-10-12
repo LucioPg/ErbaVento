@@ -3,8 +3,9 @@ modulo che implementa la cancellazione delle prenotazioni
 prodotte dal primo script, ricercando le date occupate e
 aggiornando i files
 """
+import os
 from PyQt5 import QtGui, QtCore, QtWidgets
-from tools.databaseMaker import DbMaker as dbm
+from tools.databaseMaker import DbMaker as DBM
 from copy import deepcopy as deepc
 from collections import OrderedDict as Od
 import pickle
@@ -28,6 +29,7 @@ class ManagerPreno(object):
         self.shortcut = shortcut
         self._info = info
         # if self._info is not None:
+        manageErr = False
         try:
             self.info = self.getInfo
             self._dataIn = self.info['data arrivo']
@@ -35,15 +37,20 @@ class ManagerPreno(object):
             self._domani = self._dataIn.addDays(1)
             self._nome = self.info['nome']
             self._cognome = self.info['cognome']
-        except AttributeError or TypeError:
-            # else:
+        except AttributeError:
+            manageErr = True
+        except TypeError:
+            manageErr = True
+        if manageErr:
             self._dataIn = QtCore.QDate().currentDate()
             self._domani = self._dataIn.addDays(1)
             self._dataOut = self._domani
             self._nome = None
             self._cognome = None
         self.occupate = []
-        self.DataBase = deepc(self.getDb(self._dataIn))
+        # old
+        # self.DataBase = deepc(self.getDb(self._dataIn))
+        self.DataBase = deepc(self.getDb())
         self.counter = 0
         # self.DataBase = Od()
         self.dateBooking = []
@@ -76,7 +83,11 @@ class ManagerPreno(object):
         oggi = arrivo
         while oggi < partenza:
             a, m, g = self.amg(oggi)
-            nome = database[a][m][g]['checkIn']['nome']
+            try:
+                nome = database[a][m][g]['checkIn']['nome']
+            except KeyError:
+                database = self.getDb(oggi)
+                nome = database[a][m][g]['checkIn']['nome']
             if nome != '':
                 aval = False
                 print(
@@ -106,10 +117,14 @@ class ManagerPreno(object):
 
         return listaDisponibili
 
+    # def decMissDict(self):
+    #     def inner(func):
+    #
+
     def setPlatformDict(self):
         self.platformDict
 
-    def platformPulizie(self):
+    def platformPulizie_old(self):
         # todo evitare di caricare le date passate?
         self.dateBooking.clear()
         self.dateAirbb.clear()
@@ -123,6 +138,38 @@ class ManagerPreno(object):
                     data = QtCore.QDate(anno, mese, giorno)
                     plat = self.DataBase[anno][mese][giorno]["checkIn"]["platform"]
                     pulizie = self.DataBase[anno][mese][giorno]["checkOut"]['data partenza']
+                    if plat == "Booking.com":
+                        if data not in self.dateBooking:
+                            self.dateBooking.append(data)
+                    elif plat == "airBB":
+                        if data not in self.dateAirbb:
+                            self.dateAirbb.append(data)
+                    elif plat == 'privato':
+                        if data not in self.datePrivati:
+                            self.datePrivati.append(data)
+                    if pulizie != '':
+                        if pulizie not in self.datePulizie:
+                            self.datePulizie.append(pulizie)
+
+        return self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
+
+    def platformPulizie(self, db=None):
+        if db is None:
+            db = self.DataBase
+
+        # todo evitare di caricare le date passate?
+        # print(os.getcwdb())
+        self.dateBooking.clear()
+        self.dateAirbb.clear()
+        self.datePrivati.clear()
+        self.datePulizie.clear()
+        # a, m, g = self.amg(self._dataIn)
+        for anno in db.keys():
+            for mese in db[anno].keys():
+                for giorno in db[anno][mese].keys():
+                    data = QtCore.QDate(anno, mese, giorno)
+                    plat = db[anno][mese][giorno]["checkIn"]["platform"]
+                    pulizie = db[anno][mese][giorno]["checkOut"]['data partenza']
                     if plat == "Booking.com":
                         if data not in self.dateBooking:
                             self.dateBooking.append(data)
@@ -181,37 +228,91 @@ class ManagerPreno(object):
         info = {'nome': self._nome, 'cognome': self._cognome, 'data partenza': self._dataOut}
         return info
 
-    def setThem(self):
+    def setThem(self, out=False):
         """
         crea una prenotazione e la salva su disco
         :return:
         """
-        database = deepc(self.DataBase)
+        database = deepc(self.getDb())
+
         data = self.getData()
         if data is None:
-            print("fornire un info model - freethem")
+            print("fornire un info model - setThem")
             return
         while data < self._dataOut:
             a, m, g = self.amg(data)
+            #     if a != annoIn:
+            #         database = databaseOut
             database[a][m][g]['checkIn'] = self._info
             data = data.addDays(1)
             if data == self._dataOut:
-                print("giorno stabilito")
+                # print("giorno stabilito")
                 infoRedux = self.buildInfoRed()
                 a1, m2, g3 = self.amg(data)
                 database[a1][m2][g3]['checkOut'] = deepc(infoRedux)
                 break
         self.DataBase = deepc(database)
-        self.salvaDatabase()
+        self.salvaDatabase(database)
 
-    def salvaDatabase(self):
+    def setThem_old(self, out=False):
+        """
+        crea una prenotazione e la salva su disco
+        :return:
+        """
+        database = deepc(self.getDb(self._dataIn))
+        databaseOut = deepc(self.getDb(self._dataOut))
+
+        data = self.getData()
+        annoIn = self._dataIn.year()
+        annoOut = self._dataOut.year()
+        if data is None:
+            print("fornire un info model - setThem")
+            return
+        while data < self._dataOut:
+            a, m, g = self.amg(data)
+            if a != annoIn:
+                database = databaseOut
+            database[a][m][g]['checkIn'] = self._info
+            data = data.addDays(1)
+            if data == self._dataOut:
+                # print("giorno stabilito")
+                infoRedux = self.buildInfoRed()
+                a1, m2, g3 = self.amg(data)
+                database[a1][m2][g3]['checkOut'] = deepc(infoRedux)
+                break
+        self.DataBase = deepc(database)
+        self.salvaDatabase(data, database)
+
+    def salvaDatabase(self, database):
         """"salva il database su disco
         """
-        database = dbm(self._dataIn)
+        dbm = DBM(self._dataIn)
         if self.shortcut:
-            database.salvaDatabase(self._dataIn.year(), self.DataBase, shortcut=1)
+            dbm.salvaDatabase(database, shortcut=1)
         else:
-            database.salvaDatabase(self._dataIn.year(), self.DataBase)
+            dbm.salvaDatabase(database)
+
+    def salvaDatabase_old(self, data, database):
+        """"salva il database su disco
+        """
+        dbm = DBM(self._dataIn)
+        dbmOut = DBM(self._dataOut)
+        if self.shortcut:
+            databaseIn = dbm.checkFile(self._dataIn.year(), shortcut='1')
+            databaseOut = dbmOut.checkFile(self._dataOut.year(), shortcut='1')
+            if self._dataIn.year() != self._dataOut.year():
+                dbm.salvaDatabase(databaseIn, shortcut=1)
+                dbmOut.salvaDatabase(databaseOut, shortcut=1)
+            else:
+                dbm.salvaDatabase(database, shortcut=1)
+        else:
+            databaseIn = deepc(self.DataBase)
+            databaseOut = dbmOut.checkFile(self._dataOut.year())
+            if self._dataIn.year() != self._dataOut.year():
+                dbm.salvaDatabase(databaseIn)
+                dbmOut.salvaDatabase(databaseOut)
+            else:
+                dbm.salvaDatabase(databaseIn)
 
     def freethem(self):
         """
@@ -229,8 +330,8 @@ class ManagerPreno(object):
                 checkIn, checkOut, nome, cognome = self.findDate(self.DataBase, data)
                 if (checkIn['nome'] == self._nome or checkIn['cognome'] == self._cognome) and checkIn[
                     'data arrivo'] == self._dataIn:
-                    checkIn = dbm.INFOMODEL.copy()
-                    checkOut = dbm.INFOMODELREDUX.copy()
+                    checkIn = DBM.INFOMODEL.copy()
+                    checkOut = DBM.INFOMODELREDUX.copy()
                     a, m, g = self.amg(data)
                     self.DataBase[a][m][g]['checkIn'] = checkIn
                     # if self.DataBase[a][m][g]['checkOut']['data partenza'] != '':
@@ -296,8 +397,9 @@ class ManagerPreno(object):
         self.cognome = self._cognome
         return self.cognome
 
-    def getData(self):
-        data = self._dataIn
+    def getData(self, data=None):
+        if data is None:
+            data = self._dataIn
         return data
 
     def getDbNominativo(self, db, data, modo=None):
@@ -317,7 +419,20 @@ class ManagerPreno(object):
             import traceback
             print(traceback.format_exc())
 
-    def getDb(self, data):
+    def getDb(self):
+        """
+        accede al database
+        :return:
+        """
+        # if self.shortcut != '':
+        #     database = DBM().checkFile(shortcut='1')
+        # else:
+        #     database = DBM().checkFile()
+        # print("prova ",database.anno)
+        database = DBM().checkFile()
+        return database
+
+    def getDb_old(self, data):
         """
         accede al database
         :param data:
@@ -326,11 +441,12 @@ class ManagerPreno(object):
         if data is None:
             print("fornire un info model ---- getDb")
             return
-        a, m, g = self.amg(self._dataIn)
+        # a, m, g = self.amg(self._dataIn)
+        a, m, g = self.amg(data)
         if self.shortcut:
-            database = dbm(data).checkFile(a, shortcut='1')
+            database = DBM(data).checkFile(a, shortcut='1')
         else:
-            database = dbm(data).checkFile(a)
+            database = DBM(data).checkFile(a)
         # print("prova ",database.anno)
         return database
 

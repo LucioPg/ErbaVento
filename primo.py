@@ -44,7 +44,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             "numero ospiti": 1,
             "bambini": 0,
             "spese": {},
-            "colazione": False,
+            "colazione": 'No',
             "importo": 0,
             "lordo": 0,
             "tasse": 0,
@@ -65,7 +65,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.datePulizie,
             parent=self.frame_calendar,
         )
-        self.initDatabase()
+
+        self.database = self.initDatabase()
         cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
         cal_layout.addWidget(self.calendario)
         self.frame_calendar.setLayout(cal_layout)
@@ -99,8 +100,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def exportaDb(self):
         anno = self.giornoCorrente.year()
-        db = self.getDatabase(anno)
-        exdb = excsv(db, anno)
+        db = self.getDatabase()
+        exdb = excsv(db)
         exdb.makeCsv()
         # li = exdb.updateDiz()
         # print("lunghezza li ",len(li))
@@ -130,7 +131,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             flag = oggi != al
             while flag:
                 mese = oggi.month()
-                print('mese: ', mese)
+                # print('mese: ', mese)
                 if mese != mese_dal:
                     topay = 3
                     mese_dal = mese
@@ -140,8 +141,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 oggi = oggi.addDays(1)
                 flag = oggi != al
             if permanenza != len(listaDate):
-                print("qualcosa non va nel conteggio delle tasse")
+                pass
+                # print("qualcosa non va nel conteggio delle tasse")
             tot = len(listaDate) * ospiti * fee
+            if tot == 0:
+                tot = fee
             # print("tassa da pagare: ", tot)
             return tot
         except:
@@ -166,9 +170,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 # tassa = 0
 
             lordo = importo * giorni + tassa
-            print("lordo: ", lordo)
+            # print("lordo: ", lordo)
             netto = (lordo * (1 - self.listeProvvigioni[chiave])) - tassa
-            print("netto: ", netto)
+            # print("netto: ", netto)
             self.lineEdit_lordo.setText(str(lordo))
             self.lineEdit_netto.setText(str(round(netto)))
             self.lineEdit_tax.setText(str(tassa))
@@ -206,7 +210,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             widgetItself = self.spinBox_bambini
         tot = p + other
         if tot == EvInterface.MAXOSPITI + 1:
-            print(tot)
+            # print(tot)
             widgetItself.blockSignals(True)
             widgetItself.setValue(p - 1)
             widgetItself.blockSignals(False)
@@ -222,7 +226,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             sender = self.sender()
             if sender == self.radioCorrente:
                 return
-            print("sender importAdj", sender.objectName())
+            # print("sender importAdj", sender.objectName())
             if sender.objectName().startswith('radio'):
                 self.radioCorrente = sender
                 p = self.spinBox_bambini.value() + self.spinBox_ospiti.value()
@@ -232,7 +236,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except:
             print(fex())
         indice = p - 1
-        print("listaImporti: ", self.listeImporti[chiave][indice])
+        # print("listaImporti: ", self.listeImporti[chiave][indice])
         self.spinBox_importo.setValue(self.listeImporti[chiave][indice])
 
     def riempi_campi_prenotazioni(self):
@@ -257,7 +261,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             print(platform)
         self.plainTextEdit_note.clear()
         self.plainTextEdit_note.insertPlainText(info['note'])
-        self.radio_colazione.setChecked(info['colazione'] == 'True')
+        self.radio_colazione.setChecked(info['colazione'] == 'Si')
         self.importAdj(self.spinBox_bambini.value() + self.spinBox_ospiti.value())
         dataArrivo = info['data arrivo']
         dataPartenza = info['data partenza']
@@ -277,9 +281,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             selezionata nel calendario"""
         manager = Manager(info=self.infoTemp)
         manager.canc()
-        database = self.getDatabase(self.infoTemp['data arrivo'].year())
+        # database = self.getDatabase(self.infoTemp['data arrivo'].year())
+        database = self.getDatabase()
         # self.leggiDatabase(manager.DataBase)
-        self.leggiDatabase(database)
+        # self.leggiDatabase(database)
+        self.leggiDatabase()
+
         self.calendario.updateCells()
         self.set_status_msg('Cancellazione effettuata')
 
@@ -297,17 +304,21 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             al = d.addDays(1)
             self.dateEdit_al.setDate(al)
             self.dateEdit_al.setMinimumDate(d.addDays(1))
-            print("correzione in avanti effettuata")
+            # print("correzione in avanti effettuata")
         else:
-            print("partenza ok")
+            pass
+            # print("partenza ok")
         if md >= d:
             self.dateEdit_al.setMinimumDate(d.addDays(1))
 
     def getInfo(self, a, m, g):
         try:
-            database = self.getDatabase(a)
+            database = self.getDatabase()
+            print("getinfo database keys:\n", database.keys())
             info = database[a][m][g]["checkIn"]
+            # print('getInfo', info)
         except KeyError:
+            print("keyerr getInfo evinterf")
             print(database[2019][10])
             info = None
         return info
@@ -347,6 +358,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def getInfoFromDate(self, data):
         self.get_date(data)
+        # print("data ",self.current_date)
         a, m, g = self.amg(data)
         info = self.getInfo(a, m, g)
         return info
@@ -370,7 +382,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if self.lastMonth != self.current_date.month():
             self.lastMonth = self.current_date.month()
         # print(d.month(),'<<<<',self.calendario.month())
-        print("selection changed", self.current_date_label)
+        # print("selection changed", self.current_date_label)
         self.label_data.setText(self.current_date_label)
         return self.current_date
 
@@ -400,7 +412,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a = self.infoModel.copy()
         a["nome"] = self.lineEdit_nome.text()
         a["cognome"] = self.lineEdit_cognome.text()
-        a["telefono"] = int(self.lineEdit_telefono.text())
+        a["telefono"] = self.lineEdit_telefono.text()
         if self.radio_air.isChecked():
             a["platform"] = "airBB"
         elif self.radio_booking.isChecked():
@@ -417,9 +429,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a["bambini"] = self.spinBox_bambini.text()
         a["spese"] = self.addSpese()
         if self.radio_colazione.isChecked():
-            a["colazione"] = True
+            a["colazione"] = 'Si'
         else:
-            a["colazione"] = False
+            a["colazione"] = 'No'
         a["importo"] = self.spinBox_importo.text()
         a["lordo"] = self.lineEdit_lordo.text()
         a["netto"] = self.lineEdit_netto.text()
@@ -441,7 +453,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if len(listaDisponibili) == giorniPermanenza:
             manager.setThem()
             print("prenotazione effettuata per tutte le date richieste")
-            self.leggiDatabase(manager.DataBase)
+            # self.leggiDatabase(manager.DataBase)
+            self.leggiDatabase()
             self.set_status_msg("Prenotazione eseguita con successo")
             l = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_lordo,
                  self.lineEdit_netto, self.lineEdit_tax, self.lineEdit_telefono,
@@ -459,21 +472,32 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # anno = self.calendario.yearShown()
         if anno is None:
             anno = QtCore.QDate().currentDate().year()
-        database = self.getDatabase(anno)
+        database = self.getDatabase()
         self.leggiDatabase(database)
-        print("initDatabase ", anno)
+        # self.leggiDatabase(database)
+        print("initDatabase ")
         csvDir = './csv'
         if os.path.isdir(csvDir):
-            print("csv esiste")
+            # print("csv esiste")
+            pass
         else:
             os.mkdir(csvDir)
-
-    def getDatabase(self, anno):
-        Dbm = dbm(self.dateEdit_dal.date())
-        database = Dbm.checkFile(anno)
+        anni = database.keys()
+        for a in anni:
+            csvDir = f"./csv/{str(a)}"
+            if os.path.isdir(csvDir):
+                pass
+                # print(f"./csv/{str(a)}"+'\tesiste')
+            else:
+                os.mkdir(csvDir)
         return database
 
-    def leggiDatabase(self, database):
+    def getDatabase(self, anno=None):
+        Dbm = dbm()
+        database = Dbm.checkFile()
+        return database
+
+    def leggiDatabase(self, database=None):
         """
         legge il database per restituire gli elenchi delle piattaforme
         (booking, airbb, privati, pulizie)
@@ -485,8 +509,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateAirbb.clear()
         self.datePrivati.clear()
         self.datePulizie.clear()
-        db = Manager(self.infoTemp)
-        self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie = db.platformPulizie()
+        # old
+        # db = Manager(self.infoTemp)
+
+        db = Manager()
+        self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie = db.platformPulizie(database)
         self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
         # return  self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
 
