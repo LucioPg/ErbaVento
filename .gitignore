@@ -1,10 +1,15 @@
 !gui.ui
+!requirements.txt
 *.pkl
 *.csv
 *.ods
+*.odt
+*.json
+*.txt
 *.ui
 *.spec
 opnpkl.py
+opnpkl_gen.py
 .idea/
 __pycache__/
 kwidget/__pycache__/
