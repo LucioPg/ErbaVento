@@ -3,6 +3,8 @@
 *.csv
 *.ods
 *.ui
+*.spec
+opnpkl.py
 .idea/
 __pycache__/
 kwidget/__pycache__/
