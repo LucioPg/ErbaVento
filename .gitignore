@@ -12,7 +12,7 @@
 opnpkl.py
 opnpkl_gen.py
 .idea/
-__pycache__/
+**/__pycache__/
 kwidget/__pycache__/
 tools/__pycache__/
 tools/__pycache__/databaseMaker.cpython-36.pyc
