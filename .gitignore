@@ -9,6 +9,7 @@
 *.ui
 *.spec
 *.pyc
+*_old.*
 opnpkl.py
 opnpkl_gen.py
 .idea/
