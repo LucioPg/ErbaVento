@@ -144,6 +144,9 @@
                                   </item>
                                   <item>
                                       <layout class="QVBoxLayout" name="verticalLayout_10">
+                                          <property name="rightMargin">
+                                              <number>24</number>
+                                          </property>
                                           <item>
                                               <layout class="QHBoxLayout" name="horizontalLayout">
                                                   <item>
@@ -154,10 +157,16 @@
                                                       </widget>
                                                   </item>
                                                   <item>
-                                                      <widget class="QLabel" name="label_spese">
+                                                      <widget class="QLabel" name="label_data">
+                                                          <property name="sizePolicy">
+                                                              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                                                  <horstretch>0</horstretch>
+                                                                  <verstretch>0</verstretch>
+                                                              </sizepolicy>
+                                                          </property>
                                                           <property name="minimumSize">
                                                               <size>
-                                                                  <width>48</width>
+                                                                  <width>90</width>
                                                                   <height>0</height>
                                                               </size>
                                                           </property>
