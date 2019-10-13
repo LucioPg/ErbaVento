@@ -1,12 +1,43 @@
 """
 
 """
+
 from PyQt5.QtWidgets import QProgressBar, QApplication
 from PyQt5 import QtCore, QtGui
 import sys
+# from strategy import N as Note
+# from ./strategy import SpeseText_MPBStrategy as Spese
+import stra
+
+noteButton = Note()
+speseButton = Spese()
 
 
-class MyProgressButton(QProgressBar):
+class ProgressButton(object):
+    def __init__(self, text_strategy):
+        self._setText_strategy = text_strategy
+        self._text = text_strategy._text
+
+    def setText(self):
+        self._setText_strategy.setText()
+
+    def showText(self):
+        print((self._text))
+        return self._text
+
+
+# Types of Ducks
+class GreenProgressButton(ProgressButton):
+    def __init__(self):
+        super(GreenProgressButton, self).__init__(noteButton)
+
+
+class RedProgressButton(ProgressButton):
+    def __init__(self):
+        super(RedProgressButton, self).__init__(speseButton)
+
+
+class MyProgressButton_old(QProgressBar):
     """
         Progress bar in busy mode with text displayed at the center.
     """
@@ -52,9 +83,14 @@ class MyProgressButton(QProgressBar):
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    a = MyProgressButton()
-    a.setActive(1)
-    a.show()
-    print(a.style().CE_ProgressBarGroove)
-    sys.exit(app.exec_())
+    # app = QApplication(sys.argv)
+    # a = MyProgressButton()
+    # a.setActive(1)
+    # a.show()
+    # print(a.style().CE_ProgressBarGroove)
+    # sys.exit(app.exec_())
+    note = GreenProgressButton()
+    spese = RedProgressButton()
+
+    note.showText()
+    spese.showText()
