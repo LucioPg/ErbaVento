@@ -419,16 +419,20 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.infoTemp = deepc(info)
         return self.infoTemp
 
+    def setLabel_data(self, data):
+        self.current_date_label = data.toString("ddd dd/MM/yyyy")
+        self.label_data.setText(self.current_date_label)
+
     def get_date(self, d):
         # a = self.calendarWidget.dateTextFormat()
         # self.calendario.set
-        self.current_date_label = d.toString("ddd dd/MM/yyyy")
+        self.setLabel_data(d)
         self.current_date = d
         if self.lastMonth != self.current_date.month():
             self.lastMonth = self.current_date.month()
         # print(d.month(),'<<<<',self.calendario.month())
         # print("selection changed", self.current_date_label)
-        self.label_data.setText(self.current_date_label)
+
         return self.current_date
 
     def aggiornaInfoData(self):
@@ -464,7 +468,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if self.sender() is not None:
             sender = self.sender().objectName()
             print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
-        data = self.calendario.selectedDate()
+        data = self.get_date(self.calendario.selectedDate())
         domani = data.addDays(1)
         anno = data.year()
         if anno < 2018 or anno > 2028:

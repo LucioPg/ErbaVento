@@ -42,7 +42,7 @@
                               </widget>
                           </item>
                           <item row="1" column="0">
-                              <layout class="QHBoxLayout" name="horizontalLayout_22">
+                              <layout class="QHBoxLayout" name="horizontalLayout_26">
                                   <item>
                                       <widget class="QTableWidget" name="tableWidget_info_ospite">
                                           <property name="sizePolicy">
@@ -143,39 +143,25 @@
                                       </spacer>
                                   </item>
                                   <item>
-                                      <layout class="QVBoxLayout" name="verticalLayout_10">
-                                          <property name="rightMargin">
-                                              <number>24</number>
-                                          </property>
+                                      <layout class="QVBoxLayout" name="verticalLayout_11">
                                           <item>
-                                              <layout class="QHBoxLayout" name="horizontalLayout">
-                                                  <item>
-                                                      <widget class="QPushButton" name="bot_spese">
-                                                          <property name="text">
-                                                              <string>Spese</string>
-                                                          </property>
-                                                      </widget>
-                                                  </item>
-                                                  <item>
-                                                      <widget class="QLabel" name="label_data">
-                                                          <property name="sizePolicy">
-                                                              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                                                                  <horstretch>0</horstretch>
-                                                                  <verstretch>0</verstretch>
-                                                              </sizepolicy>
-                                                          </property>
-                                                          <property name="minimumSize">
-                                                              <size>
-                                                                  <width>90</width>
-                                                                  <height>0</height>
-                                                              </size>
-                                                          </property>
-                                                          <property name="text">
-                                                              <string/>
-                                                          </property>
-                                                      </widget>
-                                                  </item>
-                                              </layout>
+                                              <widget class="QLabel" name="label_data">
+                                                  <property name="sizePolicy">
+                                                      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                                                          <horstretch>0</horstretch>
+                                                          <verstretch>0</verstretch>
+                                                      </sizepolicy>
+                                                  </property>
+                                                  <property name="minimumSize">
+                                                      <size>
+                                                          <width>90</width>
+                                                          <height>0</height>
+                                                      </size>
+                                                  </property>
+                                                  <property name="text">
+                                                      <string/>
+                                                  </property>
+                                              </widget>
                                           </item>
                                           <item>
                                               <widget class="QPushButton" name="bot_foglio">
@@ -185,29 +171,150 @@
                                               </widget>
                                           </item>
                                           <item>
-                                              <widget class="QPushButton" name="bot_cancella">
-                                                  <property name="sizePolicy">
-                                                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                                          <horstretch>0</horstretch>
-                                                          <verstretch>0</verstretch>
-                                                      </sizepolicy>
+                                              <spacer name="verticalSpacer_6">
+                                                  <property name="orientation">
+                                                      <enum>Qt::Vertical</enum>
                                                   </property>
-                                                  <property name="minimumSize">
+                                                  <property name="sizeType">
+                                                      <enum>QSizePolicy::Preferred</enum>
+                                                  </property>
+                                                  <property name="sizeHint" stdset="0">
                                                       <size>
-                                                          <width>131</width>
-                                                          <height>51</height>
+                                                          <width>20</width>
+                                                          <height>40</height>
                                                       </size>
                                                   </property>
-                                                  <property name="maximumSize">
-                                                      <size>
-                                                          <width>131</width>
-                                                          <height>51</height>
-                                                      </size>
-                                                  </property>
-                                                  <property name="text">
-                                                      <string>Cancella Prenotazione</string>
-                                                  </property>
-                                              </widget>
+                                              </spacer>
+                                          </item>
+                                      </layout>
+                                  </item>
+                                  <item>
+                                      <layout class="QVBoxLayout" name="verticalLayout_12">
+                                          <item>
+                                              <layout class="QHBoxLayout" name="horizontalLayout">
+                                                  <item>
+                                                      <widget class="QPushButton" name="bot_spese">
+                                                          <property name="minimumSize">
+                                                              <size>
+                                                                  <width>75</width>
+                                                                  <height>0</height>
+                                                              </size>
+                                                          </property>
+                                                          <property name="maximumSize">
+                                                              <size>
+                                                                  <width>75</width>
+                                                                  <height>16777215</height>
+                                                              </size>
+                                                          </property>
+                                                          <property name="text">
+                                                              <string>Spese</string>
+                                                          </property>
+                                                      </widget>
+                                                  </item>
+                                                  <item>
+                                                      <widget class="QPushButton" name="bot_note">
+                                                          <property name="minimumSize">
+                                                              <size>
+                                                                  <width>75</width>
+                                                                  <height>0</height>
+                                                              </size>
+                                                          </property>
+                                                          <property name="maximumSize">
+                                                              <size>
+                                                                  <width>75</width>
+                                                                  <height>16777215</height>
+                                                              </size>
+                                                          </property>
+                                                          <property name="text">
+                                                              <string>Note</string>
+                                                          </property>
+                                                      </widget>
+                                                  </item>
+                                              </layout>
+                                          </item>
+                                          <item>
+                                              <layout class="QHBoxLayout" name="horizontalLayout_22">
+                                                  <item>
+                                                      <spacer name="horizontalSpacer_18">
+                                                          <property name="orientation">
+                                                              <enum>Qt::Horizontal</enum>
+                                                          </property>
+                                                          <property name="sizeHint" stdset="0">
+                                                              <size>
+                                                                  <width>40</width>
+                                                                  <height>20</height>
+                                                              </size>
+                                                          </property>
+                                                      </spacer>
+                                                  </item>
+                                                  <item>
+                                                      <layout class="QVBoxLayout" name="verticalLayout_10">
+                                                          <item>
+                                                              <widget class="QPushButton" name="bot_cancella">
+                                                                  <property name="sizePolicy">
+                                                                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                                          <horstretch>0</horstretch>
+                                                                          <verstretch>0</verstretch>
+                                                                      </sizepolicy>
+                                                                  </property>
+                                                                  <property name="minimumSize">
+                                                                      <size>
+                                                                          <width>131</width>
+                                                                          <height>51</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="maximumSize">
+                                                                      <size>
+                                                                          <width>131</width>
+                                                                          <height>51</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>Cancella Prenotazione</string>
+                                                                  </property>
+                                                              </widget>
+                                                          </item>
+                                                          <item>
+                                                              <widget class="QPushButton" name="bot_prenota">
+                                                                  <property name="sizePolicy">
+                                                                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                                          <horstretch>0</horstretch>
+                                                                          <verstretch>0</verstretch>
+                                                                      </sizepolicy>
+                                                                  </property>
+                                                                  <property name="minimumSize">
+                                                                      <size>
+                                                                          <width>131</width>
+                                                                          <height>51</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="maximumSize">
+                                                                      <size>
+                                                                          <width>131</width>
+                                                                          <height>51</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>Prenota</string>
+                                                                  </property>
+                                                              </widget>
+                                                          </item>
+                                                      </layout>
+                                                  </item>
+                                                  <item>
+                                                      <spacer name="horizontalSpacer_12">
+                                                          <property name="orientation">
+                                                              <enum>Qt::Horizontal</enum>
+                                                          </property>
+                                                          <property name="sizeHint" stdset="0">
+                                                              <size>
+                                                                  <width>40</width>
+                                                                  <height>20</height>
+                                                              </size>
+                                                          </property>
+                                                      </spacer>
+                                                  </item>
+                                              </layout>
                                           </item>
                                       </layout>
                                   </item>
