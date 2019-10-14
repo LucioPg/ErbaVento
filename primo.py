@@ -298,6 +298,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return os.system('cls')
 
     def compilaInfo(self):
+        """
+        compila il modello (riga  csv ) da salvare a partire dai campi compilati
+        :return:
+        """
         a = self.infoModel.copy()
         a["nome"] = self.lineEdit_nome.text()
         a["cognome"] = self.lineEdit_cognome.text()
@@ -326,8 +330,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a["netto"] = self.lineEdit_netto.text()
         a["tasse"] = self.lineEdit_tax.text()
         a["note"] = self.plainTextEdit_note.toPlainText()
-        ## aggiunta connessione con il pulsante
-        # print(a)
         return a
 
     def correggiPartenza(self, d):
@@ -556,6 +558,38 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.setDateEdit_dal()
             # self.dateEdit_al.setDate(dataPartenza)
 
+    def riempiTabella(self, info):
+        nome = info["nome"]
+        cognome = info["cognome"]
+        telefono = info["telefono"]
+        platform = info["platform"]
+        ospiti = info["numero ospiti"]
+        bambini = info["bambini"]
+        checkIn = info["data arrivo"]
+        if type(checkIn) is QtCore.QDate:
+            checkIn = info["data arrivo"].toString("ddd dd/MM/yyyy")
+        checkOut = info["data partenza"]
+        if type(checkOut) is QtCore.QDate:
+            checkOut = info["data partenza"].toString("ddd dd/MM/yyyy")
+        item = QtWidgets.QTableWidgetItem(nome)
+        self.tableWidget_info_ospite.setItem(0, 0, item)
+        item = QtWidgets.QTableWidgetItem(cognome)
+        self.tableWidget_info_ospite.setItem(1, 0, item)
+        item = QtWidgets.QTableWidgetItem(ospiti)
+        self.tableWidget_info_ospite.setItem(2, 0, item)
+        item = QtWidgets.QTableWidgetItem(bambini)
+        self.tableWidget_info_ospite.setItem(3, 0, item)
+        if platform == "privato":
+            item = QtWidgets.QTableWidgetItem("Si")
+        else:
+            item = QtWidgets.QTableWidgetItem("No")
+        self.tableWidget_info_ospite.setItem(4, 0, item)
+        item = QtWidgets.QTableWidgetItem(checkIn)
+        self.tableWidget_info_ospite.setItem(5, 0, item)
+        item = QtWidgets.QTableWidgetItem(checkOut)
+        self.tableWidget_info_ospite.setItem(5, 1, item)
+        self.tableWidget_info_ospite.update()
+
     def salvaInfo(self):
         # if mode is None:
         info = self.compilaInfo()
@@ -611,37 +645,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         print(f"dal {data.toString('dd-MMM-yyyy')} al {domani.toString('dd-MMM-yyyy')}")
 
     def setInfoFromDate(self, info):
-        nome = info["nome"]
-        cognome = info["cognome"]
-        telefono = info["telefono"]
-        platform = info["platform"]
-        ospiti = info["numero ospiti"]
-        bambini = info["bambini"]
-        checkIn = info["data arrivo"]
-        if type(checkIn) is QtCore.QDate:
-            checkIn = info["data arrivo"].toString("ddd dd/MM/yyyy")
-        checkOut = info["data partenza"]
-        if type(checkOut) is QtCore.QDate:
-            checkOut = info["data partenza"].toString("ddd dd/MM/yyyy")
-        item = QtWidgets.QTableWidgetItem(nome)
-        self.tableWidget_info_ospite.setItem(0, 0, item)
-        item = QtWidgets.QTableWidgetItem(cognome)
-        self.tableWidget_info_ospite.setItem(1, 0, item)
-        item = QtWidgets.QTableWidgetItem(ospiti)
-        self.tableWidget_info_ospite.setItem(2, 0, item)
-        item = QtWidgets.QTableWidgetItem(bambini)
-        self.tableWidget_info_ospite.setItem(3, 0, item)
-        if platform == "privato":
-            item = QtWidgets.QTableWidgetItem("Si")
-        else:
-            item = QtWidgets.QTableWidgetItem("No")
-        self.tableWidget_info_ospite.setItem(4, 0, item)
-        item = QtWidgets.QTableWidgetItem(checkIn)
-        self.tableWidget_info_ospite.setItem(5, 0, item)
-        item = QtWidgets.QTableWidgetItem(checkOut)
-        self.tableWidget_info_ospite.setItem(5, 1, item)
-
-        self.tableWidget_info_ospite.update()
+        """compila la tabella dal modello infoTemp"""
+        self.riempiTabella(info)
 
     def setInfoTemp(self, info, data=None):
 
