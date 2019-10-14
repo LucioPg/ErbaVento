@@ -193,7 +193,7 @@
                                           <item>
                                               <layout class="QHBoxLayout" name="horizontalLayout">
                                                   <item>
-                                                      <widget class="QPushButton" name="bot_spese">
+                                                      <widget class="RedProgressButton" name="bot_spese">
                                                           <property name="minimumSize">
                                                               <size>
                                                                   <width>75</width>
@@ -212,7 +212,7 @@
                                                       </widget>
                                                   </item>
                                                   <item>
-                                                      <widget class="QPushButton" name="bot_note">
+                                                      <widget class="GreenProgressButton" name="bot_note">
                                                           <property name="minimumSize">
                                                               <size>
                                                                   <width>75</width>
@@ -1212,6 +1212,18 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+    <customwidgets>
+        <customwidget>
+            <class>RedProgressButton</class>
+            <extends>QPushButton</extends>
+            <header location="global">kwidget.myprogressbutton.myprogressbutton_main</header>
+        </customwidget>
+        <customwidget>
+            <class>GreenProgressButton</class>
+            <extends>QPushButton</extends>
+            <header location="global">kwidget.myprogressbutton.myprogressbutton_main</header>
+        </customwidget>
+    </customwidgets>
  <resources/>
  <connections/>
 </ui>

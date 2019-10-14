@@ -97,12 +97,12 @@ class Ui_MainWindow(object):
         self.verticalLayout_12.setObjectName("verticalLayout_12")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.bot_spese = QtWidgets.QPushButton(self.tab1)
+        self.bot_spese = RedProgressButton(self.tab1)
         self.bot_spese.setMinimumSize(QtCore.QSize(75, 0))
         self.bot_spese.setMaximumSize(QtCore.QSize(75, 16777215))
         self.bot_spese.setObjectName("bot_spese")
         self.horizontalLayout.addWidget(self.bot_spese)
-        self.bot_note = QtWidgets.QPushButton(self.tab1)
+        self.bot_note = GreenProgressButton(self.tab1)
         self.bot_note.setMinimumSize(QtCore.QSize(75, 0))
         self.bot_note.setMaximumSize(QtCore.QSize(75, 16777215))
         self.bot_note.setObjectName("bot_note")
@@ -537,6 +537,9 @@ class Ui_MainWindow(object):
         self.bot_checkDisp.setText(_translate("MainWindow", "disponnibilità"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab2), _translate("MainWindow", "Prenota"))
         self.menuMenu.setTitle(_translate("MainWindow", "Menu"))
+
+
+from kwidget.myprogressbutton.myprogressbutton_main import GreenProgressButton, RedProgressButton
 
 
 if __name__ == "__main__":
