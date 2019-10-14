@@ -517,9 +517,11 @@ class Ui_MainWindow(object):
         self.label_11.setBuddy(self.lineEdit_lordo)
         self.label_13.setBuddy(self.lineEdit_tax)
         self.label_14.setBuddy(self.lineEdit_netto)
+        self.label_12.setBuddy(self.plainTextEdit_note)
         self.label_nome.setBuddy(self.lineEdit_nome)
         self.label_3.setBuddy(self.lineEdit_cognome)
         self.label_4.setBuddy(self.lineEdit_telefono)
+        self.label_email.setBuddy(self.lineEdit_email)
         self.label_5.setBuddy(self.dateEdit_dal)
         self.label_6.setBuddy(self.dateEdit_al)
 
@@ -577,8 +579,6 @@ class Ui_MainWindow(object):
         self.label_8.setText(_translate("MainWindow", "Ospiti"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab2), _translate("MainWindow", "Prenota"))
         self.menuMenu.setTitle(_translate("MainWindow", "Menu"))
-
-
 from kwidget.myprogressbutton.myprogressbutton_main import RedProgressButton
 
 

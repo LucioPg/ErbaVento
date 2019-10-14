@@ -772,6 +772,9 @@
                                                                   <property name="alignment">
                                                                       <set>Qt::AlignCenter</set>
                                                                   </property>
+                                                                  <property name="buddy">
+                                                                      <cstring>plainTextEdit_note</cstring>
+                                                                  </property>
                                                               </widget>
                                                           </item>
                                                           <item>
@@ -1095,6 +1098,9 @@
                                                                   </property>
                                                                   <property name="alignment">
                                                                       <set>Qt::AlignCenter</set>
+                                                                  </property>
+                                                                  <property name="buddy">
+                                                                      <cstring>lineEdit_email</cstring>
                                                                   </property>
                                                               </widget>
                                                           </item>
