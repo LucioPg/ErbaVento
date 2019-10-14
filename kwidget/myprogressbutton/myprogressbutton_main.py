@@ -1,16 +1,76 @@
 """
-
+Strategy pattern per qprogress bar con funzionalità di pulsante
 """
 
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtWidgets import *
 import sys
-# from strategy import N as Note
-# from ./strategy import SpeseText_MPBStrategy as Spese
 from kwidget.myprogressbutton.strategy import NoteText_MPBStrategy as Note
 from kwidget.myprogressbutton.strategy import SpeseText_MPBStrategy as Spese
 from kwidget.myprogressbutton.strategy import Green_ColorMPBStrategy as Verde
 from kwidget.myprogressbutton.strategy import Red_ColorMPBStrategy as Rosso
+
+
+noteButton = Note()
+speseButton = Spese()
+verde = Verde()
+rosso = Rosso()
+
+
+class ProgressButton(QProgressBar):
+    MPB_signal = QtCore.pyqtSignal(str)
+
+    def __init__(self, text_strategy, color_strategy, parent):
+        super().__init__(parent)
+        self._setText_strategy = text_strategy
+        self._setColor_strategy = color_strategy
+        self._text = text_strategy._text
+        self.setStyleSheet(self._setColor_strategy.show_color())
+        self._value = 0
+        self.setRange(0, 0)
+        self.setAlignment(QtCore.Qt.AlignCenter)
+        self.act_status = False
+        self.nome = self._setColor_strategy.nome()
+
+    @QtCore.pyqtSlot(bool)
+    def setActive(self, status):
+        if status:
+            val = 0
+        else:
+            val = 100
+        self.setMaximum(val)
+        self.act_status = status
+        # print(self.nome, " status: ", status)
+        return self.act_status
+
+    def showText(self):
+        # print(self._text)
+        return self._text
+
+    def text(self):
+        return self._text
+
+    def mouseReleaseEvent(self, a0: QtGui.QMouseEvent) -> None:
+        # print(self.func)
+        self.MPB_signal.emit(self.nome)
+        print("CIAOOO da ", self.text())
+
+
+class GreenProgressButton(ProgressButton):
+    def __init__(self, parent):
+        super(GreenProgressButton, self).__init__(noteButton, verde, parent)
+        # self.nome = "green progress button"
+
+    def setText(self, text):
+        self._text = text
+
+
+class RedProgressButton(ProgressButton):
+    def __init__(self, parent):
+        super(RedProgressButton, self).__init__(speseButton, rosso, parent)
+
+    def setText(self, text):
+        self._text = text
 
 
 class MainW(QMainWindow):
@@ -26,22 +86,14 @@ class MainW(QMainWindow):
         self.speseBar.setActive(True)
         self.noteBar = GreenProgressButton(self)
         self.noteBar.setActive(False)
-        # self.noteBar = QProgressBar(self)
-        # self.noteBar.setValue(100)
-        # self.noteBar = ProgressButton(Note(),Verde(),self)
-        # self.noteBar = MyProgressButton_old(parent=self)
-        # self.bot = QPushButton('ciao',self)
-        # self.bot.setText('ciao')
-        # self.gridLayout = QGridLayout(self)
-        # self.gridLayout.setObjectName("gridLayout")
-        # self.gridLayout.addWidget(self.bot)
+        self.noteBar.MPB_signal.connect(self.changText)
+        self.speseBar.MPB_signal.connect(self.changText)
         self.initUI()
 
     def initUI(self):
         wid = QWidget(self)
         self.setCentralWidget(wid)
-        # self.bot = QPushButton('Click me', self)
-        # self.bot.setText('ciao')
+        self.bot = QPushButton('Click me', self)
         self.gridLayout = QGridLayout(wid)
         self.gridLayout.setObjectName("gridLayout")
         self.gridLayout.addWidget(self.speseBar)
@@ -52,74 +104,9 @@ class MainW(QMainWindow):
         wid.setLayout(self.gridLayout)
         self.show()
 
-
-
-
-noteButton = Note()
-speseButton = Spese()
-verde = Verde()
-rosso = Rosso()
-
-
-class ProgressButton(QProgressBar):
-
-    def __init__(self, text_strategy, color_strategy, parent):
-        super().__init__(parent)
-        self._setText_strategy = text_strategy
-        self._setColor_strategy = color_strategy
-        self._text = text_strategy._text
-        self.setStyleSheet(self._setColor_strategy.show_color())
-        # self._text = 'porca troia'
-        self._value = 0
-        self.setRange(0, 0)
-        self.setAlignment(QtCore.Qt.AlignCenter)
-        self.act_status = False
-        self.nome = self._setColor_strategy.nome()
-
-        # self.setText(text_strategy._text)
-        # self.setText(text_strategy._text)
-        # self.setText('aaaaaaaah')
-        # self.showText()
-
-    def setActive(self, status):
-        if status:
-            val = 0
-        else:
-            val = 100
-        self.setMaximum(val)
-        self.act_status = status
-        print(self.nome, " status: ", status)
-        return self.act_status
-
-    def showText(self):
-        print(self._text)
-        return self._text
-
-    def text(self):
-        return self._text
-
-    def mouseReleaseEvent(self, a0: QtGui.QMouseEvent) -> None:
-        print("Quack!")
-# Types of Ducks
-
-
-class GreenProgressButton(ProgressButton):
-    def __init__(self, parent):
-        super(GreenProgressButton, self).__init__(noteButton, verde, parent)
-        # self.nome = "green progress button"
-
-    def setText(self, text):
-        self._text = text
-
-
-class RedProgressButton(ProgressButton):
-    def __init__(self, parent):
-        super(RedProgressButton, self).__init__(speseButton, rosso, parent)
-        # self.nome = "red progress button"
-        # self.setText('Spese')
-
-    def setText(self, text):
-        self._text = text
+    @QtCore.pyqtSlot(str)
+    def changText(self, nome):
+        self.bot.setText(nome)
 
 
 class MyProgressButton_old(QProgressBar):

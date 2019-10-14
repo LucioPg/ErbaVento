@@ -1,18 +1,28 @@
 import abc
 
 
+class Func_MPBStrategyAbstract(object):
+    __metaclass__ = abc.ABCMeta
+
+    @abc.abstractmethod
+    def setFunc(self, func):
+        """Required Method"""
+
+
+class Func_MPBStrategy(Func_MPBStrategyAbstract):
+
+    def setFunc(self, func):
+        print(func)
+        return func
+
+
+
 class Color_MPBStrategyAbstract(object):
-    """You do not need to know about metaclasses.
-    Just know that this is how you define abstract
-    classes in Python."""
+    """metaclasse per cambiare il colore"""
     __metaclass__ = abc.ABCMeta
 
     @abc.abstractmethod
     def show_color(self):
-        """Required Method"""
-
-    @abc.abstractmethod
-    def nome(self):
         """Required Method"""
 
 
@@ -52,9 +62,7 @@ class Green_ColorMPBStrategy(Color_MPBStrategyAbstract):
 
 
 class Text_MPBStrategyAbstract(object):
-    """You do not need to know about metaclasses.
-    Just know that this is how you define abstract
-    classes in Python."""
+    """metaclasse per cambiare il testo"""
     __metaclass__ = abc.ABCMeta
 
     # @abc.abstractmethod
