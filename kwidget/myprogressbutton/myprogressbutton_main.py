@@ -97,6 +97,9 @@ class ProgressButton(QProgressBar):
 
     def text(self):
         return self._text
+
+    def mouseReleaseEvent(self, a0: QtGui.QMouseEvent) -> None:
+        print("Quack!")
 # Types of Ducks
 
 
