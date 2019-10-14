@@ -559,6 +559,25 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.dateEdit_al.setDate(dataPartenza)
 
     def riempiTabella(self, info):
+        """
+        compila la tabella dal modello infoTemp
+        :param info: modello preso dal database
+        :return: ritorna il dizionario con lo status
+                 per i progressbutton
+        """
+        statusBot = {'note': False, 'spese': False}
+        if len(info):
+            for bot in statusBot.keys():
+                try:
+                    if len(info[bot]):
+                        statusBot[bot] = True
+                    else:
+                        statusBot[bot] = False
+                except TypeError:
+                    print("info keys:")
+                    for k in info.keys():
+                        print(k, end=' ')
+
         nome = info["nome"]
         cognome = info["cognome"]
         telefono = info["telefono"]
@@ -589,6 +608,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         item = QtWidgets.QTableWidgetItem(checkOut)
         self.tableWidget_info_ospite.setItem(5, 1, item)
         self.tableWidget_info_ospite.update()
+
+        return statusBot
 
     def salvaInfo(self):
         # if mode is None:
@@ -646,7 +667,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def setInfoFromDate(self, info):
         """compila la tabella dal modello infoTemp"""
-        self.riempiTabella(info)
+        statusBot = self.riempiTabella(info)
+        for bot in statusBot.keys():
+            if bot == 'note':
+                wid = self.bot_note
+            elif bot == 'spese':
+                wid = self.bot_spese
+            self.setProgressbutton(wid, statusBot[bot])
+
 
     def setInfoTemp(self, info, data=None):
 
@@ -659,6 +687,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def setLabel_data(self, data):
         self.current_date_label = data.toString("ddd dd/MM/yyyy")
         self.label_data.setText(self.current_date_label)
+
+    def setProgressbutton(self, bot, status):
+        try:
+            bot.setActive(status)
+        except:
+            print(fex)
 
     def set_status_msg(self, st=""):
         self.statusbar.showMessage(st)
