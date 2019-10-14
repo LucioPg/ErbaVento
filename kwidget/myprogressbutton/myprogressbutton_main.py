@@ -31,6 +31,7 @@ class ProgressButton(QProgressBar):
         self.setAlignment(QtCore.Qt.AlignCenter)
         self.act_status = False
         self.nome = self._setColor_strategy.nome()
+        self.setActive(False)
 
     @QtCore.pyqtSlot(bool)
     def setActive(self, status):
@@ -53,6 +54,7 @@ class ProgressButton(QProgressBar):
     def mouseReleaseEvent(self, a0: QtGui.QMouseEvent) -> None:
         # print(self.func)
         self.MPB_signal.emit(self.nome)
+        # todo da rimuovere il print
         print("CIAOOO da ", self.text())
 
 
