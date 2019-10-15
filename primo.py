@@ -52,7 +52,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             "data partenza": None,
             "numero ospiti": 1,
             "bambini": 0,
-            "spese": {},
+            "spese": '',
             "colazione": 'No',
             "importo": 0,
             "lordo": 0,

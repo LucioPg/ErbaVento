@@ -18,7 +18,7 @@
           <item row="0" column="1">
               <widget class="QTabWidget" name="tabWidget">
                   <property name="currentIndex">
-                      <number>1</number>
+                      <number>0</number>
                   </property>
                   <widget class="QWidget" name="tab1">
                       <attribute name="title">
@@ -212,7 +212,7 @@
                                                       </widget>
                                                   </item>
                                                   <item>
-                                                      <widget class="QPushButton" name="bot_note">
+                                                      <widget class="GreenProgressButton" name="bot_note">
                                                           <property name="minimumSize">
                                                               <size>
                                                                   <width>75</width>
@@ -1333,6 +1333,11 @@
     <customwidgets>
         <customwidget>
             <class>RedProgressButton</class>
+            <extends>QPushButton</extends>
+            <header location="global">kwidget.myprogressbutton.myprogressbutton_main</header>
+        </customwidget>
+        <customwidget>
+            <class>GreenProgressButton</class>
             <extends>QPushButton</extends>
             <header location="global">kwidget.myprogressbutton.myprogressbutton_main</header>
         </customwidget>

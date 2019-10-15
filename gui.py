@@ -102,7 +102,7 @@ class Ui_MainWindow(object):
         self.bot_spese.setMaximumSize(QtCore.QSize(75, 16777215))
         self.bot_spese.setObjectName("bot_spese")
         self.horizontalLayout.addWidget(self.bot_spese)
-        self.bot_note = QtWidgets.QPushButton(self.tab1)
+        self.bot_note = GreenProgressButton(self.tab1)
         self.bot_note.setMinimumSize(QtCore.QSize(75, 0))
         self.bot_note.setMaximumSize(QtCore.QSize(75, 16777215))
         self.bot_note.setObjectName("bot_note")
@@ -526,7 +526,7 @@ class Ui_MainWindow(object):
         self.label_6.setBuddy(self.dateEdit_al)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(1)
+        self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -579,7 +579,9 @@ class Ui_MainWindow(object):
         self.label_8.setText(_translate("MainWindow", "Ospiti"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab2), _translate("MainWindow", "Prenota"))
         self.menuMenu.setTitle(_translate("MainWindow", "Menu"))
-from kwidget.myprogressbutton.myprogressbutton_main import RedProgressButton
+
+
+from kwidget.myprogressbutton.myprogressbutton_main import GreenProgressButton, RedProgressButton
 
 
 if __name__ == "__main__":
