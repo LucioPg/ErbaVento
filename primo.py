@@ -577,6 +577,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     print("info keys:")
                     for k in info.keys():
                         print(k, end=' ')
+                    print()
 
         nome = info["nome"]
         cognome = info["cognome"]
