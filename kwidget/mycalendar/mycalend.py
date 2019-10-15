@@ -9,7 +9,7 @@ class MyCalend(QtWidgets.QCalendarWidget):
     ):
         super(MyCalend, self).__init__(parent)
         self.setGridVisible(True)
-
+        self.setObjectName('Calendario')
         # self.color = QtGui.QColor(self.palette().color(QtGui.QPalette.Highlight))
         self.booking = QtGui.QColor(QtCore.Qt.cyan)
         self.privato = QtGui.QColor(QtCore.Qt.darkRed)
