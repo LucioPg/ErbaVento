@@ -98,9 +98,15 @@ class MyLineEdit(QLineEdit):
         print('email')
         try:
             nome, dominio = text.split('@')
+            prec = ''
             for n in list(nome):
                 if n.isdigit() or n.isalpha() or n == '.':
-                    pass
+                    if prec == '.' and n == '.':
+                        return False
+                    else:
+                        prec = n
+                        print("carattere precedente: ", prec)
+
                 else:
                     return False
             if dominio.count('.') == 1:
