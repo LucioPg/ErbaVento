@@ -339,6 +339,22 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a["note"] = self.plainTextEdit_note.toPlainText()
         return a
 
+    def listaWGen(self):
+        listaW = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_telefono]
+        for w in listaW:
+            yield w
+
+    def checkInfo(self):
+        print(type(self.listaWGen))
+        listaW = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_telefono]
+        for w in listaW:
+            if w.text() == '':
+                w.setFocus()
+                w.selectAll()
+                return False
+
+        return True
+
     def correggiPartenza(self, d):
         """
         adegua la spinbox della partenza a quella dell'arrivo
@@ -630,32 +646,41 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return statusBot
 
     def salvaInfo(self):
-        # if mode is None:
-        info = self.compilaInfo()
-        dal = info['data arrivo']
-        al = info['data partenza']
-        anno = dal.year()
-        giorniPermanenza = dal.daysTo(al)
-        print("(salvaInfo NUOVA) anno: ", anno)
-        manager = Manager(info)
-        listaDisponibili = manager.checkAval(dal, al)
-        if len(listaDisponibili) == giorniPermanenza:
-            manager.setThem()
-            print("prenotazione effettuata per tutte le date richieste")
-            # self.leggiDatabase(manager.DataBase)
-            self.leggiDatabase()
-            self.set_status_msg("Prenotazione eseguita con successo")
-            l = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_lordo,
-                 self.lineEdit_netto, self.lineEdit_tax, self.lineEdit_telefono,
-                 self.plainTextEdit_note]
-            for w in l:
-                w.clear()
-            self.spinBox_ospiti.setValue(1)
-            self.spinBox_bambini.setValue(0)
-            self.tabWidget.setCurrentIndex(0)
+        flag = bool
+        flag = self.checkInfo()
+
+        if flag:
+            info = self.compilaInfo()
+            for k, v in info.items():
+                print(k, v, sep=' ', end='\n')
+            print()
+            dal = info['data arrivo']
+            al = info['data partenza']
+            anno = dal.year()
+            giorniPermanenza = dal.daysTo(al)
+            print("(salvaInfo NUOVA) anno: ", anno)
+            manager = Manager(info)
+            listaDisponibili = manager.checkAval(dal, al)
+            if len(listaDisponibili) == giorniPermanenza:
+                manager.setThem()
+                print("prenotazione effettuata per tutte le date richieste")
+                # self.leggiDatabase(manager.DataBase)
+                self.leggiDatabase()
+                self.set_status_msg("Prenotazione eseguita con successo")
+                l = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_lordo,
+                     self.lineEdit_netto, self.lineEdit_tax, self.lineEdit_telefono,
+                     self.plainTextEdit_note]
+                for w in l:
+                    w.clear()
+                self.spinBox_ospiti.setValue(1)
+                self.spinBox_bambini.setValue(0)
+                self.tabWidget.setCurrentIndex(0)
+            else:
+                self.set_status_msg("Le date selezionate sono occupate")
+                print("date non disponibili")
         else:
-            self.set_status_msg("Le date selezionate sono occupate")
-            print("date non disponibili")
+            print('salvataggio fallito')
+            self.statusbar.showMessage('salvataggio fallito')
 
     def setDateEdit_dal(self):
 
