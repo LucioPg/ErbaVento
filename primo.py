@@ -100,8 +100,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.radio_air.toggled.connect(self.importAdj)
         self.radio_privato.toggled.connect(self.importAdj)
         self.radioCorrente = self.radio_booking
-        self.dateEdit_al.dateChanged.connect(self.calcLordoNetto)
-        self.dateEdit_dal.dateChanged.connect(self.calcLordoNetto)
+        self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
+        self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
         self.bot_foglio.clicked.connect(self.exportaDb)
         self.tabWidget.currentChanged.connect(self.retTab)
         self.lineEdit_nome.returnPressed.connect(self.lineEditVerifica)
@@ -112,6 +112,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.lineEdit_cognome.TABPRESSED.connect(self.lineEditVerifica)
         self.lineEdit_telefono.TABPRESSED.connect(self.lineEditVerifica)
         self.lineEdit_email.TABPRESSED.connect(self.lineEditVerifica)
+        self.giornoprecedente = self.giornoCorrente.addDays(-1)
         # STATUS BAR
         # self.statusbar.setT
 
@@ -199,7 +200,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         da pagare
         :return:
         """
-        print("calctax ", self.sender().objectName())
         try:
             dal = self.dateEdit_dal.date()
             mese_dal = dal.month()
@@ -339,11 +339,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a["note"] = self.plainTextEdit_note.toPlainText()
         return a
 
-    def listaWGen(self):
-        listaW = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_telefono]
-        for w in listaW:
-            yield w
-
     def checkInfo(self):
         print(type(self.listaWGen))
         listaW = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_telefono]
@@ -368,6 +363,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         if al <= d:
             al = d.addDays(1)
+            self.giornoprecedente = al
             self.dateEdit_al.setDate(al)
             self.dateEdit_al.setMinimumDate(d.addDays(1))
             # print("correzione in avanti effettuata")
@@ -533,6 +529,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         else:
             self.sender().nextInFocusChain().setFocus()
 
+    def periodoCambiato(self, p):
+        self.calcLordoNetto()
+
     def retTab(self, c):
         anno = self.calendario.selectedDate().year()
         if anno < 2018:
@@ -648,7 +647,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def salvaInfo(self):
         flag = bool
         flag = self.checkInfo()
-
         if flag:
             info = self.compilaInfo()
             for k, v in info.items():

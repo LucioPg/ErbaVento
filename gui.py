@@ -472,7 +472,7 @@ class Ui_MainWindow(object):
         self.label_5 = QtWidgets.QLabel(self.tab2)
         self.label_5.setObjectName("label_5")
         self.horizontalLayout_18.addWidget(self.label_5)
-        self.dateEdit_dal = QtWidgets.QDateEdit(self.tab2)
+        self.dateEdit_dal = MyDateEdit(self.tab2)
         self.dateEdit_dal.setDateTime(QtCore.QDateTime(QtCore.QDate(2019, 7, 14), QtCore.QTime(0, 0, 0)))
         self.dateEdit_dal.setMinimumDate(QtCore.QDate(2019, 7, 14))
         self.dateEdit_dal.setObjectName("dateEdit_dal")
@@ -482,7 +482,7 @@ class Ui_MainWindow(object):
         self.label_6 = QtWidgets.QLabel(self.tab2)
         self.label_6.setObjectName("label_6")
         self.horizontalLayout_18.addWidget(self.label_6)
-        self.dateEdit_al = QtWidgets.QDateEdit(self.tab2)
+        self.dateEdit_al = MyDateEdit(self.tab2)
         self.dateEdit_al.setDateTime(QtCore.QDateTime(QtCore.QDate(2019, 7, 14), QtCore.QTime(0, 0, 0)))
         self.dateEdit_al.setMinimumDateTime(QtCore.QDateTime(QtCore.QDate(2019, 7, 14), QtCore.QTime(0, 0, 0)))
         self.dateEdit_al.setObjectName("dateEdit_al")
@@ -611,6 +611,9 @@ class Ui_MainWindow(object):
         self.label_8.setText(_translate("MainWindow", "Ospiti"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab2), _translate("MainWindow", "Prenota"))
         self.menuMenu.setTitle(_translate("MainWindow", "Menu"))
+
+
+from kwidget.mydateedit.mydateedit import MyDateEdit
 from kwidget.mylineEdit.mylineEdit import MyLineEdit
 from kwidget.myprogressbutton.myprogressbutton_main import GreenProgressButton, RedProgressButton
 

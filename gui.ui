@@ -1221,7 +1221,7 @@
                                                       </widget>
                                                   </item>
                                                   <item>
-                                                      <widget class="QDateEdit" name="dateEdit_dal">
+                                                      <widget class="MyDateEdit" name="dateEdit_dal">
                                                           <property name="dateTime">
                                                               <datetime>
                                                                   <hour>0</hour>
@@ -1268,7 +1268,7 @@
                                                       </widget>
                                                   </item>
                                                   <item>
-                                                      <widget class="QDateEdit" name="dateEdit_al">
+                                                      <widget class="MyDateEdit" name="dateEdit_al">
                                                           <property name="dateTime">
                                                               <datetime>
                                                                   <hour>0</hour>
@@ -1381,6 +1381,11 @@
             <class>MyLineEdit</class>
             <extends>QLineEdit</extends>
             <header>kwidget.mylineEdit.mylineEdit</header>
+        </customwidget>
+        <customwidget>
+            <class>MyDateEdit</class>
+            <extends>QDateEdit</extends>
+            <header location="global">kwidget.mydateedit.mydateedit</header>
         </customwidget>
     </customwidgets>
     <tabstops>
