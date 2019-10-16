@@ -17,6 +17,9 @@
       <layout class="QGridLayout" name="gridLayout_3">
           <item row="0" column="1">
               <widget class="QTabWidget" name="tabWidget">
+                  <property name="focusPolicy">
+                      <enum>Qt::TabFocus</enum>
+                  </property>
                   <property name="currentIndex">
                       <number>0</number>
                   </property>
@@ -56,6 +59,9 @@
                                                   <width>300</width>
                                                   <height>220</height>
                                               </size>
+                                          </property>
+                                          <property name="focusPolicy">
+                                              <enum>Qt::NoFocus</enum>
                                           </property>
                                           <property name="frameShape">
                                               <enum>QFrame::NoFrame</enum>
@@ -165,6 +171,9 @@
                                           </item>
                                           <item>
                                               <widget class="QPushButton" name="bot_foglio">
+                                                  <property name="focusPolicy">
+                                                      <enum>Qt::ClickFocus</enum>
+                                                  </property>
                                                   <property name="text">
                                                       <string>foglio elettronico</string>
                                                   </property>
@@ -206,6 +215,9 @@
                                                                   <height>16777215</height>
                                                               </size>
                                                           </property>
+                                                          <property name="focusPolicy">
+                                                              <enum>Qt::ClickFocus</enum>
+                                                          </property>
                                                           <property name="text">
                                                               <string>Spese</string>
                                                           </property>
@@ -224,6 +236,9 @@
                                                                   <width>75</width>
                                                                   <height>16777215</height>
                                                               </size>
+                                                          </property>
+                                                          <property name="focusPolicy">
+                                                              <enum>Qt::ClickFocus</enum>
                                                           </property>
                                                           <property name="text">
                                                               <string>Note</string>
@@ -491,7 +506,7 @@
                                                       </widget>
                                                   </item>
                                                   <item>
-                                                      <widget class="QPushButton" name="pushButton_3">
+                                                      <widget class="QPushButton" name="bot_aggiungiSpesa">
                                                           <property name="text">
                                                               <string>aggiungi spesa</string>
                                                           </property>
@@ -590,6 +605,9 @@
                                                                   <height>21</height>
                                                               </size>
                                                           </property>
+                                                          <property name="focusPolicy">
+                                                              <enum>Qt::NoFocus</enum>
+                                                          </property>
                                                           <property name="readOnly">
                                                               <bool>true</bool>
                                                           </property>
@@ -642,6 +660,9 @@
                                                                   <height>21</height>
                                                               </size>
                                                           </property>
+                                                          <property name="focusPolicy">
+                                                              <enum>Qt::NoFocus</enum>
+                                                          </property>
                                                           <property name="readOnly">
                                                               <bool>true</bool>
                                                           </property>
@@ -693,6 +714,9 @@
                                                                   <width>83</width>
                                                                   <height>21</height>
                                                               </size>
+                                                          </property>
+                                                          <property name="focusPolicy">
+                                                              <enum>Qt::NoFocus</enum>
                                                           </property>
                                                           <property name="readOnly">
                                                               <bool>true</bool>
@@ -967,7 +991,7 @@
                                                               </widget>
                                                           </item>
                                                           <item>
-                                                              <widget class="QLineEdit" name="lineEdit_nome">
+                                                              <widget class="MyLineEdit" name="lineEdit_nome">
                                                                   <property name="minimumSize">
                                                                       <size>
                                                                           <width>256</width>
@@ -979,6 +1003,9 @@
                                                                           <width>256</width>
                                                                           <height>21</height>
                                                                       </size>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>lineEdit_nome</string>
                                                                   </property>
                                                               </widget>
                                                           </item>
@@ -1013,7 +1040,7 @@
                                                               </widget>
                                                           </item>
                                                           <item>
-                                                              <widget class="QLineEdit" name="lineEdit_cognome">
+                                                              <widget class="MyLineEdit" name="lineEdit_cognome">
                                                                   <property name="minimumSize">
                                                                       <size>
                                                                           <width>256</width>
@@ -1025,6 +1052,9 @@
                                                                           <width>256</width>
                                                                           <height>21</height>
                                                                       </size>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>lineEdit_cognome</string>
                                                                   </property>
                                                               </widget>
                                                           </item>
@@ -1059,7 +1089,7 @@
                                                               </widget>
                                                           </item>
                                                           <item>
-                                                              <widget class="QLineEdit" name="lineEdit_telefono">
+                                                              <widget class="MyLineEdit" name="lineEdit_telefono">
                                                                   <property name="minimumSize">
                                                                       <size>
                                                                           <width>256</width>
@@ -1071,6 +1101,9 @@
                                                                           <width>256</width>
                                                                           <height>21</height>
                                                                       </size>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>lineEdit_telefono</string>
                                                                   </property>
                                                               </widget>
                                                           </item>
@@ -1105,7 +1138,7 @@
                                                               </widget>
                                                           </item>
                                                           <item>
-                                                              <widget class="QLineEdit" name="lineEdit_email">
+                                                              <widget class="MyLineEdit" name="lineEdit_email">
                                                                   <property name="minimumSize">
                                                                       <size>
                                                                           <width>256</width>
@@ -1117,6 +1150,9 @@
                                                                           <width>256</width>
                                                                           <height>21</height>
                                                                       </size>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>lineEdit_email</string>
                                                                   </property>
                                                               </widget>
                                                           </item>
@@ -1341,7 +1377,35 @@
             <extends>QPushButton</extends>
             <header location="global">kwidget.myprogressbutton.myprogressbutton_main</header>
         </customwidget>
+        <customwidget>
+            <class>MyLineEdit</class>
+            <extends>QLineEdit</extends>
+            <header>kwidget.mylineEdit.mylineEdit</header>
+        </customwidget>
     </customwidgets>
+    <tabstops>
+        <tabstop>bot_cancella</tabstop>
+        <tabstop>bot_prenota</tabstop>
+        <tabstop>tabWidget</tabstop>
+        <tabstop>lineEdit_nome</tabstop>
+        <tabstop>lineEdit_cognome</tabstop>
+        <tabstop>lineEdit_telefono</tabstop>
+        <tabstop>lineEdit_email</tabstop>
+        <tabstop>radio_privato</tabstop>
+        <tabstop>radio_booking</tabstop>
+        <tabstop>radio_air</tabstop>
+        <tabstop>dateEdit_dal</tabstop>
+        <tabstop>dateEdit_al</tabstop>
+        <tabstop>radio_colazione</tabstop>
+        <tabstop>bot_aggiungiSpesa</tabstop>
+        <tabstop>spinBox_importo</tabstop>
+        <tabstop>spinBox_ospiti</tabstop>
+        <tabstop>spinBox_bambini</tabstop>
+        <tabstop>plainTextEdit_note</tabstop>
+        <tabstop>bot_salva</tabstop>
+        <tabstop>bot_annulla</tabstop>
+        <tabstop>bot_checkDisp</tabstop>
+    </tabstops>
  <resources/>
  <connections/>
 </ui>

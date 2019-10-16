@@ -104,7 +104,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateEdit_dal.dateChanged.connect(self.calcLordoNetto)
         self.bot_foglio.clicked.connect(self.exportaDb)
         self.tabWidget.currentChanged.connect(self.retTab)
-
+        self.lineEdit_nome.returnPressed.connect(self.lineEditVerifica)
+        self.lineEdit_cognome.returnPressed.connect(self.lineEditVerifica)
+        self.lineEdit_telefono.returnPressed.connect(self.lineEditVerifica)
+        self.lineEdit_email.returnPressed.connect(self.lineEditVerifica)
         # STATUS BAR
         # self.statusbar.setT
 
@@ -500,6 +503,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie = db.platformPulizie(database)
         self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
         # return  self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
+
+    def lineEditVerifica(self):
+        # print('Hola ',self.bot.text())
+        print('ciao ', self.sender().text())
+        if not self.sender().selector(self.sender().text()):
+            self.sender().clear()
+        else:
+            self.sender().nextInFocusChain().setFocus()
 
     def retTab(self, c):
         anno = self.calendario.selectedDate().year()
