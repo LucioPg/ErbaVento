@@ -20,7 +20,7 @@ class MyLineEdit(QLineEdit):
 
         """
 
-    # FILTERLINE = QtCore.pyqtSignal()
+    TABPRESSED = QtCore.pyqtSignal(bool)
     def __init__(self, parent=None, nome=''):
         super().__init__(parent)
         self._nome = nome
@@ -30,11 +30,25 @@ class MyLineEdit(QLineEdit):
         self.setObjectName(self._nome)
         print(self.objectName())
         self.func = None
+        shortcut = QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Tab), self,
+                             context=QtCore.Qt.WidgetWithChildrenShortcut, activated=self.do_something)
 
+    @QtCore.pyqtSlot()
+    def do_something(self):
+        print("do_something")
+        flag = self.selector(self.text())
+        if not flag:
+            self.clear()
+        self.TABPRESSED.emit(flag)
+        return flag
         # self.returnPressed.connect(self.selector)
         # self.selector()
 
-    #
+    # def keyPressEvent(self, e: QtGui.QKeyEvent):
+    #     if e.key() == QtCore.Qt.Key_Tab:
+    #         print("presto")
+    #     else:
+    #         print(e.key())
     # @QtCore.pyqtSlot()
     def setText(self, a0: str) -> None:
         super(MyLineEdit, self).setText(a0)
@@ -47,7 +61,8 @@ class MyLineEdit(QLineEdit):
         :return:
         """
         print("selector : ", text)
-        listaNomi = ['lineEdit_nome', 'lineEdit_cognome', 'lineEdit_telefono', 'lineEdit_email']
+        if text == '':
+            return False
         if self.objectName() == 'lineEdit_nome' or self.objectName() == 'lineEdit_cognome':
             if self.filtraLettere(text):
                 return True
@@ -130,3 +145,8 @@ class MyLineEdit(QLineEdit):
         except:
             print('input invalido\n')
             return False
+
+
+class Dumb:
+    def stampa(self):
+        print("dumb")

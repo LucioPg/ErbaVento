@@ -611,8 +611,6 @@ class Ui_MainWindow(object):
         self.label_8.setText(_translate("MainWindow", "Ospiti"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab2), _translate("MainWindow", "Prenota"))
         self.menuMenu.setTitle(_translate("MainWindow", "Menu"))
-
-
 from kwidget.mylineEdit.mylineEdit import MyLineEdit
 from kwidget.myprogressbutton.myprogressbutton_main import GreenProgressButton, RedProgressButton
 

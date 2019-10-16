@@ -108,6 +108,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.lineEdit_cognome.returnPressed.connect(self.lineEditVerifica)
         self.lineEdit_telefono.returnPressed.connect(self.lineEditVerifica)
         self.lineEdit_email.returnPressed.connect(self.lineEditVerifica)
+        self.lineEdit_nome.TABPRESSED.connect(self.lineEditVerifica)
+        self.lineEdit_cognome.TABPRESSED.connect(self.lineEditVerifica)
+        self.lineEdit_telefono.TABPRESSED.connect(self.lineEditVerifica)
+        self.lineEdit_email.TABPRESSED.connect(self.lineEditVerifica)
         # STATUS BAR
         # self.statusbar.setT
 
@@ -504,6 +508,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
         # return  self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
 
+    @QtCore.pyqtSlot()
     def lineEditVerifica(self):
         # print('Hola ',self.bot.text())
         print('ciao ', self.sender().text())
@@ -525,6 +530,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if self.sender() is not None:
             sender = self.sender().objectName()
             print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        self.lineEdit_nome.setFocus()
 
     def riempi_campi_prenotazioni(self):
         """ prende le info da inserire nei campi
