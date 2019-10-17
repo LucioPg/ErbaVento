@@ -47,9 +47,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             "nome": "",
             "cognome": "",
             "telefono": None,
+            "email": '',
             "platform": "",
             "data arrivo": None,
             "data partenza": None,
+            'totale notti': 0,
             "numero ospiti": 1,
             "bambini": 0,
             "spese": '',
@@ -313,6 +315,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a["nome"] = self.lineEdit_nome.text()
         a["cognome"] = self.lineEdit_cognome.text()
         a["telefono"] = self.lineEdit_telefono.text()
+        a['email'] = self.lineEdit_email.text()
         if self.radio_air.isChecked():
             a["platform"] = "airBB"
         elif self.radio_booking.isChecked():
@@ -325,7 +328,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a["data arrivo"] = self.dateEdit_dal.date()
         # a["data partenza"] = self.dateEdit_al.date().toString("dd MMM yyyy")
         a["data partenza"] = self.dateEdit_al.date()
-        a["numero ospiti"] = self.spinBox_ospiti.text()
+        a['totale notti'] = str(self.dateEdit_dal.date().daysTo(self.dateEdit_al.date()))
+        a["numero ospiti"] = str(self.spinBox_ospiti.text())
         a["bambini"] = self.spinBox_bambini.text()
         a["spese"] = self.addSpese()
         if self.radio_colazione.isChecked():
@@ -561,6 +565,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.lineEdit_nome.setText(info['nome'])
         self.lineEdit_cognome.setText(info['cognome'])
         self.lineEdit_telefono.setText(info['telefono'])
+        self.lineEdit_email.setText(info['email'])
         self.spinBox_ospiti.setValue(int(info['numero ospiti']))
         self.spinBox_bambini.setValue(int(info['bambini']))
         platform = info['platform']

@@ -29,7 +29,7 @@ class ExpCsv(object):
         #                      'tasse',
         #                      'piattaforma']
         self._database = deepcopy(self.adjDb(database))
-        self.listak = ['nome', 'cognome', 'colazione']
+        self.listak_esclusiRipetizione = ['nome', 'cognome', 'colazione']
         # self.listaColonne = self.build_listaColonne_old()
         self.listaColonne = []
         self._anno = anno
@@ -75,8 +75,8 @@ class ExpCsv(object):
         :param k:
         :return:
         """
-        if k not in self.listak:
-            self.listak.append(k)
+        if k not in self.listak_esclusiRipetizione:
+            self.listak_esclusiRipetizione.append(k)
 
     def updateDiz(self):
 
@@ -115,7 +115,7 @@ class ExpCsv(object):
                     # print("giorno data ",giorno_data)
                     dizzy[giorno_data]['mese'] = mese_data
                     dizzy[giorno_data]['giorno'] = giorno_nome
-                    listak = [x for x in db[anno][mese][giorno].keys() if x not in self.listak]
+                    listak = [x for x in db[anno][mese][giorno].keys() if x not in self.listak_esclusiRipetizione]
                     for k in db[anno][mese][giorno].keys():
                         item = getItem(anno, mese, giorno, k, db)
                         dato = db[anno][mese][giorno][k]
@@ -128,19 +128,23 @@ class ExpCsv(object):
                         else:
                             if k in listak:
                                 if ('nome' and 'cognome') in db[anno][mese][giorno]:
+
                                     nome = db[anno][mese][giorno]['nome']
                                     cognome = db[anno][mese][giorno]['cognome']
                                     nuovoItem = db[anno][mese][giorno][k]
+                                    if nome == 'franco':
+                                        print("franco!", item)
+                                        print(listaV)
                                     if (nome and cognome) not in ['', '*']:
                                         if vecchioNome == nome and vecchioCognome == cognome:
                                             # if vecchioItem != item
                                             if item not in listaV:
                                                 listaV.append(item)
                                                 dato = db[anno][mese][giorno][k]
+                                            elif len(listaV) < 13:
+                                                print("stesso giorno")
                                             else:
-                                                if nome == 'franco' and giorno == 3:
-                                                    print("franco!", item)
-                                                    print(listaV)
+
                                                 dato = '*'
                                         else:
                                             listaV.clear()
@@ -197,207 +201,9 @@ class ExpCsv(object):
         # return listaDiz
         return updated
 
-    def updateDiz_old(self):
 
-        def getNames(a, m, g):
-            form = QtCore.QDate
-            mese_data = form(a, m, g).toString("MMM")
-            giorno_data = form(a, m, g).toString("dd/MM/yyyy")
-            giorno_nome = form(a, m, g).toString("ddd dd")
-            return mese_data, giorno_data, giorno_nome
 
-        def getItem(a, m, g, k, database):
-            item = database[a][m][g][k]
-            return item
 
-        db = deepcopy(self._database)
-        listaDiz = Od()
-        vecchioNome = 'n'
-        vecchioCognome = 'c'
-        listaV = []
-        for anno in db.keys():
-            listaV.clear()
-            for mese in db[anno]:
-                dizzy = Od()
-                ieri = 1
-                listaV.clear()
-                for giorno in db[anno][mese]:
-                    listaNomi_oggi = getNames(anno, mese, giorno)
-                    giorno_data = listaNomi_oggi[1]
-                    mese_data = listaNomi_oggi[0]
-                    giorno_nome = listaNomi_oggi[2]
-                    dizzy[giorno_data] = Od()
-                    diz = dizzy[giorno_data]
-                    # print("giorno data ",giorno_data)
-                    dizzy[giorno_data]['mese'] = mese_data
-                    dizzy[giorno_data]['giorno'] = giorno_nome
-                    listak = [x for x in db[anno][mese][giorno].keys() if x not in self.listak]
-                    for k in db[anno][mese][giorno].keys():
-                        item = getItem(anno, mese, giorno, k, db)
-                        dato = db[anno][mese][giorno][k]
-                        if k == 'nome':
-                            if vecchioNome != item and (vecchioNome != '' or vecchioNome != '*'):
-                                vecchioNome = item[:]
-                        elif k == 'cognome':
-                            if vecchioCognome != item and (vecchioCognome != '' or vecchioCognome != '*'):
-                                vecchioCognome = item[:]
-                        else:
-                            if k in listak:
-                                if ('nome' and 'cognome') in db[anno][mese][giorno]:
-                                    nome = db[anno][mese][giorno]['nome']
-                                    cognome = db[anno][mese][giorno]['cognome']
-                                    nuovoItem = db[anno][mese][giorno][k]
-                                    if (nome and cognome) not in ['', '*']:
-                                        if vecchioNome == nome and vecchioCognome == cognome:
-                                            # if vecchioItem != item
-                                            if item not in listaV:
-                                                listaV.append(item)
-                                                dato = db[anno][mese][giorno][k]
-                                            else:
-                                                if nome == 'franco' and giorno == 3:
-                                                    print("franco!", item)
-                                                    print(listaV)
-                                                dato = '*'
-                                        else:
-                                            listaV.clear()
-                                            listaV.append(item)
-                                            dato = db[anno][mese][giorno][k]
-                                    else:
-                                        dato = db[anno][mese][giorno][k]
-                                else:
-                                    dato = db[anno][mese][giorno][k]
-                            else:
-                                dato = db[anno][mese][giorno][k]
-                        dizzy[giorno_data][k] = dato
-                    if giorno_data not in listaDiz:
-                        listaDiz[giorno_data] = dizzy
-                    else:
-                        print("diz già presente\n\t", diz.items())
-            lik = [x for x in diz.keys()]
-            lik.insert(0, 'data')
-            if self.listaColonne != lik:
-                self.listaColonne = lik
-        # for d in listaDiz:
-        #     print(d.keys())
-        print("len listaDiz", len(listaDiz))
-        print("dizzy \n\t\t", dizzy.items())
-        return listaDiz
-
-    def updateDiz_old_old(self):
-
-        def getNames(a, m, g):
-            form = QtCore.QDate
-            mese_data = form(a, m, g).toString("MMM")
-            giorno_data = form(a, m, g).toString("dd/MM/yyyy")
-            giorno_nome = form(a, m, g).toString("ddd dd")
-            return mese_data, giorno_data, giorno_nome
-
-        def getItem(a, m, g, k, database):
-            item = database[a][m][g][k]
-            return item
-        a = self.anno()
-        db = deepcopy(self._database)
-
-        listaDiz = []
-        default = 'FFFFFF2121'
-        # old = None
-        vecchioNome = 'n'
-        vecchioCognome = 'c'
-        vecchioItem = 'i'
-        listaV = []
-        for anno in db.keys():
-            listaV.clear()
-            for mese in db[anno]:
-                dizzy = Od()
-                ieri = 1
-                listaV.clear()
-
-                for giorno in db[anno][mese]:
-                    listaNomi_oggi = getNames(anno, mese, giorno)
-                    giorno_data = listaNomi_oggi[1]
-                    mese_data = listaNomi_oggi[0]
-                    giorno_nome = listaNomi_oggi[2]
-                    dizzy[giorno_data] = Od()
-                    diz = dizzy[giorno_data]
-                    dizzy[giorno_data]['mese'] = mese_data
-                    dizzy[giorno_data]['giorno'] = giorno_nome
-                    listak = [x for x in db[anno][mese][giorno].keys() if x not in self.listak]
-
-                    for k in db[anno][mese][giorno].keys():
-                        item = getItem(anno, mese, giorno, k, db)
-                        dato = db[anno][mese][giorno][k]
-
-                        # if item == 'franco':
-                        #     print("franco!")
-                        # if k in listak:
-                        #     pass
-                        if k == 'nome':
-                            if vecchioNome != item and (vecchioNome != '' or vecchioNome != '*'):
-                                vecchioNome = item[:]
-                                nome = vecchioNome
-
-                                # dato = db[anno][mese][giorno][k]
-                                # dato = '*'
-                            #
-                            # else:
-                            #     # dato = '*'
-                            #     # dato = db[anno][mese][giorno][k]
-                            #     print("vecchio  ",vecchio)
-                        elif k == 'cognome':
-                            if vecchioCognome != item and (vecchioCognome != '' or vecchioCognome != '*'):
-                                vecchioCognome = item[:]
-                        #
-                        # if vecchio != ('' or '*') and vecchio != item:
-                        #     dato = '*'
-                        # else:
-                        #     print("ieri = giorno !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                        #     # ieri = giorno
-                        #     dato = db[anno][mese][giorno][k]
-                        else:
-                            if k in listak:
-                                if ('nome' and 'cognome') in db[anno][mese][giorno]:
-                                    nome = db[anno][mese][giorno]['nome']
-                                    cognome = db[anno][mese][giorno]['cognome']
-                                    nuovoItem = db[anno][mese][giorno][k]
-                                    if (nome and cognome) not in ['', '*']:
-                                        if vecchioNome == nome and vecchioCognome == cognome:
-                                            # if vecchioItem != item
-                                            if item not in listaV:
-                                                listaV.append(item)
-
-                                                dato = db[anno][mese][giorno][k]
-                                            else:
-                                                if nome == 'franco' and giorno == 3:
-                                                    print("franco!", item)
-                                                    print(listaV)
-                                                # listaV.clear()
-                                                # listaV.append(item)
-                                                dato = '*'
-                                        else:
-                                            listaV.clear()
-                                            listaV.append(item)
-                                            dato = db[anno][mese][giorno][k]
-                                    else:
-                                        dato = db[anno][mese][giorno][k]
-                                else:
-                                    dato = db[anno][mese][giorno][k]
-                            else:
-                                dato = db[anno][mese][giorno][k]
-
-                            # dato = db[anno][mese][giorno][k]
-
-                        # dato = db[anno][mese][giorno][k]
-                        dizzy[giorno_data][k] = dato
-                        # vecchio = item
-                    ieri = giorno
-
-                if diz not in listaDiz:
-                    listaDiz.append(dizzy)
-            lik = [x for x in diz.keys()]
-            lik.insert(0, 'data')
-            if self.listaColonne != lik:
-                self.listaColonne = lik
-        return listaDiz
 
     def getNomeCsv(self, anno, mese):
         anno = str(anno)

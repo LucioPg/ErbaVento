@@ -52,7 +52,8 @@ class MyLineEdit(QLineEdit):
     # @QtCore.pyqtSlot()
     def setText(self, a0: str) -> None:
         super(MyLineEdit, self).setText(a0)
-        self.clear()
+        if self.sender() is None:
+            self.clear()
 
     def selector(self, text):
         """
