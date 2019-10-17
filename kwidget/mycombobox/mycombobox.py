@@ -6,10 +6,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QWidget
 
 
-class MyWidget(QComboBox):
+class MyComboBox(QComboBox):
     EDITFINISHED = pyqtSignal(str)
     def __init__(self, parent=None):
-        super(MyWidget, self).__init__(parent)
+        super(MyComboBox, self).__init__(parent)
         self.listaPlatform = ['Booking', 'AirB&B', 'Privati']
         self.preferPlat = 'Booking'
         # self.preferPlat = 'Privati'
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     dia = QDialog()
     grid = QGridLayout(dia)
-    mw = MyWidget(dia)
+    mw = MyComboBox(dia)
     grid.addWidget(mw)
     dia.setLayout(grid)
     dia.show()

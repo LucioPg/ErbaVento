@@ -340,7 +340,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return a
 
     def checkInfo(self):
-        print(type(self.listaWGen))
+        # print(type(self.listaWGen))
         listaW = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_telefono]
         for w in listaW:
             if w.text() == '':

@@ -1,4 +1,6 @@
+*.ui
 !gui.ui
+!gui_option.ui
 !requirements.txt
 *.pkl
 *.csv
@@ -6,10 +8,10 @@
 *.odt
 *.json
 *.txt
-*.ui
 *.spec
 *.pyc
 *_old.*
+*_temp.*
 opnpkl.py
 opnpkl_gen.py
 .idea/
