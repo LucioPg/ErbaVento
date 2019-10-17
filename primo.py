@@ -121,6 +121,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # self.statusbar.setT
 
     def addSpese(self):
+        dialog
         return
 
     def aggiornaInfoData(self):
@@ -135,9 +136,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.tabWidget.setCurrentIndex(0)
         else:
             pass
-        if self.sender() is not None:
-            sender = self.sender().objectName()
-            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        # if self.sender() is not None:
+        #     sender = self.sender().objectName()
+        #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
 
         self.setInfoTemp(self.getInfoFromDate(data))
         if self.infoTemp['data arrivo'] is None:
@@ -241,16 +242,17 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def cancellaprenot(self):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
-        manager = Manager(info=self.infoTemp)
-        manager.canc()
-        # database = self.getDatabase(self.infoTemp['data arrivo'].year())
-        database = self.getDatabase()
-        # self.leggiDatabase(manager.DataBase)
-        # self.leggiDatabase(database)
-        self.leggiDatabase()
+        if self.warnMsg():
+            manager = Manager(info=self.infoTemp)
+            manager.canc()
+            # database = self.getDatabase(self.infoTemp['data arrivo'].year())
+            database = self.getDatabase()
+            # self.leggiDatabase(manager.DataBase)
+            # self.leggiDatabase(database)
+            self.leggiDatabase()
 
-        self.calendario.updateCells()
-        self.set_status_msg('Cancellazione effettuata')
+            self.calendario.updateCells()
+            self.set_status_msg('Cancellazione effettuata')
 
     def checkAval(self, dal, al):
         giorniPermanenza = dal.daysTo(al)
@@ -415,9 +417,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def getInfoFromCalendar(self, data):
         # self.cleardisplay()
-        if self.sender() is not None:
-            sender = self.sender().objectName()
-            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        # if self.sender() is not None:
+        #     sender = self.sender().objectName()
+        #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         info = self.getInfoFromDate(data)
         self.setInfoFromDate(info)
         self.setInfoTemp(info)
@@ -554,9 +556,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         else:
             # self.setDateEdit_dal()
             pass
-        if self.sender() is not None:
-            sender = self.sender().objectName()
-            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        # if self.sender() is not None:
+        #     sender = self.sender().objectName()
+        #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         self.lineEdit_nome.setFocus()
 
     def riempi_campi_prenotazioni(self):
@@ -566,9 +568,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             del calendario"""
 
         # self.cleardisplay()
-        if self.sender() is not None:
-            sender = self.sender().objectName()
-            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        # if self.sender() is not None:
+        #     sender = self.sender().objectName()
+        #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         info = deepc(self.infoTemp)
         self.lineEdit_nome.setText(info['nome'])
         self.lineEdit_cognome.setText(info['cognome'])
@@ -600,9 +602,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.dateEdit_al.blockSignals(False)
             self.lineEdit_numeroGiorni.setText(info['totale notti'])
         else:
-            print("else: setDateEdit_dal")
+            # print("else: setDateEdit_dal")
             self.setDateEdit_dal()
             # self.dateEdit_al.setDate(dataPartenza)
+        # self.bot_note.setInfo(info['note'])
+        # self.bot_spese.setInfo(info['spese'])
 
     def riempiTabella(self, info):
         """
@@ -620,10 +624,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     else:
                         statusBot[bot] = False
                 except TypeError:
-                    print("info keys:")
-                    for k in info.keys():
-                        print(k, end=' ')
-                    print()
+                    pass
 
         nome = info["nome"]
         cognome = info["cognome"]
@@ -659,7 +660,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         item = QtWidgets.QTableWidgetItem(checkOut)
         self.tableWidget_info_ospite.setItem(5, 1, item)
         self.tableWidget_info_ospite.update()
-
+        self.bot_note.setInfo(info['note'])
+        self.bot_spese.setInfo(info['spese'])
         return statusBot
 
     def salvaInfo(self):
@@ -703,9 +705,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # todo rimuovere il commento a:
         # self.dateEdit_dal.setMinimumDate(self.giornoCorrente)
         # self.dateEdit_al.setMinimumDate(self.giornoCorrente.addDays(1))
-        if self.sender() is not None:
-            sender = self.sender().objectName()
-            print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        # if self.sender() is not None:
+        #     sender = self.sender().objectName()
+        # print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         data = self.get_date(self.calendario.selectedDate())
         domani = data.addDays(1)
         anno = data.year()
@@ -730,7 +732,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             elif bot == 'spese':
                 wid = self.bot_spese
             self.setProgressbutton(wid, statusBot[bot])
-
 
     def setInfoTemp(self, info, data=None):
 
@@ -781,6 +782,22 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def vaiPrenotaTab(self):
         self.tabWidget.setCurrentIndex(1)
+
+    def warnMsg(self, default=0):
+        """ Finestra di avviso, nome + 'ciò che è scritto sul bottone' + già esistente"""
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+        msg.setWindowTitle("Attenzione!")
+        msg.setText("Vuoi davvero cancellare la prenotazione?")
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+        # questo di sotto serve se voglio fare qualcosa dopo che è stato premuto ok
+        # msg.buttonClicked.connect(msgbtn)
+        # questo di sotto serve a far apparire la finestra
+        result = msg.exec_()
+        if result == QtWidgets.QMessageBox.Ok:
+            return True
+        else:
+            return False
 
 
 if __name__ == "__main__":

@@ -32,6 +32,7 @@ class ProgressButton(QProgressBar):
         self.act_status = False
         self.nome = self._setColor_strategy.nome()
         self.setActive(False)
+        self.info = None
 
     @QtCore.pyqtSlot(bool)
     def setActive(self, status):
@@ -44,18 +45,36 @@ class ProgressButton(QProgressBar):
         # print(self.nome, " status: ", status)
         return self.act_status
 
-    def showText(self):
-        # print(self._text)
-        return self._text
+    def setInfo(self, info):
+        """
+        le info possono essere le note o la lista della spesa
+        :param info:
+        :return:
+        """
+        if info is not None:
+            if info != '':
+                self.info = info
+                print('informazioni ricevute, ', self._text)
+                return True
+            else:
+                return False
+        else:
+            return False
+
 
     def text(self):
         return self._text
 
     def mouseReleaseEvent(self, a0: QtGui.QMouseEvent) -> None:
         # print(self.func)
-        self.MPB_signal.emit(self.nome)
+        # todo cambiare l'emissione di self.nome con le note o le spese
+        # todo passate dal mittente
+        # self.MPB_signal.emit(self.info)
         # todo da rimuovere il print
-        print("CIAOOO da ", self.text())
+        if self.act_status:
+            print("CIAOOO da ", self.text())
+            self.MPB_signal.emit(self.info)
+
 
 
 class GreenProgressButton(ProgressButton):
@@ -88,8 +107,8 @@ class MainW(QMainWindow):
         self.speseBar.setActive(True)
         self.noteBar = GreenProgressButton(self)
         self.noteBar.setActive(False)
-        self.noteBar.MPB_signal.connect(self.changText)
-        self.speseBar.MPB_signal.connect(self.changText)
+        self.noteBar.MPB_signal.connect(self.showText)
+        self.speseBar.MPB_signal.connect(self.showText)
         self.initUI()
 
     def initUI(self):
@@ -107,94 +126,12 @@ class MainW(QMainWindow):
         self.show()
 
     @QtCore.pyqtSlot(str)
-    def changText(self, nome):
+    def showText(self, nome):
         self.bot.setText(nome)
 
-
-class MyProgressButton_old(QProgressBar):
-    """
-        Progress bar in busy mode with text displayed at the center.
-    """
-    DEFAULTSTYLE = """
-    QProgressBar::chunk {background-color:qlineargradient(spread:reflect, x1:1, y1:0, x2:0.500455, y2:0, stop:0.414773 rgba(255, 255, 255, 20), stop:1 rgba(0, 255, 61, 255))}
-    QProgressBar{border: 0px solid red;background-color: rgba(255, 255, 255,0);};
-    font: 175 16pt \"MS Shell Dlg 2\";
-    
-    
-    """
-
-    def __init__(self, parent=None, text='Note'):
-        super().__init__(parent=None)
-        self.parent = parent
-        self.setRange(0, 0)
-        self.setAlignment(QtCore.Qt.AlignCenter)
-        self._text = None
-        self.act_status = False
-        self.setStyleSheet(self.DEFAULTSTYLE)
-
-        # self.setStyleSheet(self.styleSheet()+"font: 175 110pt \"MS Shell Dlg 2\";")
-        # self.setStyleSheet(stylelist[0]+stylelist[1])
-        self.setText(text)
-        self.setObjectName('progressBarButton')
-
-    def setText(self, text):
-        if type(text) is not str:
-            text = str(text)
-        self._text = text
-
-    def setActive(self, act):
-        if not act:
-            self.setRange(0, 100)
-        else:
-            self.setRange(0, 0)
-        self.act_status = act
-        return self.act_status
-
-    def mouseReleaseEvent(self, a0: QtGui.QMouseEvent) -> None:
-        print(self.objectName())
-    def text(self):
-        return self._text
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     main = MainW()
-    # print(main.noteBar.parent())
-    # main.initUI()
-    # lay = QGridLayout(main)
-    # lab = QLabel(main)
-    # lab2 = QLabel(main)
-    # lab.setText('CIAO')
-    # lab2.setText('2222')
-    # hbox = QHBoxLayout()
-    # hbox.addWidget(lab)
-    # hbox.addWidget(lab2)
-    # lay.addLayout(hbox,0,0,0,0)
-    # main.setLayout(hbox)
-    # main.layout().addWidget(lab)
-    # main.layout().addWidget(lab)
-    # main.addWidget(lab,0,0,0,1)
-    # lay.addWidget(lab2,0,0,0,0)
-    # lay.addWidget(lab2,0,0,0,0)
-
-    # print(main.layout().addWidget(lab))
-    # main.setLayout(lay)
-    # main.show()
-    # a = MyProgressButton()
-    # a.setActive(1)
-    # a.show()
-    # print(a.style().CE_ProgressBarGroove)
-    # sys.exit(app.exec_())
-
-    # note = GreenProgressButton()
-    #
-    #
-    # spese = RedProgressButton()
-    #
-    # note.showText()
-    # note.setText('NOTE')
-    # note.showText()
-    # spese.showText()
-    # note.show()
-    # spese.show()
     sys.exit(app.exec_())
