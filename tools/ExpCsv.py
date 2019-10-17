@@ -97,6 +97,7 @@ class ExpCsv(object):
         vecchioNome = 'n'
         vecchioCognome = 'c'
         listaV = []
+        nuovaPrenotazione = bool
         for anno in db.keys():
             listaV.clear()
             updated[anno] = Od()
@@ -106,16 +107,27 @@ class ExpCsv(object):
                 ieri = 1
                 listaV.clear()
                 for giorno in db[anno][mese]:
+
                     listaNomi_oggi = getNames(anno, mese, giorno)
                     giorno_data = listaNomi_oggi[1]
                     mese_data = listaNomi_oggi[0]
                     giorno_nome = listaNomi_oggi[2]
                     dizzy[giorno_data] = Od()
                     diz = dizzy[giorno_data]
-                    # print("giorno data ",giorno_data)
                     dizzy[giorno_data]['mese'] = mese_data
                     dizzy[giorno_data]['giorno'] = giorno_nome
                     listak = [x for x in db[anno][mese][giorno].keys() if x not in self.listak_esclusiRipetizione]
+                    nomeCheck = db[anno][mese][giorno]['nome']
+                    cognomeCheck = db[anno][mese][giorno]['cognome']
+                    nomeCognomecheck = nomeCheck + cognomeCheck
+                    # if  nomeCheck != vecchioNome or cognomeCheck != vecchioCognome:
+                    if nomeCognomecheck != (vecchioNome + vecchioNome):
+                        nuovaPrenotazione = True
+                        # print('   NUOVA PRENOTAZIONE '*2)
+                        # print(f"{nomeCheck}  {cognomeCheck}")
+                    else:
+                        listaV.clear()
+                        nuovaPrenotazione = False
                     for k in db[anno][mese][giorno].keys():
                         item = getItem(anno, mese, giorno, k, db)
                         dato = db[anno][mese][giorno][k]
@@ -125,37 +137,36 @@ class ExpCsv(object):
                         elif k == 'cognome':
                             if vecchioCognome != item and (vecchioCognome != '' or vecchioCognome != '*'):
                                 vecchioCognome = item[:]
-                        else:
-                            if k in listak:
-                                if ('nome' and 'cognome') in db[anno][mese][giorno]:
 
-                                    nome = db[anno][mese][giorno]['nome']
-                                    cognome = db[anno][mese][giorno]['cognome']
-                                    nuovoItem = db[anno][mese][giorno][k]
-                                    if nome == 'franco':
-                                        print("franco!", item)
-                                        print(listaV)
-                                    if (nome and cognome) not in ['', '*']:
-                                        if vecchioNome == nome and vecchioCognome == cognome:
-                                            # if vecchioItem != item
-                                            if item not in listaV:
+                        else:
+                            if nuovaPrenotazione:
+
+                                if k in listak:
+                                    if ('nome' and 'cognome') in db[anno][mese][giorno]:
+
+                                        nome = db[anno][mese][giorno]['nome']
+                                        cognome = db[anno][mese][giorno]['cognome']
+                                        nuovoItem = db[anno][mese][giorno][k]
+                                        if (nome and cognome) not in ['', '*']:
+                                            if vecchioNome == nome and vecchioCognome == cognome:
+                                                # if vecchioItem != item
+                                                if item not in listaV:
+                                                    listaV.append(item)
+                                                    dato = db[anno][mese][giorno][k]
+                                                else:
+                                                    dato = '*'
+                                            else:
+                                                listaV.clear()
                                                 listaV.append(item)
                                                 dato = db[anno][mese][giorno][k]
-                                            elif len(listaV) < 13:
-                                                print("stesso giorno")
-                                            else:
-
-                                                dato = '*'
                                         else:
-                                            listaV.clear()
-                                            listaV.append(item)
                                             dato = db[anno][mese][giorno][k]
                                     else:
                                         dato = db[anno][mese][giorno][k]
                                 else:
                                     dato = db[anno][mese][giorno][k]
                             else:
-                                dato = db[anno][mese][giorno][k]
+                                nuovaPrenotazione = False
                         dizzy[giorno_data][k] = dato
                     if giorno_data not in listaDiz:
                         listaDiz[giorno_data] = dizzy
@@ -193,17 +204,7 @@ class ExpCsv(object):
             lik.insert(0, 'data')
             if self.listaColonne != lik:
                 self.listaColonne = lik
-
-        # for d in listaDiz:
-        #     print(d.keys())
-        print("len listaDiz", len(listaDiz))
-        # print("dizzy \n\t\t",dizzy.items())
-        # return listaDiz
         return updated
-
-
-
-
 
     def getNomeCsv(self, anno, mese):
         anno = str(anno)
