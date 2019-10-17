@@ -72,10 +72,16 @@
                                                           <verstretch>0</verstretch>
                                                       </sizepolicy>
                                                   </property>
+                                                  <property name="minimumSize">
+                                                      <size>
+                                                          <width>300</width>
+                                                          <height>0</height>
+                                                      </size>
+                                                  </property>
                                                   <property name="maximumSize">
                                                       <size>
                                                           <width>300</width>
-                                                          <height>220</height>
+                                                          <height>240</height>
                                                       </size>
                                                   </property>
                                                   <property name="focusPolicy">
@@ -103,13 +109,13 @@
                                                       <bool>false</bool>
                                                   </attribute>
                                                   <attribute name="horizontalHeaderDefaultSectionSize">
-                                                      <number>115</number>
+                                                      <number>95</number>
                                                   </attribute>
                                                   <attribute name="horizontalHeaderMinimumSectionSize">
                                                       <number>50</number>
                                                   </attribute>
                                                   <attribute name="horizontalHeaderStretchLastSection">
-                                                      <bool>false</bool>
+                                                      <bool>true</bool>
                                                   </attribute>
                                                   <row>
                                                       <property name="text">
@@ -159,6 +165,19 @@
                                               </widget>
                                           </item>
                                       </layout>
+                                  </item>
+                                  <item>
+                                      <spacer name="horizontalSpacer_11">
+                                          <property name="orientation">
+                                              <enum>Qt::Horizontal</enum>
+                                          </property>
+                                          <property name="sizeHint" stdset="0">
+                                              <size>
+                                                  <width>40</width>
+                                                  <height>20</height>
+                                              </size>
+                                          </property>
+                                      </spacer>
                                   </item>
                                   <item>
                                       <layout class="QVBoxLayout" name="verticalLayout_3">

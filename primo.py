@@ -390,6 +390,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         db = self.getDatabase()
         exdb = excsv(db)
         exdb.makeCsv()
+        self.statusbar.showMessage('Esportazione eseguita con successo')
         # li = exdb.updateDiz()
         # print("lunghezza li ",len(li))
         # print("dal click: \n\t\t",li[9].items())
@@ -536,6 +537,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.sender().nextInFocusChain().setFocus()
 
     def periodoCambiato(self, p):
+        d = self.dateEdit_dal.date()
+        a = self.dateEdit_al.date()
+        giorni = d.daysTo(a)
+        self.lineEdit_numeroGiorni.setText(str(giorni))
         self.calcLordoNetto()
 
     def retTab(self, c):
@@ -547,7 +552,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             print("anno troppo avanti")
             self.tabWidget.setCurrentIndex(0)
         else:
-            self.setDateEdit_dal()
+            # self.setDateEdit_dal()
+            pass
         if self.sender() is not None:
             sender = self.sender().objectName()
             print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
@@ -592,6 +598,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.dateEdit_al.setDate(dataPartenza)
             self.dateEdit_dal.blockSignals(False)
             self.dateEdit_al.blockSignals(False)
+            self.lineEdit_numeroGiorni.setText(info['totale notti'])
         else:
             print("else: setDateEdit_dal")
             self.setDateEdit_dal()
@@ -625,6 +632,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         ospiti = info["numero ospiti"]
         bambini = info["bambini"]
         checkIn = info["data arrivo"]
+        numeroNotti = info['totale notti']
         if type(checkIn) is QtCore.QDate:
             checkIn = info["data arrivo"].toString("ddd dd/MM/yyyy")
         checkOut = info["data partenza"]
@@ -639,9 +647,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         item = QtWidgets.QTableWidgetItem(bambini)
         self.tableWidget_info_ospite.setItem(3, 0, item)
         if platform == "privato":
-            item = QtWidgets.QTableWidgetItem("Si")
+            pass
+            # item = QtWidgets.QTableWidgetItem("Si")
         else:
-            item = QtWidgets.QTableWidgetItem("No")
+            pass
+            # item = QtWidgets.QTableWidgetItem("No")
+        item = QtWidgets.QTableWidgetItem(numeroNotti)
         self.tableWidget_info_ospite.setItem(4, 0, item)
         item = QtWidgets.QTableWidgetItem(checkIn)
         self.tableWidget_info_ospite.setItem(5, 0, item)
@@ -703,9 +714,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateEdit_dal.blockSignals(False)
         self.dateEdit_al.blockSignals(False)
         self.dateEdit_dal.setMinimumDate(QtCore.QDate(2018, 1, 1))
-
-        if data == QtCore.QDate(2019, 7, 14):
-            print("d, presto!")
         self.dateEdit_dal.setDate(data)
         self.dateEdit_al.setDate(domani)
         self.dateEdit_al.setMinimumDate(domani)
