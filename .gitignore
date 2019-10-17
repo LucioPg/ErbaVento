@@ -11,6 +11,7 @@
 *.spec
 *.pyc
 *_old.*
+*_temp.*
 opnpkl.py
 opnpkl_gen.py
 .idea/
