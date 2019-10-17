@@ -104,7 +104,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.radioCorrente = self.radio_booking
         self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
         self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
-        self.bot_foglio.clicked.connect(self.exportaDb)
+        self.bot_esporta.clicked.connect(self.exportaDb)
+        self.bot_prenota.clicked.connect(self.vaiPrenotaTab)
+        self.bot_annulla.clicked.connect(self.vaiCalendario)
         self.tabWidget.currentChanged.connect(self.retTab)
         self.lineEdit_nome.returnPressed.connect(self.lineEditVerifica)
         self.lineEdit_cognome.returnPressed.connect(self.lineEditVerifica)
@@ -765,6 +767,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             widgetItself.blockSignals(False)
             tot = 5
         self.importAdj(tot)
+
+    def vaiCalendario(self):
+        self.tabWidget.setCurrentIndex(0)
+
+    def vaiPrenotaTab(self):
+        self.tabWidget.setCurrentIndex(1)
 
 
 if __name__ == "__main__":

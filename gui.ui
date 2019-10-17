@@ -47,93 +47,329 @@
                           <item row="1" column="0">
                               <layout class="QHBoxLayout" name="horizontalLayout_26">
                                   <item>
-                                      <widget class="QTableWidget" name="tableWidget_info_ospite">
-                                          <property name="sizePolicy">
-                                              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                                  <horstretch>0</horstretch>
-                                                  <verstretch>0</verstretch>
-                                              </sizepolicy>
-                                          </property>
-                                          <property name="maximumSize">
-                                              <size>
-                                                  <width>300</width>
-                                                  <height>220</height>
-                                              </size>
-                                          </property>
-                                          <property name="focusPolicy">
-                                              <enum>Qt::NoFocus</enum>
-                                          </property>
-                                          <property name="frameShape">
-                                              <enum>QFrame::NoFrame</enum>
-                                          </property>
-                                          <property name="verticalScrollBarPolicy">
-                                              <enum>Qt::ScrollBarAlwaysOff</enum>
-                                          </property>
-                                          <property name="horizontalScrollBarPolicy">
-                                              <enum>Qt::ScrollBarAlwaysOff</enum>
-                                          </property>
-                                          <property name="editTriggers">
-                                              <set>QAbstractItemView::NoEditTriggers</set>
-                                          </property>
-                                          <property name="selectionMode">
-                                              <enum>QAbstractItemView::NoSelection</enum>
-                                          </property>
-                                          <property name="showGrid">
-                                              <bool>false</bool>
-                                          </property>
-                                          <attribute name="horizontalHeaderVisible">
-                                              <bool>false</bool>
-                                          </attribute>
-                                          <attribute name="horizontalHeaderDefaultSectionSize">
-                                              <number>115</number>
-                                          </attribute>
-                                          <attribute name="horizontalHeaderMinimumSectionSize">
-                                              <number>50</number>
-                                          </attribute>
-                                          <attribute name="horizontalHeaderStretchLastSection">
-                                              <bool>false</bool>
-                                          </attribute>
-                                          <row>
-                                              <property name="text">
-                                                  <string>Nome</string>
-                                              </property>
-                                          </row>
-                                          <row>
-                                              <property name="text">
-                                                  <string>Cognome</string>
-                                              </property>
-                                          </row>
-                                          <row>
-                                              <property name="text">
-                                                  <string>#ospiti</string>
-                                              </property>
-                                          </row>
-                                          <row>
-                                              <property name="text">
-                                                  <string>bambini</string>
-                                              </property>
-                                          </row>
-                                          <row>
-                                              <property name="text">
-                                                  <string>privato</string>
-                                              </property>
-                                          </row>
-                                          <row>
-                                              <property name="text">
-                                                  <string>In--&gt;Out</string>
-                                              </property>
-                                          </row>
-                                          <column>
-                                              <property name="text">
-                                                  <string>New Column</string>
-                                              </property>
-                                          </column>
-                                          <column>
-                                              <property name="text">
-                                                  <string>New Column</string>
-                                              </property>
-                                          </column>
-                                      </widget>
+                                      <layout class="QVBoxLayout" name="verticalLayout_16">
+                                          <item>
+                                              <widget class="QLabel" name="label_7">
+                                                  <property name="font">
+                                                      <font>
+                                                          <weight>75</weight>
+                                                          <bold>true</bold>
+                                                      </font>
+                                                  </property>
+                                                  <property name="text">
+                                                      <string>Prenotazione</string>
+                                                  </property>
+                                                  <property name="alignment">
+                                                      <set>Qt::AlignCenter</set>
+                                                  </property>
+                                              </widget>
+                                          </item>
+                                          <item>
+                                              <widget class="QTableWidget" name="tableWidget_info_ospite">
+                                                  <property name="sizePolicy">
+                                                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                          <horstretch>0</horstretch>
+                                                          <verstretch>0</verstretch>
+                                                      </sizepolicy>
+                                                  </property>
+                                                  <property name="maximumSize">
+                                                      <size>
+                                                          <width>300</width>
+                                                          <height>220</height>
+                                                      </size>
+                                                  </property>
+                                                  <property name="focusPolicy">
+                                                      <enum>Qt::NoFocus</enum>
+                                                  </property>
+                                                  <property name="frameShape">
+                                                      <enum>QFrame::NoFrame</enum>
+                                                  </property>
+                                                  <property name="verticalScrollBarPolicy">
+                                                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                                                  </property>
+                                                  <property name="horizontalScrollBarPolicy">
+                                                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                                                  </property>
+                                                  <property name="editTriggers">
+                                                      <set>QAbstractItemView::NoEditTriggers</set>
+                                                  </property>
+                                                  <property name="selectionMode">
+                                                      <enum>QAbstractItemView::NoSelection</enum>
+                                                  </property>
+                                                  <property name="showGrid">
+                                                      <bool>false</bool>
+                                                  </property>
+                                                  <attribute name="horizontalHeaderVisible">
+                                                      <bool>false</bool>
+                                                  </attribute>
+                                                  <attribute name="horizontalHeaderDefaultSectionSize">
+                                                      <number>115</number>
+                                                  </attribute>
+                                                  <attribute name="horizontalHeaderMinimumSectionSize">
+                                                      <number>50</number>
+                                                  </attribute>
+                                                  <attribute name="horizontalHeaderStretchLastSection">
+                                                      <bool>false</bool>
+                                                  </attribute>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>Nome</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>Cognome</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>#ospiti</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>bambini</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>numero notti</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>In--&gt;Out</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string/>
+                                                      </property>
+                                                  </row>
+                                                  <column>
+                                                      <property name="text">
+                                                          <string>New Column</string>
+                                                      </property>
+                                                  </column>
+                                                  <column>
+                                                      <property name="text">
+                                                          <string>New Column</string>
+                                                      </property>
+                                                  </column>
+                                              </widget>
+                                          </item>
+                                      </layout>
+                                  </item>
+                                  <item>
+                                      <layout class="QVBoxLayout" name="verticalLayout_3">
+                                          <item>
+                                              <widget class="QLabel" name="label_2">
+                                                  <property name="font">
+                                                      <font>
+                                                          <weight>75</weight>
+                                                          <bold>true</bold>
+                                                      </font>
+                                                  </property>
+                                                  <property name="text">
+                                                      <string>Statistiche</string>
+                                                  </property>
+                                                  <property name="alignment">
+                                                      <set>Qt::AlignCenter</set>
+                                                  </property>
+                                              </widget>
+                                          </item>
+                                          <item>
+                                              <widget class="QTableWidget" name="tableWidget_stat">
+                                                  <property name="sizePolicy">
+                                                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                          <horstretch>0</horstretch>
+                                                          <verstretch>0</verstretch>
+                                                      </sizepolicy>
+                                                  </property>
+                                                  <property name="maximumSize">
+                                                      <size>
+                                                          <width>300</width>
+                                                          <height>220</height>
+                                                      </size>
+                                                  </property>
+                                                  <property name="palette">
+                                                      <palette>
+                                                          <active>
+                                                              <colorrole role="Midlight">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                              <colorrole role="Window">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                              <colorrole role="AlternateBase">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                          </active>
+                                                          <inactive>
+                                                              <colorrole role="Midlight">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                              <colorrole role="Window">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                              <colorrole role="AlternateBase">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                          </inactive>
+                                                          <disabled>
+                                                              <colorrole role="Midlight">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                              <colorrole role="Window">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                              <colorrole role="AlternateBase">
+                                                                  <brush brushstyle="SolidPattern">
+                                                                      <color alpha="255">
+                                                                          <red>255</red>
+                                                                          <green>255</green>
+                                                                          <blue>255</blue>
+                                                                      </color>
+                                                                  </brush>
+                                                              </colorrole>
+                                                          </disabled>
+                                                      </palette>
+                                                  </property>
+                                                  <property name="focusPolicy">
+                                                      <enum>Qt::NoFocus</enum>
+                                                  </property>
+                                                  <property name="frameShape">
+                                                      <enum>QFrame::NoFrame</enum>
+                                                  </property>
+                                                  <property name="frameShadow">
+                                                      <enum>QFrame::Plain</enum>
+                                                  </property>
+                                                  <property name="verticalScrollBarPolicy">
+                                                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                                                  </property>
+                                                  <property name="horizontalScrollBarPolicy">
+                                                      <enum>Qt::ScrollBarAlwaysOff</enum>
+                                                  </property>
+                                                  <property name="editTriggers">
+                                                      <set>QAbstractItemView::NoEditTriggers</set>
+                                                  </property>
+                                                  <property name="selectionMode">
+                                                      <enum>QAbstractItemView::NoSelection</enum>
+                                                  </property>
+                                                  <property name="showGrid">
+                                                      <bool>false</bool>
+                                                  </property>
+                                                  <property name="cornerButtonEnabled">
+                                                      <bool>false</bool>
+                                                  </property>
+                                                  <attribute name="horizontalHeaderVisible">
+                                                      <bool>false</bool>
+                                                  </attribute>
+                                                  <attribute name="horizontalHeaderDefaultSectionSize">
+                                                      <number>115</number>
+                                                  </attribute>
+                                                  <attribute name="horizontalHeaderMinimumSectionSize">
+                                                      <number>50</number>
+                                                  </attribute>
+                                                  <attribute name="horizontalHeaderStretchLastSection">
+                                                      <bool>false</bool>
+                                                  </attribute>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>3 Notti</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>2 Notti</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>1 Notte</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>Tasse finora</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>Numero Notti</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string>Netto finora</string>
+                                                      </property>
+                                                  </row>
+                                                  <row>
+                                                      <property name="text">
+                                                          <string/>
+                                                      </property>
+                                                  </row>
+                                                  <column>
+                                                      <property name="text">
+                                                          <string>New Column</string>
+                                                      </property>
+                                                  </column>
+                                                  <column>
+                                                      <property name="text">
+                                                          <string>New Column</string>
+                                                      </property>
+                                                  </column>
+                                              </widget>
+                                          </item>
+                                      </layout>
                                   </item>
                                   <item>
                                       <spacer name="horizontalSpacer_15">
@@ -149,101 +385,105 @@
                                       </spacer>
                                   </item>
                                   <item>
-                                      <layout class="QVBoxLayout" name="verticalLayout_11">
-                                          <item>
-                                              <widget class="QLabel" name="label_data">
-                                                  <property name="sizePolicy">
-                                                      <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                                                          <horstretch>0</horstretch>
-                                                          <verstretch>0</verstretch>
-                                                      </sizepolicy>
-                                                  </property>
-                                                  <property name="minimumSize">
-                                                      <size>
-                                                          <width>90</width>
-                                                          <height>0</height>
-                                                      </size>
-                                                  </property>
-                                                  <property name="text">
-                                                      <string/>
-                                                  </property>
-                                              </widget>
-                                          </item>
-                                          <item>
-                                              <widget class="QPushButton" name="bot_foglio">
-                                                  <property name="focusPolicy">
-                                                      <enum>Qt::ClickFocus</enum>
-                                                  </property>
-                                                  <property name="text">
-                                                      <string>foglio elettronico</string>
-                                                  </property>
-                                              </widget>
-                                          </item>
-                                          <item>
-                                              <spacer name="verticalSpacer_6">
-                                                  <property name="orientation">
-                                                      <enum>Qt::Vertical</enum>
-                                                  </property>
-                                                  <property name="sizeType">
-                                                      <enum>QSizePolicy::Preferred</enum>
-                                                  </property>
-                                                  <property name="sizeHint" stdset="0">
-                                                      <size>
-                                                          <width>20</width>
-                                                          <height>40</height>
-                                                      </size>
-                                                  </property>
-                                              </spacer>
-                                          </item>
-                                      </layout>
-                                  </item>
-                                  <item>
                                       <layout class="QVBoxLayout" name="verticalLayout_12">
                                           <item>
-                                              <layout class="QHBoxLayout" name="horizontalLayout">
+                                              <layout class="QVBoxLayout" name="verticalLayout_11">
                                                   <item>
-                                                      <widget class="RedProgressButton" name="bot_spese">
-                                                          <property name="minimumSize">
-                                                              <size>
-                                                                  <width>75</width>
-                                                                  <height>0</height>
-                                                              </size>
-                                                          </property>
-                                                          <property name="maximumSize">
-                                                              <size>
-                                                                  <width>75</width>
-                                                                  <height>16777215</height>
-                                                              </size>
-                                                          </property>
-                                                          <property name="focusPolicy">
-                                                              <enum>Qt::ClickFocus</enum>
-                                                          </property>
-                                                          <property name="text">
-                                                              <string>Spese</string>
-                                                          </property>
-                                                      </widget>
+                                                      <layout class="QHBoxLayout" name="horizontalLayout">
+                                                          <item>
+                                                              <widget class="RedProgressButton" name="bot_spese">
+                                                                  <property name="minimumSize">
+                                                                      <size>
+                                                                          <width>75</width>
+                                                                          <height>0</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="maximumSize">
+                                                                      <size>
+                                                                          <width>75</width>
+                                                                          <height>16777215</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="focusPolicy">
+                                                                      <enum>Qt::ClickFocus</enum>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>Spese</string>
+                                                                  </property>
+                                                              </widget>
+                                                          </item>
+                                                          <item>
+                                                              <widget class="GreenProgressButton" name="bot_note">
+                                                                  <property name="minimumSize">
+                                                                      <size>
+                                                                          <width>75</width>
+                                                                          <height>0</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="maximumSize">
+                                                                      <size>
+                                                                          <width>75</width>
+                                                                          <height>16777215</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="focusPolicy">
+                                                                      <enum>Qt::ClickFocus</enum>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>Note</string>
+                                                                  </property>
+                                                              </widget>
+                                                          </item>
+                                                      </layout>
                                                   </item>
                                                   <item>
-                                                      <widget class="GreenProgressButton" name="bot_note">
-                                                          <property name="minimumSize">
-                                                              <size>
-                                                                  <width>75</width>
-                                                                  <height>0</height>
-                                                              </size>
+                                                      <layout class="QHBoxLayout" name="horizontalLayout_7">
+                                                          <property name="spacing">
+                                                              <number>4</number>
                                                           </property>
-                                                          <property name="maximumSize">
-                                                              <size>
-                                                                  <width>75</width>
-                                                                  <height>16777215</height>
-                                                              </size>
+                                                          <property name="rightMargin">
+                                                              <number>22</number>
                                                           </property>
-                                                          <property name="focusPolicy">
-                                                              <enum>Qt::ClickFocus</enum>
-                                                          </property>
-                                                          <property name="text">
-                                                              <string>Note</string>
-                                                          </property>
-                                                      </widget>
+                                                          <item>
+                                                              <widget class="QLabel" name="label_data">
+                                                                  <property name="sizePolicy">
+                                                                      <sizepolicy hsizetype="Expanding"
+                                                                                  vsizetype="Preferred">
+                                                                          <horstretch>0</horstretch>
+                                                                          <verstretch>0</verstretch>
+                                                                      </sizepolicy>
+                                                                  </property>
+                                                                  <property name="minimumSize">
+                                                                      <size>
+                                                                          <width>90</width>
+                                                                          <height>0</height>
+                                                                      </size>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string/>
+                                                                  </property>
+                                                                  <property name="alignment">
+                                                                      <set>Qt::AlignCenter</set>
+                                                                  </property>
+                                                              </widget>
+                                                          </item>
+                                                          <item>
+                                                              <widget class="QPushButton" name="bot_esporta">
+                                                                  <property name="sizePolicy">
+                                                                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                                          <horstretch>0</horstretch>
+                                                                          <verstretch>0</verstretch>
+                                                                      </sizepolicy>
+                                                                  </property>
+                                                                  <property name="focusPolicy">
+                                                                      <enum>Qt::ClickFocus</enum>
+                                                                  </property>
+                                                                  <property name="text">
+                                                                      <string>Esporta</string>
+                                                                  </property>
+                                                              </widget>
+                                                          </item>
+                                                      </layout>
                                                   </item>
                                               </layout>
                                           </item>
