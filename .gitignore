@@ -1,3 +1,6 @@
+*.ui
+!gui.ui
+!gui_option.ui
 !requirements.txt
 *.pkl
 *.csv
