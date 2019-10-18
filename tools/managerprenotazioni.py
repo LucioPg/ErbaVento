@@ -66,6 +66,8 @@ class ManagerPreno(object):
         # self.platformDict = Od(platformDict)
 
     def checkAval(self, dal, al):
+        # todo aggiungere  (self,INFO, dal, al) per verificare che il nome sia lo stesso
+        # todo invece che semplicemente vuoto ( serve per fare il controllo nelle modifiche)
         """
         controlla la disponibilità delle prenotazioni
         nell'intervallo delle date fornite
@@ -253,35 +255,6 @@ class ManagerPreno(object):
                 break
         self.DataBase = deepc(database)
         self.salvaDatabase(database)
-
-    def setThem_old(self, out=False):
-        """
-        crea una prenotazione e la salva su disco
-        :return:
-        """
-        database = deepc(self.getDb(self._dataIn))
-        databaseOut = deepc(self.getDb(self._dataOut))
-
-        data = self.getData()
-        annoIn = self._dataIn.year()
-        annoOut = self._dataOut.year()
-        if data is None:
-            print("fornire un info model - setThem")
-            return
-        while data < self._dataOut:
-            a, m, g = self.amg(data)
-            if a != annoIn:
-                database = databaseOut
-            database[a][m][g]['checkIn'] = self._info
-            data = data.addDays(1)
-            if data == self._dataOut:
-                # print("giorno stabilito")
-                infoRedux = self.buildInfoRed()
-                a1, m2, g3 = self.amg(data)
-                database[a1][m2][g3]['checkOut'] = deepc(infoRedux)
-                break
-        self.DataBase = deepc(database)
-        self.salvaDatabase(data, database)
 
     def salvaDatabase(self, database):
         """"salva il database su disco

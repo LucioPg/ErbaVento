@@ -4,17 +4,26 @@ from PyQt5.QtWidgets import *
 
 
 class DialogInfo(QDialog):
-    def __init__(self, tipo, parent=None):
+    def __init__(self, tipo, showBool=False, parent=None):
         super(DialogInfo, self).__init__(parent)
         self.tipo = tipo
+        self.showBool = showBool
         self.gui = Gui()
         self.gui.setupUi(Dialog=self)
-        if self.tipo == 'Note':
-            self.gui.label_dialog_info.setText('Note')
-            self.gui.textBrowser_dialog_info.setReadOnly(True)
+        if not self.showBool:
+            if self.tipo == 'Note':
+                self.gui.label_dialog_info.setText('Note')
+                self.gui.textBrowser_dialog_info.setReadOnly(True)
+            else:
+                self.gui.label_dialog_info.setText('Spese')
+                self.gui.textBrowser_dialog_info.setReadOnly(False)
         else:
-            self.gui.label_dialog_info.setText('Spese')
-            self.gui.textBrowser_dialog_info.setReadOnly(False)
+            if self.tipo == 'Note':
+                self.gui.label_dialog_info.setText('Note')
+                self.gui.textBrowser_dialog_info.setReadOnly(False)
+            else:
+                self.gui.label_dialog_info.setText('Spese')
+                self.gui.textBrowser_dialog_info.setReadOnly(False)
         self.show()
 
 

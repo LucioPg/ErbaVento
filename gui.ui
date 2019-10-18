@@ -772,6 +772,13 @@
                                                       </widget>
                                                   </item>
                                                   <item>
+                                                      <widget class="QPushButton" name="bot_rimuoviSpesa">
+                                                          <property name="text">
+                                                              <string>rimuovi spesa</string>
+                                                          </property>
+                                                      </widget>
+                                                  </item>
+                                                  <item>
                                                       <spacer name="verticalSpacer_9">
                                                           <property name="orientation">
                                                               <enum>Qt::Vertical</enum>

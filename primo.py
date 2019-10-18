@@ -3,6 +3,7 @@ from collections import OrderedDict as Od
 from copy import deepcopy as deepc
 from gui import Ui_MainWindow as mainwindow
 from kwidget.mycalendar.mycalend import MyCalend
+from kwidget.dialog_info.dialog_info_main import DialogInfo
 from tools.ExpCsv import ExpCsv as excsv
 from tools.databaseMaker import DbMaker as dbm
 from tools.managerprenotazioni import ManagerPreno as Manager
@@ -76,7 +77,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.datePulizie,
             parent=self.frame_calendar,
         )
-
+        self.spese = {}
         self.database = self.initDatabase()
         cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
         cal_layout.addWidget(self.calendario)
@@ -107,6 +108,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_esporta.clicked.connect(self.exportaDb)
         self.bot_prenota.clicked.connect(self.vaiPrenotaTab)
         self.bot_annulla.clicked.connect(self.vaiCalendario)
+        self.bot_aggiungiSpesa.clicked.connect(self.addSpese)
+        self.bot_spese.MPB_signal.connect(self.speseNoteShow)
+        self.bot_note.MPB_signal.connect(self.speseNoteShow)
         self.tabWidget.currentChanged.connect(self.retTab)
         self.lineEdit_nome.returnPressed.connect(self.lineEditVerifica)
         self.lineEdit_cognome.returnPressed.connect(self.lineEditVerifica)
@@ -121,7 +125,19 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # self.statusbar.setT
 
     def addSpese(self):
-        dialog
+        dialog = DialogInfo('Spese')
+        data = self.dateEdit_dal.date()
+        a, m, g = self.amg(data)
+        spese = self.database[a][m][g]['checkIn']['spese']
+        self.spese[data] = spese
+        spesaIniziale = spese
+        if not spese.endswith('\n'):
+            spese += '\n'
+        if dialog.exec_():
+            spese += dialog.gui.textBrowser_dialog_info.toPlainText()
+            self.database[a][m][g]['checkIn']['spese'] = spese
+        if data not in self.spese.keys():
+            self.spese[data] = spese
         return
 
     def aggiornaInfoData(self):
@@ -335,7 +351,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a['totale notti'] = str(self.dateEdit_dal.date().daysTo(self.dateEdit_al.date()))
         a["numero ospiti"] = str(self.spinBox_ospiti.text())
         a["bambini"] = self.spinBox_bambini.text()
-        a["spese"] = self.addSpese()
+        # a["spese"] = self.addSpese()
         if self.radio_colazione.isChecked():
             a["colazione"] = 'Si'
         else:
@@ -345,6 +361,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a["netto"] = self.lineEdit_netto.text()
         a["tasse"] = self.lineEdit_tax.text()
         a["note"] = self.plainTextEdit_note.toPlainText()
+        try:
+            spese = self.spese[self.dateEdit_dal.date()]
+        except KeyError:
+            data = self.dateEdit_dal.date()
+            an, m, g = self.amg(data)
+            spese = self.database[an][m][g]['checkIn']['spese']
+        a['spese'] = spese
         return a
 
     def checkInfo(self):
@@ -664,8 +687,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_spese.setInfo(info['spese'])
         return statusBot
 
-    def salvaInfo(self):
+    def salvaInfo(self, ):
+        """modo = False # 'senza controllo' # modo = True #'con controllo'
+
+        :return:
+        """
         flag = bool
+        modo = False  # 'senza controllo' # modo = True #'con controllo'
         flag = self.checkInfo()
         if flag:
             info = self.compilaInfo()
@@ -678,8 +706,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             giorniPermanenza = dal.daysTo(al)
             print("(salvaInfo NUOVA) anno: ", anno)
             manager = Manager(info)
+
             listaDisponibili = manager.checkAval(dal, al)
+
             if len(listaDisponibili) == giorniPermanenza:
+                controllo = True
+            if not modo: controllo = False
+            if not controllo:
                 manager.setThem()
                 print("prenotazione effettuata per tutte le date richieste")
                 # self.leggiDatabase(manager.DataBase)
@@ -696,10 +729,19 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             else:
                 self.set_status_msg("Le date selezionate sono occupate")
                 print("date non disponibili")
+                if len(listaDisponibili):
+                    self.dialogDisponibili(listaDisponibili)
         else:
             print('salvataggio fallito')
             self.statusbar.showMessage('salvataggio fallito')
 
+    def dialogDisponibili(self, l):
+        d = DialogInfo('Note', showBool=True)
+        data = ''
+        for g in l:
+            data += g.toString("dd/MM/yyyy") + '\n'
+        d.gui.textBrowser_dialog_info.setText(data)
+        d.exec_()
     def setDateEdit_dal(self):
 
         # todo rimuovere il commento a:
@@ -754,6 +796,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def set_status_msg(self, st=""):
         self.statusbar.showMessage(st)
         return
+
+    def speseNoteShow(self, info):
+        print(info)
+        dialog = DialogInfo(info, showBool=True)
+        a, m, g = self.amg(self.calendario.selectedDate())
+        k = info.lower()
+        text = self.database[a][m][g]['checkIn'][k]
+        dialog.gui.textBrowser_dialog_info.setText(text)
+        dialog.exec_()
 
     def totOspitiAdj(self, p):
         sender = self.sender()
