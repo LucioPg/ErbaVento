@@ -77,8 +77,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.datePulizie,
             parent=self.frame_calendar,
         )
+        self.calendario.currentPageChanged.connect(self.riempiTabellaStat)
         self.spese = {}
         self.database = self.initDatabase()
+        self.infoSta = self.initStatDb()
         cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
         cal_layout.addWidget(self.calendario)
         self.frame_calendar.setLayout(cal_layout)
@@ -410,6 +412,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         giorno = int(data.toString("dd"))
         return anno, mese, giorno
 
+    def dialogDisponibili(self, l):
+        d = DialogInfo('Note', showBool=True)
+        data = ''
+        for g in l:
+            data += g.toString("dd/MM/yyyy") + '\n'
+        d.gui.textBrowser_dialog_info.setText(data)
+        d.exec_()
+
     def exportaDb(self):
         anno = self.giornoCorrente.year()
         db = self.getDatabase()
@@ -532,6 +542,37 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 os.mkdir(csvDir)
         return database
 
+    def initStatDb(self):
+        stat = deepc(self.database)
+        for anno in self.database.keys():
+            for mese in self.database[anno].keys():
+                for giorno in self.database[anno][mese].keys():
+                    statGiornaliere = stat[anno][mese][giorno]
+                    statGiornaliere.pop('checkIn')
+                    statGiornaliere.pop('checkOut')
+                    l = ['3 notti', '2 notti', '1 notte', 'tasse finora', 'netto finora']
+                    for k in l:
+                        if k not in statGiornaliere:
+                            statGiornaliere[k] = 0
+                    chiave = self.database[anno][mese][giorno]['checkIn']
+                    numeroNotti = int(chiave['totale notti'])
+                    if numeroNotti != 0:
+                        print(giorno, mese, anno, numeroNotti, end=' ')
+                        print()
+                    if numeroNotti >= 3:
+                        statGiornaliere['3 notti'] += 1
+                        print(" stat: ", statGiornaliere['3 notti'])
+                    elif numeroNotti == 2:
+                        statGiornaliere['2 notti'] += 1
+                    elif numeroNotti == 1:
+                        statGiornaliere['1 notte'] += 1
+                    tasse = int(chiave['tasse'])
+                    statGiornaliere['tasse finora'] += tasse
+                    netto = int(chiave['netto'])
+                    statGiornaliere['netto finora'] += netto
+
+        return stat
+
     def leggiDatabase(self, database=None):
         """
         legge il database per restituire gli elenchi delle piattaforme
@@ -631,7 +672,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # self.bot_note.setInfo(info['note'])
         # self.bot_spese.setInfo(info['spese'])
 
-    def riempiTabella(self, info):
+    def riempiTabellaPrenotazioni(self, info):
         """
         compila la tabella dal modello infoTemp
         :param info: modello preso dal database
@@ -648,7 +689,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         statusBot[bot] = False
                 except TypeError:
                     pass
-
         nome = info["nome"]
         cognome = info["cognome"]
         telefono = info["telefono"]
@@ -687,7 +727,20 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_spese.setInfo(info['spese'])
         return statusBot
 
-    def salvaInfo(self, ):
+    def riempiTabellaStat(self):
+        # print('mese corrente ',self.calendario.selectedDate().toString('MMM'))
+        data = self.calendario.selectedDate()
+        onPageDate = data.month()
+        stat = {'3 notti': 0, '2 notti': 0, '1 notte': 0, 'tasse finora': 0, 'netto finora': 0}
+        a, m, g = self.amg(data)
+        db = deepc(self.infoSta)
+        try:
+            print('ok')
+            print(db[a][m][g].items())
+        except KeyError:
+            print(db.keys())
+
+    def salvaInfo(self):
         """modo = False # 'senza controllo' # modo = True #'con controllo'
 
         :return:
@@ -706,9 +759,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             giorniPermanenza = dal.daysTo(al)
             print("(salvaInfo NUOVA) anno: ", anno)
             manager = Manager(info)
-
             listaDisponibili = manager.checkAval(dal, al)
-
             if len(listaDisponibili) == giorniPermanenza:
                 controllo = True
             if not modo: controllo = False
@@ -735,13 +786,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             print('salvataggio fallito')
             self.statusbar.showMessage('salvataggio fallito')
 
-    def dialogDisponibili(self, l):
-        d = DialogInfo('Note', showBool=True)
-        data = ''
-        for g in l:
-            data += g.toString("dd/MM/yyyy") + '\n'
-        d.gui.textBrowser_dialog_info.setText(data)
-        d.exec_()
     def setDateEdit_dal(self):
 
         # todo rimuovere il commento a:
@@ -767,7 +811,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def setInfoFromDate(self, info):
         """compila la tabella dal modello infoTemp"""
-        statusBot = self.riempiTabella(info)
+        self.riempiTabellaStat()
+        statusBot = self.riempiTabellaPrenotazioni(info)
         for bot in statusBot.keys():
             if bot == 'note':
                 wid = self.bot_note
