@@ -12,6 +12,10 @@ import inspect
 import os
 import sys
 
+
+# todo modificare il comportamento del tasto salva quando è già presente una prenotazione, usare il tasto modifica
+# todo con la funzione di preservazione delle prenotazioni già presenti
+
 # todo aggiungere voci menu per settaggi vari come tasse, importi e provvigioni
 # todo come anche il settaggio del file database, se conservato in locale
 #  oppure in un server, ma anche poter scegliere se farlo in formato json

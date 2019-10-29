@@ -167,17 +167,17 @@
                                       </layout>
                                   </item>
                                   <item>
-                                      <spacer name="horizontalSpacer_11">
+                                      <widget class="Line" name="line_5">
+                                          <property name="frameShadow">
+                                              <enum>QFrame::Raised</enum>
+                                          </property>
+                                          <property name="lineWidth">
+                                              <number>2</number>
+                                          </property>
                                           <property name="orientation">
-                                              <enum>Qt::Horizontal</enum>
+                                              <enum>Qt::Vertical</enum>
                                           </property>
-                                          <property name="sizeHint" stdset="0">
-                                              <size>
-                                                  <width>40</width>
-                                                  <height>20</height>
-                                              </size>
-                                          </property>
-                                      </spacer>
+                                      </widget>
                                   </item>
                                   <item>
                                       <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -964,11 +964,6 @@
                                                                                   <property name="text">
                                                                                       <string>Lordo</string>
                                                                                   </property>
-                                                                                  <property name="alignment">
-                                                                                      <set>
-                                                                                          Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter
-                                                                                      </set>
-                                                                                  </property>
                                                                                   <property name="buddy">
                                                                                       <cstring>lineEdit_lordo</cstring>
                                                                                   </property>
@@ -1051,11 +1046,6 @@
                                                                                   </property>
                                                                                   <property name="text">
                                                                                       <string>Netto</string>
-                                                                                  </property>
-                                                                                  <property name="alignment">
-                                                                                      <set>
-                                                                                          Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter
-                                                                                      </set>
                                                                                   </property>
                                                                                   <property name="buddy">
                                                                                       <cstring>lineEdit_netto</cstring>
@@ -1223,11 +1213,6 @@
                                                                                   </property>
                                                                                   <property name="text">
                                                                                       <string>Tax</string>
-                                                                                  </property>
-                                                                                  <property name="alignment">
-                                                                                      <set>
-                                                                                          Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter
-                                                                                      </set>
                                                                                   </property>
                                                                                   <property name="buddy">
                                                                                       <cstring>lineEdit_tax</cstring>
