@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
-    <class>Dialog</class>
-    <widget class="QDialog" name="Dialog">
+    <class>Dialog_opt</class>
+    <widget class="QDialog" name="Dialog_opt">
         <property name="windowModality">
             <enum>Qt::WindowModal</enum>
         </property>
@@ -10,8 +10,26 @@
                 <x>0</x>
                 <y>0</y>
                 <width>571</width>
-                <height>360</height>
+                <height>385</height>
             </rect>
+        </property>
+        <property name="sizePolicy">
+            <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+            </sizepolicy>
+        </property>
+        <property name="minimumSize">
+            <size>
+                <width>571</width>
+                <height>385</height>
+            </size>
+        </property>
+        <property name="maximumSize">
+            <size>
+                <width>571</width>
+                <height>385</height>
+            </size>
         </property>
         <property name="windowTitle">
             <string>EvInterface -Configurazione</string>
@@ -42,10 +60,13 @@
             </item>
             <item row="0" column="0" rowspan="5" colspan="2">
                 <widget class="QTabWidget" name="tabWidget">
+                    <property name="enabled">
+                        <bool>true</bool>
+                    </property>
                     <property name="currentIndex">
                         <number>0</number>
                     </property>
-                    <widget class="QWidget" name="tab_2">
+                    <widget class="QWidget" name="tab_struttura">
                         <attribute name="title">
                             <string>Struttura</string>
                         </attribute>
@@ -268,6 +289,77 @@
                                                         </layout>
                                                     </item>
                                                     <item>
+                                                        <widget class="Line" name="line_3">
+                                                            <property name="orientation">
+                                                                <enum>Qt::Horizontal</enum>
+                                                            </property>
+                                                        </widget>
+                                                    </item>
+                                                    <item>
+                                                        <layout class="QHBoxLayout" name="horizontalLayout">
+                                                            <item>
+                                                                <widget class="QLabel" name="label_8">
+                                                                    <property name="sizePolicy">
+                                                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                                            <horstretch>0</horstretch>
+                                                                            <verstretch>0</verstretch>
+                                                                        </sizepolicy>
+                                                                    </property>
+                                                                    <property name="minimumSize">
+                                                                        <size>
+                                                                            <width>81</width>
+                                                                            <height>20</height>
+                                                                        </size>
+                                                                    </property>
+                                                                    <property name="maximumSize">
+                                                                        <size>
+                                                                            <width>81</width>
+                                                                            <height>20</height>
+                                                                        </size>
+                                                                    </property>
+                                                                    <property name="font">
+                                                                        <font>
+                                                                            <weight>75</weight>
+                                                                            <bold>true</bold>
+                                                                        </font>
+                                                                    </property>
+                                                                    <property name="text">
+                                                                        <string>Provvigione:</string>
+                                                                    </property>
+                                                                </widget>
+                                                            </item>
+                                                            <item>
+                                                                <widget class="QDoubleSpinBox"
+                                                                        name="spinbox_provvigione">
+                                                                    <property name="sizePolicy">
+                                                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                                            <horstretch>0</horstretch>
+                                                                            <verstretch>0</verstretch>
+                                                                        </sizepolicy>
+                                                                    </property>
+                                                                    <property name="buttonSymbols">
+                                                                        <enum>QAbstractSpinBox::PlusMinus</enum>
+                                                                    </property>
+                                                                    <property name="suffix">
+                                                                        <string>%</string>
+                                                                    </property>
+                                                                    <property name="minimum">
+                                                                        <double>0.000000000000000</double>
+                                                                    </property>
+                                                                    <property name="maximum">
+                                                                        <double>100.000000000000000</double>
+                                                                    </property>
+                                                                    <property name="singleStep">
+                                                                        <double>1.000000000000000</double>
+                                                                    </property>
+                                                                    <property name="value">
+                                                                        <double>0.000000000000000</double>
+                                                                    </property>
+                                                                </widget>
+                                                            </item>
+                                                        </layout>
+                                                    </item>
+                                                    <item>
                                                         <spacer name="verticalSpacer_4">
                                                             <property name="orientation">
                                                                 <enum>Qt::Vertical</enum>
@@ -423,7 +515,10 @@
                         <zorder>line</zorder>
                         <zorder>line_2</zorder>
                     </widget>
-                    <widget class="QWidget" name="tab">
+                    <widget class="QWidget" name="tab_generale">
+                        <property name="enabled">
+                            <bool>false</bool>
+                        </property>
                         <attribute name="title">
                             <string>Generale</string>
                         </attribute>
@@ -456,7 +551,7 @@
         <connection>
             <sender>buttonBox</sender>
             <signal>accepted()</signal>
-            <receiver>Dialog</receiver>
+            <receiver>Dialog_opt</receiver>
             <slot>accept()</slot>
             <hints>
                 <hint type="sourcelabel">
@@ -472,7 +567,7 @@
         <connection>
             <sender>buttonBox</sender>
             <signal>rejected()</signal>
-            <receiver>Dialog</receiver>
+            <receiver>Dialog_opt</receiver>
             <slot>reject()</slot>
             <hints>
                 <hint type="sourcelabel">
