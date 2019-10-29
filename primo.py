@@ -42,7 +42,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.listeImporti = {'Booking.com': [72, 74, 92, 111, 130],
                              'AirB&B': [64, 65, 85, 100, 117],
                              'Privati': [72, 74, 92, 111, 130]}
-        self.listeProvvigioni = {'Booking.com': 0.18,
+        self.listeProvvigioni = {'Booking.com': 0.15,
                                  'AirB&B': 0.03,
                                  'Privati': 0}
         self.listeTasse = {'Booking.com': False,
