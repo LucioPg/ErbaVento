@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from gui_option import Ui_Dialog as DialogOptionGui
+from gui_option import Ui_Dialog_opt as DialogOptionGui
 import json
 from copy import deepcopy
 from traceback import format_exc as fex
