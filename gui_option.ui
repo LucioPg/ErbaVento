@@ -357,6 +357,89 @@
                                                                     </property>
                                                                 </widget>
                                                             </item>
+                                                            <item>
+                                                                <spacer name="horizontalSpacer">
+                                                                    <property name="orientation">
+                                                                        <enum>Qt::Horizontal</enum>
+                                                                    </property>
+                                                                    <property name="sizeHint" stdset="0">
+                                                                        <size>
+                                                                            <width>40</width>
+                                                                            <height>20</height>
+                                                                        </size>
+                                                                    </property>
+                                                                </spacer>
+                                                            </item>
+                                                        </layout>
+                                                    </item>
+                                                    <item>
+                                                        <layout class="QHBoxLayout" name="horizontalLayout_2">
+                                                            <item>
+                                                                <widget class="QLabel" name="label_9">
+                                                                    <property name="sizePolicy">
+                                                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                                            <horstretch>0</horstretch>
+                                                                            <verstretch>0</verstretch>
+                                                                        </sizepolicy>
+                                                                    </property>
+                                                                    <property name="minimumSize">
+                                                                        <size>
+                                                                            <width>81</width>
+                                                                            <height>20</height>
+                                                                        </size>
+                                                                    </property>
+                                                                    <property name="maximumSize">
+                                                                        <size>
+                                                                            <width>81</width>
+                                                                            <height>20</height>
+                                                                        </size>
+                                                                    </property>
+                                                                    <property name="font">
+                                                                        <font>
+                                                                            <weight>75</weight>
+                                                                            <bold>true</bold>
+                                                                        </font>
+                                                                    </property>
+                                                                    <property name="text">
+                                                                        <string>Tasse:</string>
+                                                                    </property>
+                                                                </widget>
+                                                            </item>
+                                                            <item>
+                                                                <widget class="QDoubleSpinBox" name="spinbox_tasse">
+                                                                    <property name="sizePolicy">
+                                                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                                            <horstretch>0</horstretch>
+                                                                            <verstretch>0</verstretch>
+                                                                        </sizepolicy>
+                                                                    </property>
+                                                                    <property name="buttonSymbols">
+                                                                        <enum>QAbstractSpinBox::PlusMinus</enum>
+                                                                    </property>
+                                                                    <property name="suffix">
+                                                                        <string>€</string>
+                                                                    </property>
+                                                                    <property name="minimum">
+                                                                        <double>0.000000000000000</double>
+                                                                    </property>
+                                                                    <property name="maximum">
+                                                                        <double>100.000000000000000</double>
+                                                                    </property>
+                                                                    <property name="singleStep">
+                                                                        <double>1.000000000000000</double>
+                                                                    </property>
+                                                                    <property name="value">
+                                                                        <double>0.000000000000000</double>
+                                                                    </property>
+                                                                </widget>
+                                                            </item>
+                                                            <item>
+                                                                <widget class="QRadioButton" name="radio_attivaTassa">
+                                                                    <property name="text">
+                                                                        <string>Attiva</string>
+                                                                    </property>
+                                                                </widget>
+                                                            </item>
                                                         </layout>
                                                     </item>
                                                     <item>
@@ -505,19 +588,13 @@
                                 </layout>
                             </item>
                         </layout>
-                        <zorder>tableWidget__importi</zorder>
+                        <zorder></zorder>
+                        <zorder></zorder>
                         <zorder>label</zorder>
-                        <zorder>label_4</zorder>
-                        <zorder></zorder>
-                        <zorder>verticalLayoutWidget</zorder>
-                        <zorder></zorder>
-                        <zorder></zorder>
-                        <zorder>line</zorder>
-                        <zorder>line_2</zorder>
                     </widget>
                     <widget class="QWidget" name="tab_generale">
                         <property name="enabled">
-                            <bool>false</bool>
+                            <bool>true</bool>
                         </property>
                         <attribute name="title">
                             <string>Generale</string>

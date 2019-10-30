@@ -25,6 +25,7 @@ class DbMaker(object):
             "bambini": 0,
         "spese": '',
         "colazione": 'No',
+        "stagione": '',
             "importo": 0,
             "lordo": 0,
             "tasse": 0,
@@ -130,65 +131,6 @@ class DbMaker(object):
                     database[anno][k][v]["checkOut"] = self.infoModelRedux
         return database
 
-    def makeDataBase_old(self, anno=None, info=None):
-        """ crea il database da zero"""
-        if anno is None:
-            if type(self.anno) is int:
-                anno = self.anno
-            else:
-                anno = int(self.anno)
-            database = Od()
-            database[anno] = Od()
-
-            numeroGiorni = self.bisestileCheck(self.anno)
-            for k in numeroGiorni.keys():
-                database[anno][k] = Od()
-                for v in range(1, numeroGiorni[k] + 1):
-                    # database[nome][k][v] = Od()
-                    database[anno][k][v] = Od()
-                    if info is None:
-                        database[anno][k][v]["checkIn"] = self.infoModel
-                        database[anno][k][v]["checkOut"] = self.infoModelRedux
-                    else:
-                        database[anno][k][v]["checkIn"] = info
-                        database[anno][k][v]["checkOut"] = self.infoModelRedux
-        else:
-            if type(anno) is not int:
-
-                # nomeFile = anno + ".pkl"
-                anno = int(anno)
-                database = Od()
-                database[anno] = Od()
-            else:
-
-                # nomeFile = str(anno) + ".pkl"
-                database = Od()
-                database[anno] = Od()
-
-            numeroGiorni = self.bisestileCheck(anno)
-            for k in numeroGiorni.keys():
-                database[anno][k] = Od()
-                for v in range(1, numeroGiorni[k] + 1):
-                    database[anno][k][v] = Od()
-                    if info is None:
-                        database[anno][k][v]["checkIn"] = self.infoModel
-                        database[anno][k][v]["checkOut"] = self.infoModelRedux
-                    else:
-
-                        # c = info.copy()
-                        database[anno][k][v]["checkOut"] = Od()
-                        database[anno][k][v]["checkOut"]["nome"] = database[anno][k][v][
-                            "checkIn"
-                        ]["nome"]
-                        database[anno][k][v]["checkOut"]["cognome"] = database[anno][k][
-                            v
-                        ]["checkIn"]["cognome"]
-                        database[anno][k][v]["checkOut"]["data partenza"] = database[
-                            anno
-                        ][k][v]["checkIn"]["data partenza"]
-        # print("database creato",database)
-        return database
-
     def checkFile(self, shortcut=''):
 
         nome = 'database.pkl'
@@ -230,19 +172,6 @@ class DbMaker(object):
             nome = '../database.pkl'
         else:
             nome = 'database.pkl'
-        with open(nome, "wb") as f:
-            pickle.dump(fileDb, f)
-        print("salvataggio effettuato in: ", nome)
-
-    def salvaDatabase_old(self, anno, fileDb, shortcut=0):
-        """ salva il database per l'anno indicato"""
-        print("sequenza di salvataggio iniziata")
-        if type(anno) is not str:
-            anno = str(anno)
-        if shortcut:
-            nome = '../' + anno + ".pkl"
-        else:
-            nome = anno + ".pkl"
         with open(nome, "wb") as f:
             pickle.dump(fileDb, f)
         print("salvataggio effettuato in: ", nome)

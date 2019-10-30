@@ -1621,28 +1621,60 @@
                                       <layout class="QVBoxLayout" name="verticalLayout_7">
                                           <item>
                                               <layout class="QHBoxLayout" name="horizontalLayout_5">
+                                                  <property name="rightMargin">
+                                                      <number>43</number>
+                                                  </property>
                                                   <item>
-                                                      <widget class="QRadioButton" name="radio_privato">
+                                                      <widget class="QLabel" name="label_11">
+                                                          <property name="font">
+                                                              <font>
+                                                                  <pointsize>16</pointsize>
+                                                              </font>
+                                                          </property>
                                                           <property name="text">
-                                                              <string>Privato</string>
+                                                              <string>Platform :</string>
                                                           </property>
                                                       </widget>
                                                   </item>
                                                   <item>
-                                                      <widget class="QRadioButton" name="radio_booking">
-                                                          <property name="text">
-                                                              <string>Booking.com</string>
+                                                      <widget class="QComboBox" name="combo_platformPrenotazioni"/>
+                                                  </item>
+                                              </layout>
+                                          </item>
+                                          <item>
+                                              <layout class="QHBoxLayout" name="horizontalLayout_11">
+                                                  <property name="rightMargin">
+                                                      <number>43</number>
+                                                  </property>
+                                                  <item>
+                                                      <widget class="QLabel" name="label_14">
+                                                          <property name="font">
+                                                              <font>
+                                                                  <pointsize>16</pointsize>
+                                                              </font>
                                                           </property>
-                                                          <property name="checked">
-                                                              <bool>true</bool>
+                                                          <property name="text">
+                                                              <string>Stagione :</string>
                                                           </property>
                                                       </widget>
                                                   </item>
                                                   <item>
-                                                      <widget class="QRadioButton" name="radio_air">
-                                                          <property name="text">
-                                                              <string>AirB&amp;B</string>
-                                                          </property>
+                                                      <widget class="QComboBox" name="combo_stagionePrenotazioni">
+                                                          <item>
+                                                              <property name="text">
+                                                                  <string>Alta</string>
+                                                              </property>
+                                                          </item>
+                                                          <item>
+                                                              <property name="text">
+                                                                  <string>Media</string>
+                                                              </property>
+                                                          </item>
+                                                          <item>
+                                                              <property name="text">
+                                                                  <string>Bassa</string>
+                                                              </property>
+                                                          </item>
                                                       </widget>
                                                   </item>
                                               </layout>
@@ -1835,9 +1867,6 @@
         <tabstop>lineEdit_cognome</tabstop>
         <tabstop>lineEdit_telefono</tabstop>
         <tabstop>lineEdit_email</tabstop>
-        <tabstop>radio_privato</tabstop>
-        <tabstop>radio_booking</tabstop>
-        <tabstop>radio_air</tabstop>
         <tabstop>dateEdit_dal</tabstop>
         <tabstop>dateEdit_al</tabstop>
         <tabstop>radio_colazione</tabstop>

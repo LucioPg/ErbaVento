@@ -4,6 +4,7 @@ from copy import deepcopy as deepc
 from gui import Ui_MainWindow as mainwindow
 from kwidget.mycalendar.mycalend import MyCalend
 from kwidget.dialog_info.dialog_info_main import DialogInfo
+from kwidget.dialog_opt.dialog_opt import DialogOption
 from tools.ExpCsv import ExpCsv as excsv
 from tools.databaseMaker import DbMaker as dbm
 from tools.managerprenotazioni import ManagerPreno as Manager
@@ -13,10 +14,13 @@ import os
 import sys
 
 
+# todo adeguare gli importi quando si cambia la stagione
+# todo impostare l'ultima stagione selezionata come preferita
+
 # todo modificare il comportamento del tasto salva quando è già presente una prenotazione, usare il tasto modifica
 # todo con la funzione di preservazione delle prenotazioni già presenti
 
-# todo aggiungere voci menu per settaggi vari come tasse, importi e provvigioni
+
 # todo come anche il settaggio del file database, se conservato in locale
 #  oppure in un server, ma anche poter scegliere se farlo in formato json
 # todo aggiungere sistema UNDO
@@ -34,20 +38,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
 
-
+        self.settingsIcon = 'settingsIcon.png'
         self.dateBooking = []
         self.dateAirbb = []
         self.datePrivati = []
         self.datePulizie = []
-        self.listeImporti = {'Booking.com': [72, 74, 92, 111, 130],
-                             'AirB&B': [64, 65, 85, 100, 117],
-                             'Privati': [72, 74, 92, 111, 130]}
-        self.listeProvvigioni = {'Booking.com': 0.15,
-                                 'AirB&B': 0.03,
-                                 'Privati': 0}
-        self.listeTasse = {'Booking.com': False,
-                           'AirB&B': False,
-                           'Privati': False}
+        self.listeImporti = {}
+        self.listeProvvigioni = {}
+        self.listeTasse = {}
+        self.tassa = 0
         d = {
             "nome": "",
             "cognome": "",
@@ -61,6 +60,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             "bambini": 0,
             "spese": '',
             "colazione": 'No',
+            "stagione": '',
             "importo": 0,
             "lordo": 0,
             "tasse": 0,
@@ -83,8 +83,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         )
         self.calendario.currentPageChanged.connect(self.riempiTabellaStat)
         self.spese = {}
+        self.config = self.initConfig()
         self.database = self.initDatabase()
         self.infoSta = self.initStatDb()
+        self.setMenuMain()
+        self.loadConfig()
         cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
         cal_layout.addWidget(self.calendario)
         self.frame_calendar.setLayout(cal_layout)
@@ -105,10 +108,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.spinBox_ospiti.valueChanged.connect(self.totOspitiAdj)
         self.spinBox_bambini.valueChanged.connect(self.totOspitiAdj)
         self.spinBox_importo.valueChanged.connect(self.calcLordoNetto)
-        self.radio_booking.toggled.connect(self.importAdj)
-        self.radio_air.toggled.connect(self.importAdj)
-        self.radio_privato.toggled.connect(self.importAdj)
-        self.radioCorrente = self.radio_booking
+        self.combo_platformPrenotazioni.currentTextChanged.connect(self.importAdj)
+        self.combo_stagionePrenotazioni.currentTextChanged.connect(self.importAdj)
+        # self.radio_booking.toggled.connect(self.importAdj)
+        # self.radio_air.toggled.connect(self.importAdj)
+        # self.radio_privato.toggled.connect(self.importAdj)
+        # self.radioCorrente = self.radio_booking
+
+
         self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
         self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
         self.bot_esporta.clicked.connect(self.exportaDb)
@@ -183,6 +190,28 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         return a, m, g
 
+    def buildListeIPT(self):
+        # self.listeImporti = {'Booking': [72, 74, 92, 111, 130],
+        #                      'AirB&B': [64, 65, 85, 100, 117],
+        #                      'Privati': [72, 74, 92, 111, 130]}
+        # self.listeProvvigioni = {'Booking': 0.15,
+        #                          'AirB&B': 0.03,
+        #                          'Privati': 0}
+        # self.listeTasse = {'Booking': False,
+        #                    'AirB&B': False,
+        #                    'Privati': False}
+        platforms = [p for p in self.config['platforms']]
+        # stagione = self.config['stagione preferita']
+        stagione = self.combo_stagionePrenotazioni.currentText()
+        print('stagione selez: ', stagione)
+        importi = self.config['stagione'][stagione]
+        self.listeImporti = {p: i for p, i in importi.items()}
+        self.listeProvvigioni = {p: prov for p, prov in self.config['provvigioni'].items()}
+        self.listeTasse = {p: t for p, t in self.config['tasse attive'].items()}
+        self.tassa = self.config['tasse']
+
+
+
     def botFuncCheckAval(self):
         dal = self.dateEdit_dal.date()
         al = self.dateEdit_al.date()
@@ -196,7 +225,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         """
         try:
             importo = self.spinBox_importo.value()
-            chiave = self.getPlatformKey()
+            chiave = self.combo_platformPrenotazioni.currentText()
             ospiti = self.spinBox_ospiti.value() + self.spinBox_bambini.value()
             giorni = self.dateEdit_dal.date().daysTo(self.dateEdit_al.date())
             tassa = 0
@@ -235,7 +264,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             permanenza = dal.daysTo(al)
             ospiti = self.spinBox_ospiti.value()
             topay = 3
-            fee = 2
+            fee = self.tassa
             oggi = self.dateEdit_dal.date()
             listaDate = []
             flag = oggi != al
@@ -342,14 +371,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a["cognome"] = self.lineEdit_cognome.text()
         a["telefono"] = self.lineEdit_telefono.text()
         a['email'] = self.lineEdit_email.text()
-        if self.radio_air.isChecked():
-            a["platform"] = "airBB"
-        elif self.radio_booking.isChecked():
-            a["platform"] = "Booking.com"
-        elif self.radio_privato.isChecked():
-            a["platform"] = "privato"
-        else:
-            a["platform"] = "sconosciuta"
+        a["platform"] = self.combo_platformPrenotazioni.currentText()
         # a["data arrivo"] = self.dateEdit_dal.date().toString("dd MMM yyyy")
         a["data arrivo"] = self.dateEdit_dal.date()
         # a["data partenza"] = self.dateEdit_al.date().toString("dd MMM yyyy")
@@ -362,6 +384,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             a["colazione"] = 'Si'
         else:
             a["colazione"] = 'No'
+        a["stagione"] = self.combo_stagionePrenotazioni.currentText()
         a["importo"] = self.spinBox_importo.text()
         a["lordo"] = self.lineEdit_lordo.text()
         a["netto"] = self.lineEdit_netto.text()
@@ -424,6 +447,20 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         d.gui.textBrowser_dialog_info.setText(data)
         d.exec_()
 
+    def dialogOpt(self):
+        try:
+            dialog = DialogOption(self)
+            if dialog.exec_():
+                conf = dialog.config
+
+            self.config = conf
+            self.loadConfig()
+            # todo copiare la variabile self.config
+        except UnboundLocalError:
+            pass
+        except:
+            print(fex())
+
     def exportaDb(self):
         anno = self.giornoCorrente.year()
         db = self.getDatabase()
@@ -473,21 +510,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             info = deepc(self.infoModel)
         return info
 
-    def getPlatformKey(self):
-        """
-        restituisce la chiave per i dizionari con le liste
-        self.listaProvvigioni
-        self.listaImporti
-        :return: chiave -> str
-        """
-        if self.radio_privato.isChecked():
-            chiave = 'Privati'
-        elif self.radio_air.isChecked():
-            chiave = 'AirB&B'
-        elif self.radio_booking.isChecked():
-            chiave = 'Booking.com'
-        return chiave
-
     def get_date(self, d):
         # a = self.calendarWidget.dateTextFormat()
         # self.calendario.set
@@ -500,27 +522,55 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         return self.current_date
 
-    def importAdj(self, p):
-        if type(p) is not int:
-            p = int(p)
-        chiave = self.getPlatformKey()
+    def importAdj(self):
+        if self.sender() is not None:
+            print(self.sender().objectName())
+        totOspiti = self.spinBox_bambini.value() + self.spinBox_ospiti.value()
+        maxOspiti = self.config['numero letti']
+        if totOspiti >= maxOspiti:
+            totOspiti = maxOspiti
+        self.spinBox_ospiti.setMaximum(maxOspiti)
+        self.spinBox_bambini.setMaximum(maxOspiti - self.spinBox_ospiti.value())
+        self.tassa = self.config['tasse']
+        self.calcLordoNetto()
+        indice = totOspiti - 1
+        platform = self.combo_platformPrenotazioni.currentText()
+        self.buildListeIPT()
         try:
+            self.spinBox_importo.setValue(self.listeImporti['importi'][platform][indice])
+            print('value: ', self.listeImporti['importi'][platform][indice])
+        except KeyError:
+            print('self.listeImporti\n \t', self.listeImporti)
+            for v in self.listeImporti.keys():
+                print(len(v))
+            print('err key: ', len(platform))
 
-            sender = self.sender()
-            if sender == self.radioCorrente:
-                return
-            # print("sender importAdj", sender.objectName())
-            if sender.objectName().startswith('radio'):
-                self.radioCorrente = sender
-                p = self.spinBox_bambini.value() + self.spinBox_ospiti.value()
-                if p >= 5:
-                    p = 5
-                self.calcLordoNetto()
-        except:
-            print(fex())
-        indice = p - 1
-        # print("listaImporti: ", self.listeImporti[chiave][indice])
-        self.spinBox_importo.setValue(self.listeImporti[chiave][indice])
+    # def importAdj_old(self, p):
+    #     if type(p) is not int:
+    #         p = int(p)
+    #     chiave = self.getPlatformKey()
+    #     try:
+    #
+    #         sender = self.sender()
+    #         if sender == self.radioCorrente:
+    #             return
+    #         # print("sender importAdj", sender.objectName())
+    #         if sender.objectName().startswith('radio'):
+    #             self.radioCorrente = sender
+    #             p = self.spinBox_bambini.value() + self.spinBox_ospiti.value()
+    #             if p >= 5:
+    #                 p = 5
+    #             self.calcLordoNetto()
+    #     except:
+    #         print(fex())
+    #     indice = p - 1
+    #     # print("listaImporti: ", self.listeImporti[chiave][indice])
+    #     self.spinBox_importo.setValue(self.listeImporti[chiave][indice])
+
+    def initConfig(self):
+        d = DialogOption()
+        config = d.checkConfigFile()
+        return config
 
     def initDatabase(self, anno=None):
         # anno = self.calendario.yearShown()
@@ -606,6 +656,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         else:
             self.sender().nextInFocusChain().setFocus()
 
+    def loadConfig(self):
+        numeroOspiti = self.config['numero letti']
+        self.spinBox_ospiti.setMaximum(numeroOspiti)
+        self.spinBox_bambini.setMaximum(numeroOspiti - 1)
+        self.buildListeIPT()
+        # self.infoModel
+        plats = self.config['platforms']
+        for platform in plats:
+            if platform != '':
+                self.combo_platformPrenotazioni.addItem(platform)
+        self.lineEdit_tax.setText(str(self.config['tasse']))
+
     def periodoCambiato(self, p):
         d = self.dateEdit_dal.date()
         a = self.dateEdit_al.date()
@@ -639,40 +701,52 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # if self.sender() is not None:
         #     sender = self.sender().objectName()
         #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
-        info = deepc(self.infoTemp)
-        self.lineEdit_nome.setText(info['nome'])
-        self.lineEdit_cognome.setText(info['cognome'])
-        self.lineEdit_telefono.setText(info['telefono'])
-        self.lineEdit_email.setText(info['email'])
-        self.spinBox_ospiti.setValue(int(info['numero ospiti']))
-        self.spinBox_bambini.setValue(int(info['bambini']))
-        platform = info['platform']
-        if platform == 'privato':
-            self.radio_privato.setChecked(True)
-        elif platform == 'booking':
-            self.radio_booking.setChecked(True)
-        elif platform == 'airBB':
-            self.radio_air.setChecked(True)
-        else:
-            print(platform)
-        self.plainTextEdit_note.clear()
-        self.plainTextEdit_note.insertPlainText(info['note'])
-        self.radio_colazione.setChecked(info['colazione'] == 'Si')
-        self.importAdj(self.spinBox_bambini.value() + self.spinBox_ospiti.value())
-        dataArrivo = info['data arrivo']
-        dataPartenza = info['data partenza']
-        if (dataArrivo or dataPartenza) is not None:
-            self.dateEdit_dal.blockSignals(True)
-            self.dateEdit_al.blockSignals(True)
-            self.dateEdit_dal.setDate(dataArrivo)
-            self.dateEdit_al.setDate(dataPartenza)
-            self.dateEdit_dal.blockSignals(False)
-            self.dateEdit_al.blockSignals(False)
-            self.lineEdit_numeroGiorni.setText(info['totale notti'])
-        else:
-            # print("else: setDateEdit_dal")
-            self.setDateEdit_dal()
-            # self.dateEdit_al.setDate(dataPartenza)
+        try:
+            info = deepc(self.infoTemp)
+            self.lineEdit_nome.setText(info['nome'])
+            self.lineEdit_cognome.setText(info['cognome'])
+            self.lineEdit_telefono.setText(info['telefono'])
+            self.lineEdit_email.setText(info['email'])
+            self.spinBox_ospiti.setValue(int(info['numero ospiti']))
+            self.spinBox_bambini.setValue(int(info['bambini']))
+            platform = info['platform']
+            if platform != '':
+                indiceCombo = self.combo_platformPrenotazioni.findText(platform)
+            else:
+                indiceCombo = 0
+            self.combo_platformPrenotazioni.setCurrentIndex(indiceCombo)
+            print('indice Combo: ', indiceCombo)
+            print('platform: ', platform)
+            # try:
+            #
+            # except:
+            #     print(fex())
+            self.plainTextEdit_note.clear()
+            self.plainTextEdit_note.insertPlainText(info['note'])
+            self.radio_colazione.setChecked(info['colazione'] == 'Si')
+            # self.importAdj(self.spinBox_bambini.value() + self.spinBox_ospiti.value())
+            stagione = info['stagione']
+            indiceComboStagione = self.combo_stagionePrenotazioni.findText(stagione)
+            if indiceComboStagione == -1:
+                indiceComboStagione = self.combo_stagionePrenotazioni.findText(self.config['stagione preferita'])
+            self.combo_stagionePrenotazioni.setCurrentIndex(indiceComboStagione)
+            self.importAdj()
+            dataArrivo = info['data arrivo']
+            dataPartenza = info['data partenza']
+            if (dataArrivo or dataPartenza) is not None:
+                self.dateEdit_dal.blockSignals(True)
+                self.dateEdit_al.blockSignals(True)
+                self.dateEdit_dal.setDate(dataArrivo)
+                self.dateEdit_al.setDate(dataPartenza)
+                self.dateEdit_dal.blockSignals(False)
+                self.dateEdit_al.blockSignals(False)
+                self.lineEdit_numeroGiorni.setText(info['totale notti'])
+            else:
+                # print("else: setDateEdit_dal")
+                self.setDateEdit_dal()
+                # self.dateEdit_al.setDate(dataPartenza)
+        except:
+            print(fex())
         # self.bot_note.setInfo(info['note'])
         # self.bot_spese.setInfo(info['spese'])
 
@@ -836,6 +910,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.current_date_label = data.toString("ddd dd/MM/yyyy")
         self.label_data.setText(self.current_date_label)
 
+    def setMenuMain(self):
+        optionMenuAction = QtWidgets.QAction(QtGui.QIcon(self.settingsIcon), 'opzioni', self)
+        optionMenuAction.setShortcut('Ctrl+O')
+        optionMenuAction.setStatusTip('Apre le impostazioni')
+        optionMenuAction.triggered.connect(self.dialogOpt)
+        self.menuMenu.addAction(optionMenuAction)
+
     def setProgressbutton(self, bot, status):
         try:
             bot.setActive(status)
@@ -856,26 +937,26 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         dialog.exec_()
 
     def totOspitiAdj(self, p):
-        sender = self.sender()
-        widget = sender.objectName()
-        widgetItself = None
-        # print("valore ", p)
-        if widget == 'spinBox_ospiti':
-            # print("sender spinBox_ospiti")
-            other = self.spinBox_bambini.value()
-            widgetItself = self.spinBox_ospiti
-        else:
-            # print("sender spinBox_bambini")
-            other = self.spinBox_ospiti.value()
-            widgetItself = self.spinBox_bambini
-        tot = p + other
-        if tot == EvInterface.MAXOSPITI + 1:
-            # print(tot)
-            widgetItself.blockSignals(True)
-            widgetItself.setValue(p - 1)
-            widgetItself.blockSignals(False)
-            tot = 5
-        self.importAdj(tot)
+        # sender = self.sender()
+        # widget = sender.objectName()
+        # widgetItself = None
+        # # print("valore ", p)
+        # if widget == 'spinBox_ospiti':
+        #     # print("sender spinBox_ospiti")
+        #     other = self.spinBox_bambini.value()
+        #     widgetItself = self.spinBox_ospiti
+        # else:
+        #     # print("sender spinBox_bambini")
+        #     other = self.spinBox_ospiti.value()
+        #     widgetItself = self.spinBox_bambini
+        # tot = p + other
+        # if tot == EvInterface.MAXOSPITI + 1:
+        #     # print(tot)
+        #     widgetItself.blockSignals(True)
+        #     widgetItself.setValue(p - 1)
+        #     widgetItself.blockSignals(False)
+        #     tot = 5
+        self.importAdj()
 
     def vaiCalendario(self):
         self.tabWidget.setCurrentIndex(0)

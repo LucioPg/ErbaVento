@@ -58,9 +58,9 @@ class ManagerPreno(object):
         self.datePrivati = []
         self.datePulizie = []
         self.platformDict = {
-            'booking': self.dateBooking,
-            'airbb': self.dateAirbb,
-            'privati': self.datePrivati,
+            'Booking': self.dateBooking,
+            'AirB&B': self.dateAirbb,
+            'Privati': self.datePrivati,
             'pulizie': self.datePulizie
         }
         # self.platformDict = Od(platformDict)
@@ -126,35 +126,6 @@ class ManagerPreno(object):
     def setPlatformDict(self):
         self.platformDict
 
-    def platformPulizie_old(self):
-        # todo evitare di caricare le date passate?
-        self.dateBooking.clear()
-        self.dateAirbb.clear()
-        self.datePrivati.clear()
-        self.datePulizie.clear()
-        a, m, g = self.amg(self._dataIn)
-        partenza = self.DataBase[a][m][g]["checkIn"]['data partenza']
-        for anno in self.DataBase.keys():
-            for mese in self.DataBase[anno].keys():
-                for giorno in self.DataBase[anno][mese].keys():
-                    data = QtCore.QDate(anno, mese, giorno)
-                    plat = self.DataBase[anno][mese][giorno]["checkIn"]["platform"]
-                    pulizie = self.DataBase[anno][mese][giorno]["checkOut"]['data partenza']
-                    if plat == "Booking.com":
-                        if data not in self.dateBooking:
-                            self.dateBooking.append(data)
-                    elif plat == "airBB":
-                        if data not in self.dateAirbb:
-                            self.dateAirbb.append(data)
-                    elif plat == 'privato':
-                        if data not in self.datePrivati:
-                            self.datePrivati.append(data)
-                    if pulizie != '':
-                        if pulizie not in self.datePulizie:
-                            self.datePulizie.append(pulizie)
-
-        return self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
-
     def platformPulizie(self, db=None):
         if db is None:
             db = self.DataBase
@@ -172,13 +143,13 @@ class ManagerPreno(object):
                     data = QtCore.QDate(anno, mese, giorno)
                     plat = db[anno][mese][giorno]["checkIn"]["platform"]
                     pulizie = db[anno][mese][giorno]["checkOut"]['data partenza']
-                    if plat == "Booking.com":
+                    if plat == "Booking":
                         if data not in self.dateBooking:
                             self.dateBooking.append(data)
-                    elif plat == "airBB":
+                    elif plat == "AirB&B":
                         if data not in self.dateAirbb:
                             self.dateAirbb.append(data)
-                    elif plat == 'privato':
+                    elif plat == 'Privati':
                         if data not in self.datePrivati:
                             self.datePrivati.append(data)
                     if pulizie != '':
