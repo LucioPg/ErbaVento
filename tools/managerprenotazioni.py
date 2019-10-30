@@ -53,6 +53,8 @@ class ManagerPreno(object):
         self.DataBase = deepc(self.getDb())
         self.counter = 0
         # self.DataBase = Od()
+        datePren = {'platforms': {}}
+        self.datePrenotazioni = Od(datePren)
         self.dateBooking = []
         self.dateAirbb = []
         self.datePrivati = []
@@ -132,10 +134,7 @@ class ManagerPreno(object):
 
         # todo evitare di caricare le date passate?
         # print(os.getcwdb())
-        self.dateBooking.clear()
-        self.dateAirbb.clear()
-        self.datePrivati.clear()
-        self.datePulizie.clear()
+        self.datePrenotazioni.clear()
         # a, m, g = self.amg(self._dataIn)
         for anno in db.keys():
             for mese in db[anno].keys():
@@ -143,20 +142,38 @@ class ManagerPreno(object):
                     data = QtCore.QDate(anno, mese, giorno)
                     plat = db[anno][mese][giorno]["checkIn"]["platform"]
                     pulizie = db[anno][mese][giorno]["checkOut"]['data partenza']
-                    if plat == "Booking":
-                        if data not in self.dateBooking:
-                            self.dateBooking.append(data)
-                    elif plat == "AirB&B":
-                        if data not in self.dateAirbb:
-                            self.dateAirbb.append(data)
-                    elif plat == 'Privati':
-                        if data not in self.datePrivati:
-                            self.datePrivati.append(data)
+                    if 'platforms' not in self.datePrenotazioni:
+                        self.datePrenotazioni['platforms'] = Od()
+                    if plat != '':
+
+                        if plat not in self.datePrenotazioni['platforms']:
+
+                            dat = {'date': [data]}
+                            self.datePrenotazioni['platforms'][plat] = Od(dat)
+                            self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor
+                        else:
+                            print("PLAT: ", plat, "##")
+                            self.datePrenotazioni['platforms'][plat]['date'].append(data)
+                    # if plat == "Booking":
+                    #     if data not in self.dateBooking:
+                    #         self.dateBooking.append(data)
+                    # elif plat == "AirB&B":
+                    #     if data not in self.dateAirbb:
+                    #         self.dateAirbb.append(data)
+                    # elif plat == 'Privati':
+                    #     if data not in self.datePrivati:
+                    #         self.datePrivati.append(data)
                     if pulizie != '':
                         if pulizie not in self.datePulizie:
                             self.datePulizie.append(pulizie)
 
-        return self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
+        return self.datePrenotazioni, self.datePulizie
+
+    def openColorDialog(self):
+        color = QtWidgets.QColorDialog.getColor()
+        if color.isValid():
+            print(color.name())
+            return color
 
     def canc(self):
         """
@@ -235,28 +252,6 @@ class ManagerPreno(object):
             dbm.salvaDatabase(database, shortcut=1)
         else:
             dbm.salvaDatabase(database)
-
-    def salvaDatabase_old(self, data, database):
-        """"salva il database su disco
-        """
-        dbm = DBM(self._dataIn)
-        dbmOut = DBM(self._dataOut)
-        if self.shortcut:
-            databaseIn = dbm.checkFile(self._dataIn.year(), shortcut='1')
-            databaseOut = dbmOut.checkFile(self._dataOut.year(), shortcut='1')
-            if self._dataIn.year() != self._dataOut.year():
-                dbm.salvaDatabase(databaseIn, shortcut=1)
-                dbmOut.salvaDatabase(databaseOut, shortcut=1)
-            else:
-                dbm.salvaDatabase(database, shortcut=1)
-        else:
-            databaseIn = deepc(self.DataBase)
-            databaseOut = dbmOut.checkFile(self._dataOut.year())
-            if self._dataIn.year() != self._dataOut.year():
-                dbm.salvaDatabase(databaseIn)
-                dbmOut.salvaDatabase(databaseOut)
-            else:
-                dbm.salvaDatabase(databaseIn)
 
     def freethem(self):
         """

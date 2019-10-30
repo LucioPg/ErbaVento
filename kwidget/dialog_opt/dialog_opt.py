@@ -12,10 +12,10 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     defaultTasseAttive = {'Booking': False,
                           'AirB&B': False,
                           'Privati': False}
-    defaultPlatforms = ['Booking',
-                        'AirB&B',
-                        'Privati'
-                        ]
+    defaultPlatforms = {'Booking': QtGui.QColor(QtCore.Qt.cyan).name(),
+                        'AirB&B': QtGui.QColor(QtCore.Qt.darkRed).name(),
+                        'Privati': QtGui.QColor(QtCore.Qt.darkGreen).name()
+                        }
     defaultImporti = {'Booking': [72, 74, 92, 111, 130],
                       'AirB&B': [64, 65, 85, 100, 117],
                       'Privati': [72, 74, 92, 111, 130]}

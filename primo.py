@@ -47,6 +47,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.listeProvvigioni = {}
         self.listeTasse = {}
         self.tassa = 0
+        datePren = {'platforms': {}}
+        self.datePrenotazioni = Od(datePren)
         d = {
             "nome": "",
             "cognome": "",
@@ -75,12 +77,17 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.setupUi(self)
         self.statusbar.showMessage("Ready!!!!")
         self.calendario = MyCalend(
-            self.dateAirbb,
-            self.dateBooking,
-            self.datePrivati,
+            self.datePrenotazioni,
             self.datePulizie,
             parent=self.frame_calendar,
         )
+        # self.calendario = MyCalend(
+        #     self.dateAirbb,
+        #     self.dateBooking,
+        #     self.datePrivati,
+        #     self.datePulizie,
+        #     parent=self.frame_calendar,
+        # )
         self.calendario.currentPageChanged.connect(self.riempiTabellaStat)
         self.spese = {}
         self.config = self.initConfig()
@@ -538,7 +545,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.buildListeIPT()
         try:
             self.spinBox_importo.setValue(self.listeImporti['importi'][platform][indice])
-            print('value: ', self.listeImporti['importi'][platform][indice])
+            # print('value: ', self.listeImporti['importi'][platform][indice])
         except KeyError:
             print('self.listeImporti\n \t', self.listeImporti)
             for v in self.listeImporti.keys():
@@ -628,29 +635,32 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return stat
 
     def leggiDatabase(self, database=None):
-        """
-        legge il database per restituire gli elenchi delle piattaforme
-        (booking, airbb, privati, pulizie)
-        per stilizzare il calendario
-        :param database:
-        :return:
-        """
-        self.dateBooking.clear()
-        self.dateAirbb.clear()
-        self.datePrivati.clear()
-        self.datePulizie.clear()
+        # """
+        # legge il database per restituire gli elenchi delle piattaforme
+        # (booking, airbb, privati, pulizie)
+        # per stilizzare il calendario
+        # :param database:
+        # :return:
+        # """
+        # self.dateBooking.clear()
+        # self.dateAirbb.clear()
+        # self.datePrivati.clear()
+        # self.datePulizie.clear()
         # old
         # db = Manager(self.infoTemp)
 
         db = Manager()
-        self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie = db.platformPulizie(database)
-        self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
+        self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
+        print('----  ', self.datePrenotazioni.values())
+        self.addColors()
+        # self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
+        self.calendario.setDates(self.datePrenotazioni, self.datePulizie)
         # return  self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
 
     @QtCore.pyqtSlot()
     def lineEditVerifica(self):
         # print('Hola ',self.bot.text())
-        print('ciao ', self.sender().text())
+        # print('ciao ', self.sender().text())
         if not self.sender().selector(self.sender().text()):
             self.sender().clear()
         else:
@@ -663,10 +673,22 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.buildListeIPT()
         # self.infoModel
         plats = self.config['platforms']
-        for platform in plats:
+        for platform in plats.keys():
             if platform != '':
                 self.combo_platformPrenotazioni.addItem(platform)
         self.lineEdit_tax.setText(str(self.config['tasse']))
+
+    def addColors(self):
+        for p, c in self.config['platforms'].items():
+            color = c
+            plat = p
+            try:
+                self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor(color)
+            except KeyError:
+                print('self.datePrenotazioni ', self.datePrenotazioni)
+                # self.close()
+
+
 
     def periodoCambiato(self, p):
         d = self.dateEdit_dal.date()
