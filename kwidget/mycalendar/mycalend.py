@@ -54,7 +54,7 @@ class MyCalend(QtWidgets.QCalendarWidget):
                 if date in self.datePrenotazioni['platforms'][plat]['date']:
                     # painter.fillRect(rect, QtGui.QColor(QtCore.Qt.cyan))
                     painter.fillRect(rect, self.datePrenotazioni['platforms'][plat]['colore'])
-                    print('colore: ', self.datePrenotazioni['platforms'][plat]['colore'].name())
+                    # print('colore: ', self.datePrenotazioni['platforms'][plat]['colore'].name())
 
                 if date in self.pulizieList:
                     painter.drawRect(rect.adjusted(0, 0, -1, -1))

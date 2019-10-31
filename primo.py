@@ -520,7 +520,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def get_date(self, d):
         # a = self.calendarWidget.dateTextFormat()
         # self.calendario.set
-        self.setLabel_data(d)
+        self.setLabel_stagione(d)
         self.current_date = d
         if self.lastMonth != self.current_date.month():
             self.lastMonth = self.current_date.month()
@@ -682,8 +682,40 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         for p, c in self.config['platforms'].items():
             color = c
             plat = p
+            print('addcolor: ', color)
+
+            def parseColor(col):
+                rgb = []
+                coppia = ''
+                rec = ''
+                rec = col[1:]
+                print('rec: ', rec)
+                r = int(rec[:2], 16)
+                g = int(rec[2:4], 16)
+                b = int(rec[4:6], 16)
+                rgb = [r, g, b]
+                # for v in rgb:
+                #     print(v, end='')
+                # print()
+                return rgb, rec
             try:
-                self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor(color)
+                if color.startswith('#'):
+                    col, rec = parseColor(color)
+                    trueColor = QtGui.QColor.fromRgba(int(rec, 16))
+                else:
+                    trueColor = QtGui.QColor(color)
+                # print('trueColor: ',trueColor)
+                # print('c: ',c)
+                colorTest = QtCore.Qt.GlobalColor(0)
+                self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor(colorTest)
+                for i in range(50):
+                    try:
+                        uff = QtCore.Qt.GlobalColor(i)
+                    except:
+                        print(fex())
+                # colorTest = QtCore.Qt.GlobalColor(5)
+                # print('colortest: ', colorTest)
+                # self.datePrenotazioni['platforms'][plat]['colore'] = trueColor
             except KeyError:
                 print('self.datePrenotazioni ', self.datePrenotazioni)
                 # self.close()
@@ -899,14 +931,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         anno = data.year()
         if anno < 2018 or anno > 2028:
             return
-        self.dateEdit_dal.blockSignals(False)
-        self.dateEdit_al.blockSignals(False)
         self.dateEdit_dal.setMinimumDate(QtCore.QDate(2018, 1, 1))
         self.dateEdit_dal.setDate(data)
         self.dateEdit_al.setDate(domani)
         self.dateEdit_al.setMinimumDate(domani)
-        self.dateEdit_dal.blockSignals(False)
-        self.dateEdit_al.blockSignals(False)
         print(f"dal {data.toString('dd-MMM-yyyy')} al {domani.toString('dd-MMM-yyyy')}")
 
     def setInfoFromDate(self, info):
@@ -928,9 +956,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.infoTemp = deepc(info)
         return self.infoTemp
 
-    def setLabel_data(self, data):
-        self.current_date_label = data.toString("ddd dd/MM/yyyy")
-        self.label_data.setText(self.current_date_label)
+    def setLabel_stagione(self, data):
+        a, m, g = self.amg(data)
+        stagione = self.database[a][m][g]['checkIn']['stagione']
+        self.label_stagione.setText(stagione)
+        print('stagione lab ', stagione)
 
     def setMenuMain(self):
         optionMenuAction = QtWidgets.QAction(QtGui.QIcon(self.settingsIcon), 'opzioni', self)

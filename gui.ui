@@ -464,7 +464,7 @@
                                                               <number>22</number>
                                                           </property>
                                                           <item>
-                                                              <widget class="QLabel" name="label_data">
+                                                              <widget class="QLabel" name="label_stagione">
                                                                   <property name="sizePolicy">
                                                                       <sizepolicy hsizetype="Expanding"
                                                                                   vsizetype="Preferred">
@@ -477,6 +477,9 @@
                                                                           <width>90</width>
                                                                           <height>0</height>
                                                                       </size>
+                                                                  </property>
+                                                                  <property name="styleSheet">
+                                                                      <string notr="true"/>
                                                                   </property>
                                                                   <property name="text">
                                                                       <string/>

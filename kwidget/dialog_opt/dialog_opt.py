@@ -1,5 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from gui_option import Ui_Dialog_opt as DialogOptionGui
+from kwidget.basiccolorselector.mybcolors import MyBcolors
 import json
 from copy import deepcopy
 from traceback import format_exc as fex
@@ -87,6 +88,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         self.bot_aggiungiLetto.clicked.connect(self.aggiungiLetto)
         self.bot_sottraiLetto.clicked.connect(self.sottraiLetto)
         self.buttonBox.accepted.connect(self.saveConfigBot)
+        self.bot_scegliColore.clicked.connect(self.chooseColor)
 
         # funzioni comboBoxes
         self.combo_platform.currentTextChanged.connect(self.displayImporti)
@@ -151,6 +153,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                 if flagNuvoImporto:
                     self.setNuovoImporto()
             self.setProvvigione()
+            self.setColor()
         except:
             print(fex())
 
@@ -163,6 +166,39 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         platform = self.combo_platform.currentText()
         return stagione, platform
 
+    def chooseColor(self):
+        try:
+            plat = self.combo_platform.currentText()
+            coloreAttuale = self.config['platforms'][plat]
+            colorForm = MyBcolors(plat, deepcopy(self.config['platforms']))
+            colorForm.exec_()
+            # if colorForm.accepted():
+            print(colorForm.platColors)
+            self.config['platforms'] = colorForm.platColors
+            self.setColor()
+            # colorForm.close()
+            # else:
+            #     print('not accepted', colorForm.accepted())
+
+        except:
+            print(fex())
+
+    def setColor(self):
+        def setMyStyleSheet(color):
+            a = """QPushButton{border:0px;
+                                    background-color: """
+            b = """QPushButton::pressed{
+                                    background-color: rgb(255, 255, 255);}"""
+            mystyleSheet = a + color + '}' + b
+            # print(mystyleSheet)
+            return mystyleSheet
+
+        plat = self.combo_platform.currentText()
+        color = self.config['platforms'][plat]
+        styleSheet = setMyStyleSheet(color)
+        self.bot_scegliColore.setStyleSheet(styleSheet)
+
+
     def loadConfig(self):
         if self.checkConfigFile() is not None:
             self.spinbox_provvigione.setSingleStep(0.5)
@@ -172,6 +208,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             self.setProvvigione()
             self.setTasse(self.config['tasse'])
             self.combo_stagione.setCurrentIndex(self.combo_stagione.findText(self.config['stagione preferita']))
+            self.setColor()
 
     def on_context_menu(self, point):
         # show context menu
