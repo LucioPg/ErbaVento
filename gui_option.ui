@@ -562,7 +562,7 @@
                                                                         </size>
                                                                     </property>
                                                                     <property name="styleSheet">
-                                                                        <string notr="true">QPushButton{border:0px}
+                                                                        <string notr="true">
                                                                         </string>
                                                                     </property>
                                                                     <property name="text">

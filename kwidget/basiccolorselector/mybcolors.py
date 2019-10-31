@@ -2,6 +2,11 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from kwidget.basiccolorselector.gui_basiccolorselector import Ui_Form_colorSelector as Form
 
 
+class MyBcolors_2(Form, QtWidgets.QColorDialog):
+    def __init__(self, platform, platColors, parent=None):
+        super(MyBcolors_2, self).__init__(parent)
+
+
 class MyBcolors(Form, QtWidgets.QDialog):
     def __init__(self, platform, platColors, parent=None):
         super(MyBcolors, self).__init__(parent)

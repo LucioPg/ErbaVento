@@ -1,12 +1,14 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from gui_option import Ui_Dialog_opt as DialogOptionGui
 from kwidget.basiccolorselector.mybcolors import MyBcolors
+from kwidget.basiccolorselector.mybcolors import MyBcolors_2
 import json
 from copy import deepcopy
 from traceback import format_exc as fex
 import os
 
 
+# todo sistemare il radio_button per le tasse attive
 class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     fileConf = 'config.json'
     defaultTasse = 1
@@ -44,31 +46,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(DialogOption, self).__init__(parent)
         self.setupUi(self)
-        # self.fileConf = '../../config.json'
-        # self.defaultPlatforms = ['Booking',
-        #                          'AirB&B',
-        #                          'Privati'
-        #                          ]
-        # self.defaultImporti = {'Booking': [72, 74, 92, 111, 130],
-        #                        'AirB&B': [64, 65, 85, 100, 117],
-        #                        'Privati': [72, 74, 92, 111, 130]}
-        # self.defaultProvvigioni = {'Booking': 0.15, 'AirB&B': 0.03, 'Privati': 0}
-        # self.config = {}
-        # self.defaultConfig = {'numero letti': 5,
-        #                       'platforms': self.defaultPlatforms,
-        #                       'stagione': {
-        #                           'Alta': {
-        #                                             'importi': self.defaultImporti
-        #                                    },
-        #                           'Bassa': {
-        #                                              'importi': self.defaultImporti
-        #                                     },
-        #                           'Media': {
-        #                                              'importi': self.defaultImporti
-        #                                     }
-        #                           },
-        #                       'provvigioni': {pl: prov for pl, prov in self.defaultProvvigioni.items()}
-        #                       }
+
         self.checkConfigFile()
         self.loadConfig()
 
@@ -169,13 +147,31 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     def chooseColor(self):
         try:
             plat = self.combo_platform.currentText()
-            coloreAttuale = self.config['platforms'][plat]
-            colorForm = MyBcolors(plat, deepcopy(self.config['platforms']))
-            colorForm.exec_()
+            coloriPresenti = [presente for presente in self.config['platforms'].values()]
+            print('colori presenti: ', coloriPresenti)
+            colorForm = MyBcolors_2(plat, deepcopy(self.config['platforms']))
+            # colorForm = MyBcolors(plat, deepcopy(self.config['platforms']))
+            col = QtWidgets.QColorDialog.getColor()
+            print('colore scelto: ', col.name())
+
+            if col.isValid():
+                if col.name() not in coloriPresenti:
+                    self.bot_scegliColore.setStyleSheet("QPushButton { background-color: %s }"
+                                                        % col.name())
+                    self.config['platforms'][plat] = col.name()
+                else:
+                    msg = QtWidgets.QMessageBox()
+                    msg.setText('Il colore selezionato è già stato attribuito')
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("Attenzione!")
+                    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                    msg.exec_()
+                    return self.chooseColor()
             # if colorForm.accepted():
-            print(colorForm.platColors)
-            self.config['platforms'] = colorForm.platColors
-            self.setColor()
+            # print(colorForm.platColors)
+            # self.config['platforms'] = colorForm.platColors
+            # colorForm.currentColorChanged.connect(self.stampa)
+            # self.setColor()
             # colorForm.close()
             # else:
             #     print('not accepted', colorForm.accepted())
@@ -183,20 +179,13 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         except:
             print(fex())
 
+    def stampa(self, cosa):
+        print(cosa)
     def setColor(self):
-        def setMyStyleSheet(color):
-            a = """QPushButton{border:0px;
-                                    background-color: """
-            b = """QPushButton::pressed{
-                                    background-color: rgb(255, 255, 255);}"""
-            mystyleSheet = a + color + '}' + b
-            # print(mystyleSheet)
-            return mystyleSheet
-
         plat = self.combo_platform.currentText()
         color = self.config['platforms'][plat]
-        styleSheet = setMyStyleSheet(color)
-        self.bot_scegliColore.setStyleSheet(styleSheet)
+        self.bot_scegliColore.setStyleSheet("QPushButton { background-color: %s }"
+                                            % QtGui.QColor(color).name())
 
 
     def loadConfig(self):

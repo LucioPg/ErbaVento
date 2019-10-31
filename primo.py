@@ -464,6 +464,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
             self.config = conf
             self.loadConfig()
+            self.leggiDatabase()
             # todo copiare la variabile self.config
         except UnboundLocalError:
             pass
