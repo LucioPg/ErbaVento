@@ -82,8 +82,9 @@ class MyCalend(QtWidgets.QCalendarWidget):
             #         painter.drawRect(rect.adjusted(0, 0, -1, -1))
             if date in self.listeDate:
                 plat = self.listeDate[date]
-                colore = self.colors[plat]
-                painter.fillRect(rect, QtGui.QColor(colore))
+                colore = QtGui.QColor(self.colors[plat])
+                colore.setAlpha(150)
+                painter.fillRect(rect, colore)
             if date in self.pulizieList:
                 painter.drawRect(rect.adjusted(0, 0, -1, -1))
 
