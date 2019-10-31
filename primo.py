@@ -683,50 +683,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.combo_platformPrenotazioni.addItem(platform)
         self.lineEdit_tax.setText(str(self.config['tasse']))
 
-    def addColors(self):
-        for p, c in self.config['platforms'].items():
-            color = c
-            plat = p
-            print('addcolor: ', color)
-
-            def parseColor(col):
-                rgb = []
-                coppia = ''
-                rec = ''
-                rec = col[1:]
-                print('rec: ', rec)
-                r = int(rec[:2], 16)
-                g = int(rec[2:4], 16)
-                b = int(rec[4:6], 16)
-                rgb = [r, g, b]
-                # for v in rgb:
-                #     print(v, end='')
-                # print()
-                return rgb, rec
-            try:
-                if color.startswith('#'):
-                    col, rec = parseColor(color)
-                    trueColor = QtGui.QColor.fromRgba(int(rec, 16))
-                else:
-                    trueColor = QtGui.QColor(color)
-                # print('trueColor: ',trueColor)
-                # print('c: ',c)
-                colorTest = QtCore.Qt.GlobalColor(0)
-                # self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor(colorTest)
-                for i in range(50):
-                    try:
-                        uff = QtCore.Qt.GlobalColor(i)
-                    except:
-                        print(fex())
-                # colorTest = QtCore.Qt.GlobalColor(5)
-                # print('colortest: ', colorTest)
-                # self.datePrenotazioni['platforms'][plat]['colore'] = trueColor
-            except KeyError:
-                print('self.datePrenotazioni ', self.datePrenotazioni)
-                # self.close()
-
-
-
     def periodoCambiato(self, p):
         d = self.dateEdit_dal.date()
         a = self.dateEdit_al.date()
@@ -855,6 +811,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # item = QtWidgets.QTableWidgetItem("No")
         item = QtWidgets.QTableWidgetItem(numeroNotti)
         self.tableWidget_info_ospite.setItem(4, 0, item)
+        item = QtWidgets.QTableWidgetItem(platform)
+        self.tableWidget_info_ospite.setItem(4, 1, item)
         item = QtWidgets.QTableWidgetItem(checkIn)
         self.tableWidget_info_ospite.setItem(5, 0, item)
         item = QtWidgets.QTableWidgetItem(checkOut)
