@@ -39,6 +39,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         super(EvInterface, self).__init__(parent)
 
         self.settingsIcon = 'settingsIcon.png'
+        self.colors = {}
         self.dateBooking = []
         self.dateAirbb = []
         self.datePrivati = []
@@ -79,6 +80,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.calendario = MyCalend(
             self.datePrenotazioni,
             self.datePulizie,
+            self.colors,
             parent=self.frame_calendar,
         )
         # self.calendario = MyCalend(
@@ -210,7 +212,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         platforms = [p for p in self.config['platforms']]
         # stagione = self.config['stagione preferita']
         stagione = self.combo_stagionePrenotazioni.currentText()
-        print('stagione selez: ', stagione)
+        # print('stagione selez: ', stagione)
         importi = self.config['stagione'][stagione]
         self.listeImporti = {p: i for p, i in importi.items()}
         self.listeProvvigioni = {p: prov for p, prov in self.config['provvigioni'].items()}
@@ -651,10 +653,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         db = Manager()
         self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
-        print('----  ', self.datePrenotazioni.values())
-        self.addColors()
+        # print('----  ', self.datePrenotazioni.values())
+        # self.addColors()
         # self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
-        self.calendario.setDates(self.datePrenotazioni, self.datePulizie)
+        self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['platforms'])
         # return  self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
 
     @QtCore.pyqtSlot()
@@ -671,6 +673,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.spinBox_ospiti.setMaximum(numeroOspiti)
         self.spinBox_bambini.setMaximum(numeroOspiti - 1)
         self.buildListeIPT()
+        self.colors = deepc(self.config['platforms'])
+        database = self.getDatabase()
+        self.leggiDatabase(database)
         # self.infoModel
         plats = self.config['platforms']
         for platform in plats.keys():
@@ -707,7 +712,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 # print('trueColor: ',trueColor)
                 # print('c: ',c)
                 colorTest = QtCore.Qt.GlobalColor(0)
-                self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor(colorTest)
+                # self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor(colorTest)
                 for i in range(50):
                     try:
                         uff = QtCore.Qt.GlobalColor(i)
@@ -960,7 +965,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a, m, g = self.amg(data)
         stagione = self.database[a][m][g]['checkIn']['stagione']
         self.label_stagione.setText(stagione)
-        print('stagione lab ', stagione)
+        # print('stagione lab ', stagione)
 
     def setMenuMain(self):
         optionMenuAction = QtWidgets.QAction(QtGui.QIcon(self.settingsIcon), 'opzioni', self)

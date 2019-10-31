@@ -83,7 +83,7 @@ class MyBcolors(Form, QtWidgets.QDialog):
                                     else:
                                         bot.setToolTip(attr)
                                 else:
-                                    print(QtGui.QColor(c).name(), '--->', QtGui.QColor(attr).name())
+                                    # print(QtGui.QColor(c).name(), '--->', QtGui.QColor(attr).name())
                                     bot.setToolTip(attr)
                             bot.clicked.connect(self.assegnaEchiudi)
             #             # bot.setStyleSheet(mystyleSheet)

@@ -150,7 +150,7 @@ class ManagerPreno(object):
 
                             dat = {'date': [data]}
                             self.datePrenotazioni['platforms'][plat] = Od(dat)
-                            self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor
+                            # self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor
                         else:
                             print("PLAT: ", plat, "##")
                             self.datePrenotazioni['platforms'][plat]['date'].append(data)
