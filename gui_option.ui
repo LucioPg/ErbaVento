@@ -289,6 +289,13 @@
                                                         </layout>
                                                     </item>
                                                     <item>
+                                                        <widget class="Line" name="line_4">
+                                                            <property name="orientation">
+                                                                <enum>Qt::Horizontal</enum>
+                                                            </property>
+                                                        </widget>
+                                                    </item>
+                                                    <item>
                                                         <layout class="QHBoxLayout" name="horizontalLayout">
                                                             <item>
                                                                 <layout class="QHBoxLayout" name="horizontalLayout_8">
@@ -326,13 +333,31 @@
                                                                     </item>
                                                                     <item>
                                                                         <widget class="QDoubleSpinBox"
-                                                                                name="spinbox_provvigione_2">
+                                                                                name="spinbox_provvigione">
+                                                                            <property name="enabled">
+                                                                                <bool>true</bool>
+                                                                            </property>
                                                                             <property name="sizePolicy">
                                                                                 <sizepolicy hsizetype="Fixed"
                                                                                             vsizetype="Fixed">
                                                                                     <horstretch>0</horstretch>
                                                                                     <verstretch>0</verstretch>
                                                                                 </sizepolicy>
+                                                                            </property>
+                                                                            <property name="minimumSize">
+                                                                                <size>
+                                                                                    <width>65</width>
+                                                                                    <height>20</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="maximumSize">
+                                                                                <size>
+                                                                                    <width>65</width>
+                                                                                    <height>20</height>
+                                                                                </size>
+                                                                            </property>
+                                                                            <property name="alignment">
+                                                                                <set>Qt::AlignCenter</set>
                                                                             </property>
                                                                             <property name="buttonSymbols">
                                                                                 <enum>QAbstractSpinBox::PlusMinus</enum>
@@ -368,35 +393,6 @@
                                                                         </spacer>
                                                                     </item>
                                                                 </layout>
-                                                            </item>
-                                                            <item>
-                                                                <widget class="QDoubleSpinBox"
-                                                                        name="spinbox_provvigione">
-                                                                    <property name="sizePolicy">
-                                                                        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                                                            <horstretch>0</horstretch>
-                                                                            <verstretch>0</verstretch>
-                                                                        </sizepolicy>
-                                                                    </property>
-                                                                    <property name="buttonSymbols">
-                                                                        <enum>QAbstractSpinBox::PlusMinus</enum>
-                                                                    </property>
-                                                                    <property name="suffix">
-                                                                        <string>%</string>
-                                                                    </property>
-                                                                    <property name="minimum">
-                                                                        <double>0.000000000000000</double>
-                                                                    </property>
-                                                                    <property name="maximum">
-                                                                        <double>100.000000000000000</double>
-                                                                    </property>
-                                                                    <property name="singleStep">
-                                                                        <double>1.000000000000000</double>
-                                                                    </property>
-                                                                    <property name="value">
-                                                                        <double>0.000000000000000</double>
-                                                                    </property>
-                                                                </widget>
                                                             </item>
                                                             <item>
                                                                 <spacer name="horizontalSpacer">
@@ -461,6 +457,21 @@
                                                                             <verstretch>0</verstretch>
                                                                         </sizepolicy>
                                                                     </property>
+                                                                    <property name="minimumSize">
+                                                                        <size>
+                                                                            <width>65</width>
+                                                                            <height>20</height>
+                                                                        </size>
+                                                                    </property>
+                                                                    <property name="maximumSize">
+                                                                        <size>
+                                                                            <width>65</width>
+                                                                            <height>20</height>
+                                                                        </size>
+                                                                    </property>
+                                                                    <property name="alignment">
+                                                                        <set>Qt::AlignCenter</set>
+                                                                    </property>
                                                                     <property name="buttonSymbols">
                                                                         <enum>QAbstractSpinBox::PlusMinus</enum>
                                                                     </property>
@@ -489,6 +500,13 @@
                                                                 </widget>
                                                             </item>
                                                         </layout>
+                                                    </item>
+                                                    <item>
+                                                        <widget class="Line" name="line_5">
+                                                            <property name="orientation">
+                                                                <enum>Qt::Horizontal</enum>
+                                                            </property>
+                                                        </widget>
                                                     </item>
                                                     <item>
                                                         <layout class="QHBoxLayout" name="horizontalLayout_9">
@@ -566,6 +584,13 @@
                                                                 </spacer>
                                                             </item>
                                                         </layout>
+                                                    </item>
+                                                    <item>
+                                                        <widget class="Line" name="line_6">
+                                                            <property name="orientation">
+                                                                <enum>Qt::Horizontal</enum>
+                                                            </property>
+                                                        </widget>
                                                     </item>
                                                     <item>
                                                         <spacer name="verticalSpacer_4">
@@ -713,7 +738,6 @@
                                 </layout>
                             </item>
                         </layout>
-                        <zorder></zorder>
                         <zorder></zorder>
                         <zorder>label</zorder>
                     </widget>

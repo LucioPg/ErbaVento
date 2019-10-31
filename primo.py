@@ -653,7 +653,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         db = Manager()
         self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
-        # print('----  ', self.datePrenotazioni.values())
+        print('----  ', self.datePrenotazioni['platforms'])
         # self.addColors()
         # self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
         self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['platforms'])
@@ -674,8 +674,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.spinBox_bambini.setMaximum(numeroOspiti - 1)
         self.buildListeIPT()
         self.colors = deepc(self.config['platforms'])
-        database = self.getDatabase()
-        self.leggiDatabase(database)
+        # database = self.getDatabase()
+        # self.leggiDatabase(database)
         # self.infoModel
         plats = self.config['platforms']
         for platform in plats.keys():
