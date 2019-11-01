@@ -94,21 +94,12 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         try:
             platAddPlat = ''
             dia = SimpleLine(icon=self.optIcon)
-            # def getPlat(text):
-            #     global platAddPlat
-            #     try:
-            #         platAddPlat = text
-            #         print('getPlat: ', text)
-            #     # lineEdit.close()
-            #         return platAddPlat
-            #     except:
-            #         print(fex())
-            # lineEdit.ECCETESTE.connect(getPlat)
-            # wid.setLayout(grid)
             if dia.exec_():
                 platAddPlat = dia.newPlat
                 print('nuova platform: ', platAddPlat)
-            if platAddPlat not in self.config['platforms'].keys():
+            else:
+                return
+            if platAddPlat != '' and platAddPlat not in self.config['platforms'].keys():
                 importi = [0 for x in range(self.config['numero letti'])]
                 for sta in self.config['stagione']:
                     self.config['stagione'][sta]['importi'][platAddPlat] = importi
