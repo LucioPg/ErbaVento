@@ -29,7 +29,7 @@ class ExpCsv(object):
         #                      'tasse',
         #                      'piattaforma']
         self._database = deepcopy(self.adjDb(database))
-        self.listak_esclusiRipetizione = ['nome', 'cognome', 'colazione']
+        self.listak_esclusiRipetizione = ['nome', 'cognome', 'colazione', 'platform']
         # self.listaColonne = self.build_listaColonne_old()
         self.listaColonne = []
         self._anno = anno
