@@ -10,7 +10,7 @@ from traceback import format_exc as fex
 import os
 
 
-# todo sistemare il radio_button per le tasse attive
+
 class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     fileConf = 'config.json'
     defaultTasse = 2
@@ -41,7 +41,8 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                      'provvigioni': {pl: prov for pl, prov in defaultProvvigioni.items()},
                      'stagione preferita': 'Media',
                      'tasse': defaultTasse,
-                     'tasse attive': defaultTasseAttive
+                     'tasse attive': defaultTasseAttive,
+                     'colori settati': deepcopy(defaultPlatforms)
                      }
     config = {}
 
@@ -70,6 +71,9 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         self.bot_sottraiLetto.clicked.connect(self.sottraiLetto)
         self.buttonBox.accepted.connect(self.saveConfigBot)
         self.bot_scegliColore.clicked.connect(self.chooseColor)
+
+        # funzione radioButto tasse Attive
+        self.radio_attivaTassa.clicked.connect(self.setTasseAttive)
 
         # funzioni comboBoxes
         self.combo_platform.currentTextChanged.connect(self.displayImporti)
@@ -105,24 +109,19 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                 platAddPlat = dia.newPlat
                 print('nuova platform: ', platAddPlat)
             if platAddPlat not in self.config['platforms'].keys():
-                self.chooseColor(platAddPlat)
                 importi = [0 for x in range(self.config['numero letti'])]
                 for sta in self.config['stagione']:
                     self.config['stagione'][sta]['importi'][platAddPlat] = importi
                 self.config['provvigioni'][platAddPlat] = 0.0
-                self.config['tasse attive'][platAddPlat] = False
+                self.config['tasse attive'][platAddPlat] = self.radio_attivaTassa.isChecked()
+                self.saveConfig(self.fileConf, self.config)
+                self.chooseColor(platAddPlat)
                 self.setComboPlat()
                 self.combo_platform.setCurrentIndex(self.combo_platform.findText(platAddPlat))
-                # self.setColor()
-
-                self.saveConfig(self.fileConf, self.config)
             else:
                 print('sono fuori')
-
-
         except:
             print(fex())
-
 
     def aggiungiLetto(self):
         numeroAttuale = int(self.label_numeroLetti.text())
@@ -161,6 +160,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                     self.bot_scegliColore.setStyleSheet("QPushButton { background-color: %s }"
                                                         % col.name())
                     self.config['platforms'][platCol] = col.name()
+                    self.config['colori settati'][platCol] = col.name()
                 else:
                     msg = QtWidgets.QMessageBox()
                     msg.setText('Il colore selezionato è già stato attribuito')
@@ -168,7 +168,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                     msg.setWindowTitle("Attenzione!")
                     msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
                     msg.exec_()
-                    return self.chooseColor()
+                    return self.chooseColor(platCol)
             # if colorForm.accepted():
             # print(colorForm.platColors)
             # self.config['platforms'] = colorForm.platColors
@@ -181,7 +181,12 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         except:
             print(fex())
 
-    def displayImporti(self):
+    def clearComboPlat(self):
+        self.combo_platform.clear()
+
+    def displayImporti(self, t=None):
+        if t is not None:
+            print('testo passato: ', t)
         try:
             rows = int(self.label_numeroLetti.text())
             self.tableWidget__importi.setRowCount(rows)
@@ -204,8 +209,18 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                     self.setNuovoImporto()
             self.setProvvigione()
             self.setColor()
+            self.displayTasseAttive()
+        except KeyError:
+            print('stagione: ', stagione, ' *')
+            print('platform: ', platform, ' *')
         except:
             print(fex())
+
+    def displayTasseAttive(self):
+        plat = self.combo_platform.currentText()
+        act = self.config['tasse attive'][plat]
+        print("act: ", act)
+        self.radio_attivaTassa.setChecked(act)
 
     def getPlatStag(self):
         """
@@ -216,13 +231,6 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         platform = self.combo_platform.currentText()
         return stagione, platform
 
-    def stampa(self, cosa):
-        print(cosa)
-    def setColor(self):
-        plat = self.combo_platform.currentText()
-        color = self.config['platforms'][plat]
-        self.bot_scegliColore.setStyleSheet("QPushButton { background-color: %s }"
-                                            % QtGui.QColor(color).name())
 
 
     def loadConfig(self):
@@ -236,6 +244,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             self.combo_stagione.setCurrentIndex(self.combo_stagione.findText(self.config['stagione preferita']))
             self.setColor()
             self.setComboPlat()
+            self.displayTasseAttive()
 
 
     def on_context_menu(self, point):
@@ -243,7 +252,19 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         self.popMenu.exec_(self.combo_platform.mapToGlobal(point))
 
     def removePlatform(self):
-        pass
+
+        plat = self.combo_platform.currentText()
+        del self.config['platforms'][plat]
+        del self.config['provvigioni'][plat]
+        del self.config['tasse attive'][plat]
+        # self.config['platforms'].__delitem__(plat)
+        # self.config['provvigioni'].__delitem__(plat)
+        # self.config['tasse attive'].__delitem__(plat)
+        for sta in self.config['stagione']:
+            del self.config['stagione'][sta]['importi'][plat]
+            # self.config['stagione'][sta]['importi'].__delitem__(plat)
+        self.setComboPlat()
+        self.saveConfig(self.fileConf, self.config)
 
     @staticmethod
     def saveConfig(fileConf, config):
@@ -254,7 +275,14 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         fileConf = os.path.join(os.getcwd(), self.fileConf)
         self.saveConfig(fileConf, self.config)
 
+    def setColor(self):
+        plat = self.combo_platform.currentText()
+        color = self.config['platforms'][plat]
+        self.bot_scegliColore.setStyleSheet("QPushButton { background-color: %s }"
+                                            % QtGui.QColor(color).name())
+
     def setComboPlat(self):
+        self.combo_platform.clear()
         plats = self.config['platforms'].keys()
         for plat in plats:
             ind = self.combo_platform.findText(plat)
@@ -310,6 +338,12 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             tassa = self.defaultTasse
         self.config['tasse'] = tassa
         self.spinbox_tasse.setValue(float(tassa))
+
+    def setTasseAttive(self):
+        plat = self.combo_platform.currentText()
+        self.config['tasse attive'][plat] = self.radio_attivaTassa.isChecked()
+
+
 
     def sottraiLetto(self):
         numeroAttuale = int(self.label_numeroLetti.text())

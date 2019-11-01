@@ -14,15 +14,9 @@ import os
 import sys
 
 
-# todo adeguare gli importi quando si cambia la stagione
-# todo impostare l'ultima stagione selezionata come preferita
 
 # todo modificare il comportamento del tasto salva quando è già presente una prenotazione, usare il tasto modifica
 # todo con la funzione di preservazione delle prenotazioni già presenti
-
-
-# todo come anche il settaggio del file database, se conservato in locale
-#  oppure in un server, ma anche poter scegliere se farlo in formato json
 # todo aggiungere sistema UNDO
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
@@ -657,7 +651,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         print('----  ', self.datePrenotazioni['platforms'])
         # self.addColors()
         # self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
-        self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['platforms'])
+        self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
         # return  self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
 
     @QtCore.pyqtSlot()
@@ -674,13 +668,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.spinBox_ospiti.setMaximum(numeroOspiti)
         self.spinBox_bambini.setMaximum(numeroOspiti - 1)
         self.buildListeIPT()
-        self.colors = deepc(self.config['platforms'])
+        self.colors = deepc(self.config['colori settati'])
         # database = self.getDatabase()
         # self.leggiDatabase(database)
         # self.infoModel
         plats = self.config['platforms']
+        self.combo_platformPrenotazioni.clear()
         for platform in plats.keys():
-            if platform != '':
+            if platform != '' and self.combo_platformPrenotazioni.findText(platform, QtCore.Qt.MatchExactly) == -1:
                 self.combo_platformPrenotazioni.addItem(platform)
         self.lineEdit_tax.setText(str(self.config['tasse']))
 
