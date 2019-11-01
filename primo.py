@@ -292,9 +292,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except:
             print(fex())
 
-    def cancellaprenot(self, wrnMode=False):
+    def cancellaprenot(self, wrnMode=True):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
+        print('cancella')
         if wrnMode:
             if self.warnMsg():
                 manager = Manager(info=self.infoTemp)
@@ -626,7 +627,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return database
 
     def initStatDb(self, database={}):
-        if len(database) == 0:
+        if database is None or len(database) == 0:
             database = deepc(self.database)
 
         def formatStuff(li):
@@ -701,13 +702,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         :param database:
         :return:
         """
-
-        db = Manager()
-        self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
-        self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
-        self.infoSta = self.initStatDb(database)
-        self.riempiTabellaStat()
-
+        try:
+            db = Manager()
+            self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
+            self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
+            self.infoSta = self.initStatDb(db.DataBase)
+            self.riempiTabellaStat()
+        except:
+            print(fex())
     @QtCore.pyqtSlot()
     def lineEditVerifica(self):
         # print('Hola ',self.bot.text())
@@ -908,7 +910,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return statusBot
 
     def riempiTabellaStat(self, info=None):
-        print('riempiTabellaStat')
+        print('riempiTabellaStat from ', self.sender())
         if info is None:
             info = deepc(self.infoSta)
         # print('mese corrente ',self.calendario.selectedDate().toString('MMM'))
