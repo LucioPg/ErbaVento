@@ -13,21 +13,6 @@ class ExpCsv(object):
     """
 
     def __init__(self, database, anno=None, shortcut=0):
-
-        # self.listaColonne = ['anno',
-        #                      'mese',
-        #                      'giorno',
-        #                      'nome',
-        #                      'cognome',
-        #                      'telefono'
-        #                      'arrivo',
-        #                      'partenza',
-        #                      'numero ospiti',
-        #                      'bambini',
-        #                      'lordo',
-        #                      'netto',
-        #                      'tasse',
-        #                      'piattaforma']
         self._database = deepcopy(self.adjDb(database))
         self.listak_esclusiRipetizione = ['nome', 'cognome', 'colazione', 'platform']
         # self.listaColonne = self.build_listaColonne_old()
@@ -123,8 +108,6 @@ class ExpCsv(object):
                     # if  nomeCheck != vecchioNome or cognomeCheck != vecchioCognome:
                     if nomeCognomecheck != (vecchioNome + vecchioNome):
                         nuovaPrenotazione = True
-                        # print('   NUOVA PRENOTAZIONE '*2)
-                        # print(f"{nomeCheck}  {cognomeCheck}")
                     else:
                         listaV.clear()
                         nuovaPrenotazione = False
@@ -137,10 +120,8 @@ class ExpCsv(object):
                         elif k == 'cognome':
                             if vecchioCognome != item and (vecchioCognome != '' or vecchioCognome != '*'):
                                 vecchioCognome = item[:]
-
                         else:
                             if nuovaPrenotazione:
-
                                 if k in listak:
                                     if ('nome' and 'cognome') in db[anno][mese][giorno]:
 
@@ -174,33 +155,6 @@ class ExpCsv(object):
                         print("diz già presente\n\t", diz.items())
                 updated[anno][mese] = deepcopy(dizzy)
             lik = [x for x in diz.keys()]
-            # listaCol = listak[:]
-            # for x in range(len(self.listak)):
-            #     item = self.listak[x]
-            #     if item not in listaCol:
-            #         listaCol.insert(x,item)
-            # if lik == listaCol:
-            #     print("listaK è come lik? si")
-            # else:
-            #     print(f"lik = {len(lik)}\t\t\tlistak= {len(listaCol)}")
-            #
-            #     def ottieni(lista,x):
-            #         try:
-            #             val = lista[x]
-            #         except IndexError:
-            #             val = None
-            #         return val
-            #     for x in range(max(len(lik),len(listaCol))):
-            #         z = ottieni(lik,x)
-            #         y = ottieni(listaCol,x)
-            #         print(f"{x}#   lik= {z}\t\t\tlistak= {y}")
-            #     for el in lik:
-            #         if el not in listaCol:
-            #             print(el)
-            # clear = os.system('cls')
-            # clear()
-            #
-
             lik.insert(0, 'data')
             if self.listaColonne != lik:
                 self.listaColonne = lik
@@ -232,15 +186,12 @@ class ExpCsv(object):
                 self.checkFile(nomeFile, li[anno][mese])
 
     def writeCsv(self, nomeFile, diz):
-        newDict = Od()
         li = [x for x in diz.keys()]
         vi = []
-        finale = li[:]
         for k in li:
             val = [diz[k][p] for p in diz[k].keys()]
             val.insert(0, k)
             vi.append(val)
-
         with open(nomeFile, 'wt', newline='') as csv_db:
             w = csv.writer(csv_db, quoting=csv.QUOTE_NONNUMERIC)
             w.writerow(self.listaColonne)
@@ -255,22 +206,11 @@ class ExpCsv(object):
             if not filecmp.cmp(nomeTemporaneo, nomeFile):
                 shutil.copyfile(nomeTemporaneo, nomeFile)
         except FileNotFoundError:
-            # print("££££££££££££££££££££")
-            # print(f"csv non presente {nomeFile}, procedo alla creazione")
             self.writeCsv(nomeFile, diz)
             self.checkFile(nomeFile, diz, temp=1)
-        # else:
-        #     print("**********************")
-        #     print(traceback.format_exc())
-        #     return False
         finally:
             try:
                 os.remove(nomeTemporaneo)
             except FileNotFoundError:
                 pass
-            else:
-                pass
-                # print("database virtuale aggiornato, pronto per csv")
-                # print(traceback.format_exc())
-
             return True
