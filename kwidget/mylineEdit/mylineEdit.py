@@ -5,7 +5,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui, QtCore
 
-
 class MyLineEdit(QLineEdit):
     """ questa versione di qlineedit ha un diverso tipo di filtro
         applicato ai campi di testo che viene determinato at run time

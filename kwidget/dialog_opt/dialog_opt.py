@@ -2,6 +2,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from gui_option import Ui_Dialog_opt as DialogOptionGui
 from kwidget.basiccolorselector.mybcolors import MyBcolors
 from kwidget.basiccolorselector.mybcolors import MyBcolors_2
+from kwidget.singleline.singleline import MySimpleLinEditDialog as SimpleLine
+# from kwidget.mylineEdit.mylineEdit import MySimpleLineEdit as SimpleLine
 import json
 from copy import deepcopy
 from traceback import format_exc as fex
@@ -11,7 +13,7 @@ import os
 # todo sistemare il radio_button per le tasse attive
 class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     fileConf = 'config.json'
-    defaultTasse = 1
+    defaultTasse = 2
     defaultTasseAttive = {'Booking': False,
                           'AirB&B': False,
                           'Privati': False}
@@ -61,7 +63,8 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         self.popMenu.addAction(addPlat)
         self.popMenu.addSeparator()
         self.popMenu.addAction(removePlat)
-
+        self.optIcon = QtGui.QIcon('settingsIcon.png')
+        self.setWindowIcon(self.optIcon)
         # funzioni pulsanti
         self.bot_aggiungiLetto.clicked.connect(self.aggiungiLetto)
         self.bot_sottraiLetto.clicked.connect(self.sottraiLetto)
@@ -84,7 +87,42 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     #     print('kwargs: ', kwargs)
 
     def addPlatform(self):
-        pass
+        try:
+            platAddPlat = ''
+            dia = SimpleLine(icon=self.optIcon)
+            # def getPlat(text):
+            #     global platAddPlat
+            #     try:
+            #         platAddPlat = text
+            #         print('getPlat: ', text)
+            #     # lineEdit.close()
+            #         return platAddPlat
+            #     except:
+            #         print(fex())
+            # lineEdit.ECCETESTE.connect(getPlat)
+            # wid.setLayout(grid)
+            if dia.exec_():
+                platAddPlat = dia.newPlat
+                print('nuova platform: ', platAddPlat)
+            if platAddPlat not in self.config['platforms'].keys():
+                self.chooseColor(platAddPlat)
+                importi = [0 for x in range(self.config['numero letti'])]
+                for sta in self.config['stagione']:
+                    self.config['stagione'][sta]['importi'][platAddPlat] = importi
+                self.config['provvigioni'][platAddPlat] = 0.0
+                self.config['tasse attive'][platAddPlat] = False
+                self.setComboPlat()
+                self.combo_platform.setCurrentIndex(self.combo_platform.findText(platAddPlat))
+                # self.setColor()
+
+                self.saveConfig(self.fileConf, self.config)
+            else:
+                print('sono fuori')
+
+
+        except:
+            print(fex())
+
 
     def aggiungiLetto(self):
         numeroAttuale = int(self.label_numeroLetti.text())
@@ -108,6 +146,40 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             cls.saveConfig(cls.fileConf, cls.config)
             print('File di configurazione creato')
         return config
+
+    def chooseColor(self, platCol=None):
+        try:
+            if platCol is None:
+                platCol = self.combo_platform.currentText()
+
+            coloriPresenti = [presente for presente in self.config['platforms'].values()]
+            print('colori presenti: ', coloriPresenti)
+            col = QtWidgets.QColorDialog.getColor()
+            print('colore scelto: ', col.name())
+            if col.isValid():
+                if col.name() not in coloriPresenti:
+                    self.bot_scegliColore.setStyleSheet("QPushButton { background-color: %s }"
+                                                        % col.name())
+                    self.config['platforms'][platCol] = col.name()
+                else:
+                    msg = QtWidgets.QMessageBox()
+                    msg.setText('Il colore selezionato è già stato attribuito')
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("Attenzione!")
+                    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+                    msg.exec_()
+                    return self.chooseColor()
+            # if colorForm.accepted():
+            # print(colorForm.platColors)
+            # self.config['platforms'] = colorForm.platColors
+            # colorForm.currentColorChanged.connect(self.stampa)
+            # self.setColor()
+            # colorForm.close()
+            # else:
+            #     print('not accepted', colorForm.accepted())
+
+        except:
+            print(fex())
 
     def displayImporti(self):
         try:
@@ -144,41 +216,6 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         platform = self.combo_platform.currentText()
         return stagione, platform
 
-    def chooseColor(self):
-        try:
-            plat = self.combo_platform.currentText()
-            coloriPresenti = [presente for presente in self.config['platforms'].values()]
-            print('colori presenti: ', coloriPresenti)
-            colorForm = MyBcolors_2(plat, deepcopy(self.config['platforms']))
-            # colorForm = MyBcolors(plat, deepcopy(self.config['platforms']))
-            col = QtWidgets.QColorDialog.getColor()
-            print('colore scelto: ', col.name())
-
-            if col.isValid():
-                if col.name() not in coloriPresenti:
-                    self.bot_scegliColore.setStyleSheet("QPushButton { background-color: %s }"
-                                                        % col.name())
-                    self.config['platforms'][plat] = col.name()
-                else:
-                    msg = QtWidgets.QMessageBox()
-                    msg.setText('Il colore selezionato è già stato attribuito')
-                    msg.setIcon(QtWidgets.QMessageBox.Warning)
-                    msg.setWindowTitle("Attenzione!")
-                    msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-                    msg.exec_()
-                    return self.chooseColor()
-            # if colorForm.accepted():
-            # print(colorForm.platColors)
-            # self.config['platforms'] = colorForm.platColors
-            # colorForm.currentColorChanged.connect(self.stampa)
-            # self.setColor()
-            # colorForm.close()
-            # else:
-            #     print('not accepted', colorForm.accepted())
-
-        except:
-            print(fex())
-
     def stampa(self, cosa):
         print(cosa)
     def setColor(self):
@@ -198,6 +235,8 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             self.setTasse(self.config['tasse'])
             self.combo_stagione.setCurrentIndex(self.combo_stagione.findText(self.config['stagione preferita']))
             self.setColor()
+            self.setComboPlat()
+
 
     def on_context_menu(self, point):
         # show context menu
@@ -214,6 +253,13 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     def saveConfigBot(self):
         fileConf = os.path.join(os.getcwd(), self.fileConf)
         self.saveConfig(fileConf, self.config)
+
+    def setComboPlat(self):
+        plats = self.config['platforms'].keys()
+        for plat in plats:
+            ind = self.combo_platform.findText(plat)
+            if ind == -1:
+                self.combo_platform.addItem(plat)
 
     def setImporti(self, i=None):
         try:
