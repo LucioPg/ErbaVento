@@ -942,10 +942,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         print(info)
         dialog = DialogInfo(info, showBool=True)
         a, m, g = self.amg(self.calendario.selectedDate())
-        k = info.lower()
-        text = self.database[a][m][g]['checkIn'][k]
+        noteChiave = info.lower()
+        text = self.database[a][m][g]['checkIn'][noteChiave]
         dialog.gui.textBrowser_dialog_info.setText(text)
-        dialog.exec_()
+        if dialog.exec_():
+            nuovoTesto = dialog.gui.textBrowser_dialog_info.toPlainText()
+            if nuovoTesto != text:
+                self.database[a][m][g]['checkIn'][noteChiave] = nuovoTesto
+                dbm.salvaDatabase(self.database)
 
     def totOspitiAdj(self, p):
         # sender = self.sender()

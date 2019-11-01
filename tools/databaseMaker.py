@@ -165,7 +165,8 @@ class DbMaker(object):
                 pickle.dump(fileDb, f)
         return fileDb
 
-    def salvaDatabase(self, fileDb, shortcut=''):
+    @staticmethod
+    def salvaDatabase(fileDb, shortcut=''):
         """ salva il database per l'anno indicato"""
         print("sequenza di salvataggio iniziata")
         if shortcut != '':
