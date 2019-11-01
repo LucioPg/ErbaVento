@@ -67,7 +67,7 @@ class ManagerPreno(object):
         }
         # self.platformDict = Od(platformDict)
 
-    def checkAval(self, dal, al):
+    def checkAval(self, dal, al, nomePassato='', cognomePassato=''):
         # todo aggiungere  (self,INFO, dal, al) per verificare che il nome sia lo stesso
         # todo invece che semplicemente vuoto ( serve per fare il controllo nelle modifiche)
         """
@@ -75,6 +75,8 @@ class ManagerPreno(object):
         nell'intervallo delle date fornite
         :param dal:
         :param al:
+        :param nomePassato:str
+        :param cognomePassato:str
         :return: list
         """
         giorniPermanenza = dal.daysTo(al)
@@ -89,15 +91,21 @@ class ManagerPreno(object):
             a, m, g = self.amg(oggi)
             try:
                 nome = database[a][m][g]['checkIn']['nome']
+                cognome = database[a][m][g]['checkIn']['cognome']
             except KeyError:
                 database = self.getDb()
                 nome = database[a][m][g]['checkIn']['nome']
-            if nome != '':
-                aval = False
-                print(
-                    "spiacente, casa non disponibile in questa data",
-                    oggi.toString("dd MMM yyyy"),
-                )
+                cognome = database[a][m][g]['checkIn']['cognome']
+            print('nome CheckAval ', nome, ' nomepassato: ', nomePassato)
+            if nome != nomePassato or cognome != cognomePassato:
+                if nome != '' and cognome != '':
+                    aval = False
+                    print(
+                        "spiacente, casa non disponibile in questa data",
+                        oggi.toString("dd MMM yyyy"),
+                    )
+                else:
+                    listaDisponibili.append(oggi)
             else:
                 listaDisponibili.append(oggi)
             oggi = oggi.addDays(1)

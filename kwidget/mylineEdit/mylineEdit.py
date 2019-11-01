@@ -60,7 +60,7 @@ class MyLineEdit(QLineEdit):
         returPressed in base al testo passato nell'istanza
         :return:
         """
-        print("selector : ", text)
+        # print("mylineedit selector : ", text)
         if text == '':
             return False
         if self.objectName() == 'lineEdit_nome' or self.objectName() == 'lineEdit_cognome':

@@ -108,6 +108,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_salva.clicked.connect(self.salvaInfo)
         self.bot_checkDisp.clicked.connect(self.botFuncCheckAval)
         self.bot_cancella.clicked.connect(self.cancellaprenot)
+        self.bot_modifica.clicked.connect(self.modificaESalva)
         self.spinBox_ospiti.valueChanged.connect(self.totOspitiAdj)
         self.spinBox_bambini.valueChanged.connect(self.totOspitiAdj)
         self.spinBox_importo.valueChanged.connect(self.calcLordoNetto)
@@ -177,8 +178,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.bot_cancella.setEnabled(False)
         else:
             self.bot_cancella.setEnabled(True)
-        if self.infoTemp['note'] != '':
-            print(self.infoTemp['note'])
         self.setDateEdit_dal()
 
     def amg(self, data=QtCore.QDate):
@@ -293,10 +292,22 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except:
             print(fex())
 
-    def cancellaprenot(self):
+    def cancellaprenot(self, wrnMode=False):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
-        if self.warnMsg():
+        if wrnMode:
+            if self.warnMsg():
+                manager = Manager(info=self.infoTemp)
+                manager.canc()
+                # database = self.getDatabase(self.infoTemp['data arrivo'].year())
+                database = self.getDatabase()
+                # self.leggiDatabase(manager.DataBase)
+                # self.leggiDatabase(database)
+                self.leggiDatabase()
+
+                self.calendario.updateCells()
+                self.set_status_msg('Cancellazione effettuata')
+        else:
             manager = Manager(info=self.infoTemp)
             manager.canc()
             # database = self.getDatabase(self.infoTemp['data arrivo'].year())
@@ -447,12 +458,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         try:
             d.setWindowModality(QtCore.Qt.WindowModal)
             d.gui.textBrowser_dialog_info.setReadOnly(True)
-            d.gui.buttonBox_dialog_info.setStandardButtons(QtWidgets.QMessageBox.Ok)
         except:
             print(fex())
         data = ''
-        for g in l:
-            data += g.toString("dd/MM/yyyy") + '\n'
+        if len(l) > 0:
+            for g in l:
+                data += g.addDays(1).toString("dd/MM/yyyy") + '\n'
+        else:
+            data = 'Nessuna data disponibile'
         d.gui.textBrowser_dialog_info.setText(data)
         d.exec_()
 
@@ -664,7 +677,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def lineEditVerifica(self):
         # print('Hola ',self.bot.text())
         # print('ciao ', self.sender().text())
-        if not self.sender().selector(self.sender().text()):
+        print("TABPRESSED")
+        listaInfo = [self.infoModel['nome'], self.infoModel['cognome'], self.infoModel['telefono']]
+        testo = self.sender().text()
+        if testo not in listaInfo:
+            self.modificaOsalva(modifica=False)
+        else:
+            self.modificaOsalva(modifica=True)
+        if not self.sender().selector(testo):
             self.sender().clear()
         else:
             self.sender().nextInFocusChain().setFocus()
@@ -685,11 +705,33 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.combo_platformPrenotazioni.addItem(platform)
         self.lineEdit_tax.setText(str(self.config['tasse']))
 
+    def modificaESalva(self):
+        try:
+            info = self.compilaInfo()
+            dal = self.dateEdit_dal.date()
+            al = self.dateEdit_al.date()
+            manager = Manager(info)
+            listaDisponibili = manager.checkAval(dal, al, nomePassato=self.lineEdit_nome.text(),
+                                                 cognomePassato=self.lineEdit_cognome.text())
+            giorniPermanenza = dal.daysTo(al)
+            if len(listaDisponibili) == giorniPermanenza:
+                print('modifica ok')
+                print('prima cancello')
+                self.cancellaprenot(wrnMode=False)
+                print('poi salvo...')
+                self.salvaInfo(modo=False)
+            else:
+                self.dialogDisponibili(listaDisponibili)
+        except:
+            print(fex())
+
     def modificaOsalva(self, modifica=False):
         flagMod = modifica
         flagSalva = not modifica
         self.bot_salva.setEnabled(flagSalva)
         self.bot_modifica.setEnabled(flagMod)
+        # self.bot_modifica.setEnabled(True)
+        # self.bot_salva.setEnabled(True)
 
 
     def periodoCambiato(self, p):
@@ -723,10 +765,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # todo aggiungere segnale alle mylineEdit perché si sblocchi il tasto salva o modifica
         try:
             info = deepc(self.infoTemp)
-            # if (info['nome'] and info['cognome'] and info['telefono']) == '':
-            #     self.modificaOsalva()
-            # else:
-            #     self.modificaOsalva(modifica=True)
+            if (info['nome'] and info['cognome'] and info['telefono']) == '':
+                self.modificaOsalva()
+            else:
+                self.modificaOsalva(modifica=True)
             self.lineEdit_nome.setText(info['nome'])
             self.lineEdit_cognome.setText(info['cognome'])
             self.lineEdit_telefono.setText(info['telefono'])
@@ -761,6 +803,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.dateEdit_dal.blockSignals(True)
                 self.dateEdit_al.blockSignals(True)
                 self.dateEdit_dal.setDate(dataArrivo)
+                self.dateEdit_al.setMinimumDate(dataArrivo.addDays(1))
                 self.dateEdit_al.setDate(dataPartenza)
                 self.dateEdit_dal.blockSignals(False)
                 self.dateEdit_al.blockSignals(False)
@@ -842,13 +885,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except KeyError:
             print(db.keys())
 
-    def salvaInfo(self):
+    def salvaInfo(self, modo=True):
         """modo = False # 'senza controllo' # modo = True #'con controllo'
 
         :return:
         """
         flag = bool
-        modo = True  # 'con controllo' # modo = False ---> 'senza controllo'
         # modo = False  # 'senza controllo' # modo = True #'con controllo'
         flag = self.checkInfo()
         if flag:
@@ -885,8 +927,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             else:
                 self.set_status_msg("Le date selezionate sono occupate")
                 print("date non disponibili")
-                if len(listaDisponibili):
-                    self.dialogDisponibili(listaDisponibili)
+
+                self.dialogDisponibili(listaDisponibili)
         else:
             print('salvataggio fallito')
             self.statusbar.showMessage('salvataggio fallito')
