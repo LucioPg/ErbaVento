@@ -90,7 +90,7 @@ class ManagerPreno(object):
             try:
                 nome = database[a][m][g]['checkIn']['nome']
             except KeyError:
-                database = self.getDb(oggi)
+                database = self.getDb()
                 nome = database[a][m][g]['checkIn']['nome']
             if nome != '':
                 aval = False
@@ -105,7 +105,7 @@ class ManagerPreno(object):
         if giorniPermanenza == len(listaDisponibili):
             print("casa libera  tutti i giorni disponibili")
         else:
-            print(" casa libera nei giorni:\n")
+            print(" casa libera nei giorni:")
             # todo ripristinare la funzionalità qui sotto
             # if len(listaDisponibili) > 0:
             #     self.dateEdit_dal.setDate(listaDisponibili[0])

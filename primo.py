@@ -444,6 +444,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def dialogDisponibili(self, l):
         d = DialogInfo('Note', showBool=True)
+        try:
+            d.setWindowModality(QtCore.Qt.WindowModal)
+            d.gui.textBrowser_dialog_info.setReadOnly(True)
+            d.gui.buttonBox_dialog_info.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        except:
+            print(fex())
         data = ''
         for g in l:
             data += g.toString("dd/MM/yyyy") + '\n'
@@ -679,6 +685,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.combo_platformPrenotazioni.addItem(platform)
         self.lineEdit_tax.setText(str(self.config['tasse']))
 
+    def modificaOsalva(self, modifica=False):
+        flagMod = modifica
+        flagSalva = not modifica
+        self.bot_salva.setEnabled(flagSalva)
+        self.bot_modifica.setEnabled(flagMod)
+
+
     def periodoCambiato(self, p):
         d = self.dateEdit_dal.date()
         a = self.dateEdit_al.date()
@@ -707,13 +720,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             della prenotazione a partire dalle info
             nel box nella pagina
             del calendario"""
-
-        # self.cleardisplay()
-        # if self.sender() is not None:
-        #     sender = self.sender().objectName()
-        #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        # todo aggiungere segnale alle mylineEdit perché si sblocchi il tasto salva o modifica
         try:
             info = deepc(self.infoTemp)
+            # if (info['nome'] and info['cognome'] and info['telefono']) == '':
+            #     self.modificaOsalva()
+            # else:
+            #     self.modificaOsalva(modifica=True)
             self.lineEdit_nome.setText(info['nome'])
             self.lineEdit_cognome.setText(info['cognome'])
             self.lineEdit_telefono.setText(info['telefono'])
@@ -758,8 +771,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 # self.dateEdit_al.setDate(dataPartenza)
         except:
             print(fex())
-        # self.bot_note.setInfo(info['note'])
-        # self.bot_spese.setInfo(info['spese'])
 
     def riempiTabellaPrenotazioni(self, info):
         """
@@ -837,7 +848,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         :return:
         """
         flag = bool
-        modo = False  # 'senza controllo' # modo = True #'con controllo'
+        modo = True  # 'con controllo' # modo = False ---> 'senza controllo'
+        # modo = False  # 'senza controllo' # modo = True #'con controllo'
         flag = self.checkInfo()
         if flag:
             info = self.compilaInfo()
@@ -853,8 +865,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             listaDisponibili = manager.checkAval(dal, al)
             if len(listaDisponibili) == giorniPermanenza:
                 controllo = True
-            if not modo: controllo = False
-            if not controllo:
+            else:
+                controllo = False
+            if not modo: controllo = True
+            if controllo:
                 manager.setThem()
                 print("prenotazione effettuata per tutte le date richieste")
                 # self.leggiDatabase(manager.DataBase)
