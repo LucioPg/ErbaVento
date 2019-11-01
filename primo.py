@@ -84,7 +84,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         #     self.datePulizie,
         #     parent=self.frame_calendar,
         # )
-        self.calendario.currentPageChanged.connect(self.riempiTabellaStat)
+        self.calendario.currentPageChanged.connect(self.correggiDataSelected)
         self.spese = {}
         self.config = self.initConfig()
         self.database = self.initDatabase()
@@ -413,6 +413,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a['spese'] = spese
         return a
 
+    def correggiDataSelected(self):
+        """seleziona il primo del mese se si cambia la pagina del calendario"""
+
+        data = QtCore.QDate(self.calendario.yearShown(), self.calendario.monthShown(), 1)
+        self.calendario.setSelectedDate(data)
+        self.riempiTabellaStat()
     def checkInfo(self):
         # print(type(self.listaWGen))
         listaW = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_telefono]
@@ -619,8 +625,45 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 os.mkdir(csvDir)
         return database
 
-    def initStatDb(self):
-        stat = deepc(self.database)
+    def initStatDb(self, database={}):
+        if len(database) == 0:
+            database = deepc(self.database)
+
+        def formatStuff(li):
+            form = {k: 0 for k in li}
+            return Od(form)
+
+        statG = deepc(database)
+        stat = deepc(database)
+        l = ['3 Notti', '2 Notti', '1 Notte', 'Tasse finora', 'Netto finora']
+        formatStat = formatStuff(l)
+        for anno in database.keys():
+            for mese in database[anno].keys():
+                stat[anno][mese] = {}
+                formatStat = formatStuff(l)
+                for giorno in database[anno][mese].keys():
+                    statGiornaliere = statG[anno][mese][giorno]
+                    chiave = database[anno][mese][giorno]['checkIn']
+                    numeroNotti = int(chiave['totale notti'])
+                    # if numeroNotti != 0:
+                    #     print('initStatDb: ',database[anno][mese][giorno]['checkIn']['nome'], numeroNotti, end=' ')
+                    #     print()
+                    if numeroNotti >= 3:
+                        formatStat['3 Notti'] += 1
+                        # print(" stat: ", formatStat['3 notti'])
+                    elif numeroNotti == 2:
+                        formatStat['2 Notti'] += 1
+                    elif numeroNotti == 1:
+                        formatStat['1 Notte'] += 1
+                    tasse = int(chiave['tasse'])
+                    formatStat['Tasse finora'] += tasse
+                    netto = int(chiave['netto'])
+                    formatStat['Netto finora'] += netto
+                stat[anno][mese] = deepc(formatStat)
+                formatStat = formatStuff(l)
+        return stat
+
+    def initStatDb_old(self):
         for anno in self.database.keys():
             for mese in self.database[anno].keys():
                 for giorno in self.database[anno][mese].keys():
@@ -651,27 +694,19 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return stat
 
     def leggiDatabase(self, database=None):
-        # """
-        # legge il database per restituire gli elenchi delle piattaforme
-        # (booking, airbb, privati, pulizie)
-        # per stilizzare il calendario
-        # :param database:
-        # :return:
-        # """
-        # self.dateBooking.clear()
-        # self.dateAirbb.clear()
-        # self.datePrivati.clear()
-        # self.datePulizie.clear()
-        # old
-        # db = Manager(self.infoTemp)
+        """
+        legge il database per restituire gli elenchi delle piattaforme
+        (booking, airbb, privati, pulizie)
+        per stilizzare il calendario
+        :param database:
+        :return:
+        """
 
         db = Manager()
         self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
-        print('----  ', self.datePrenotazioni['platforms'])
-        # self.addColors()
-        # self.calendario.setDates(self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie)
         self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
-        # return  self.dateBooking, self.dateAirbb, self.datePrivati, self.datePulizie
+        self.infoSta = self.initStatDb(database)
+        self.riempiTabellaStat()
 
     @QtCore.pyqtSlot()
     def lineEditVerifica(self):
@@ -872,18 +907,48 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_spese.setInfo(info['spese'])
         return statusBot
 
-    def riempiTabellaStat(self):
+    def riempiTabellaStat(self, info=None):
+        print('riempiTabellaStat')
+        if info is None:
+            info = deepc(self.infoSta)
         # print('mese corrente ',self.calendario.selectedDate().toString('MMM'))
         data = self.calendario.selectedDate()
         onPageDate = data.month()
-        stat = {'3 notti': 0, '2 notti': 0, '1 notte': 0, 'tasse finora': 0, 'netto finora': 0}
         a, m, g = self.amg(data)
-        db = deepc(self.infoSta)
+        dbStat = deepc(info)
+        totaleNotti = 0
         try:
             print('ok')
-            print(db[a][m][g].items())
+            print(dbStat[a][m].items())
+            self.tableWidget_stat.setRowCount(0)
+            row = 0
+            for c0, c1 in dbStat[a][m].items():
+                self.tableWidget_stat.insertRow(row)
+                print(c0, ' ', c1)
+                print('row ', row)
+                item0 = QtWidgets.QTableWidgetItem()
+                item0.setText(c0)
+                item1 = QtWidgets.QTableWidgetItem()
+                item1.setText(str(c1))
+                self.tableWidget_stat.setItem(row, 0, item0)
+                self.tableWidget_stat.setItem(row, 1, item1)
+                row += 1
+            nottiDaSommare = [x for x in dbStat[a][m].values()][:3]
+            print('nottiDaSommare', nottiDaSommare)
+            for n in nottiDaSommare:
+                totaleNotti += n
+            print('total', totaleNotti)
+            self.tableWidget_stat.insertRow(row)
+            itemt = QtWidgets.QTableWidgetItem()
+            itemt.setText(str(totaleNotti))
+            self.tableWidget_stat.setItem(row, 1, itemt)
+            itemtn = QtWidgets.QTableWidgetItem()
+            itemtn.setText('Notti Totali')
+            self.tableWidget_stat.setItem(row, 0, itemtn)
+            self.tableWidget_stat.update()
         except KeyError:
-            print(db.keys())
+            print('riempi stat key err ')
+            print(dbStat.keys())
 
     def salvaInfo(self, modo=True):
         """modo = False # 'senza controllo' # modo = True #'con controllo'
