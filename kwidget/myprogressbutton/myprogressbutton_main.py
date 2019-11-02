@@ -9,12 +9,35 @@ from kwidget.myprogressbutton.strategy import NoteText_MPBStrategy as Note
 from kwidget.myprogressbutton.strategy import SpeseText_MPBStrategy as Spese
 from kwidget.myprogressbutton.strategy import Green_ColorMPBStrategy as Verde
 from kwidget.myprogressbutton.strategy import Red_ColorMPBStrategy as Rosso
+from traceback import format_exc as fex
 
 
 noteButton = Note()
 speseButton = Spese()
 verde = Verde()
 rosso = Rosso()
+
+
+class ColorButton(QPushButton):
+    statoCambiato = QtCore.pyqtSignal(bool)
+
+    def __init__(self, parent=None):
+        super(ColorButton, self).__init__(parent)
+        self.state = False
+        self.statoCambiato.connect(self.changeColor)
+
+    # @QtCore.pyqtSlot()
+    def changeColor(self, state):
+        if state:
+            self.setStyleSheet("""QPushButton{background-color: rgba(255, 50, 50, 150);}
+                                QPushButton::pressed{background-color: rgba(155, 10, 10, 150);}""")
+        else:
+            self.setStyleSheet("""""")
+
+    def setState(self, state: bool):
+
+        self.state = state
+        self.statoCambiato.emit(state)
 
 
 class ProgressButton(QProgressBar):
@@ -51,13 +74,15 @@ class ProgressButton(QProgressBar):
         :param info:
         :return:
         """
-        if info is not None:
+        if info is not None and type(info) is str:
             if info != '':
                 self.info = info
                 print('informazioni ricevute, ', self._text)
                 return True
             else:
                 return False
+        elif type(info) is dict:
+            self.info = 'is a dict'
         else:
             return False
 

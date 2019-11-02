@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>862</width>
+       <width>868</width>
     <height>885</height>
    </rect>
   </property>
@@ -410,7 +410,7 @@
                                                   <item>
                                                       <layout class="QHBoxLayout" name="horizontalLayout">
                                                           <item>
-                                                              <widget class="RedProgressButton" name="bot_spese">
+                                                              <widget class="ColorButton" name="bot_spese">
                                                                   <property name="minimumSize">
                                                                       <size>
                                                                           <width>75</width>
@@ -425,6 +425,9 @@
                                                                   </property>
                                                                   <property name="focusPolicy">
                                                                       <enum>Qt::ClickFocus</enum>
+                                                                  </property>
+                                                                  <property name="styleSheet">
+                                                                      <string notr="true"/>
                                                                   </property>
                                                                   <property name="text">
                                                                       <string>Spese</string>
@@ -486,22 +489,6 @@
                                                                   </property>
                                                                   <property name="alignment">
                                                                       <set>Qt::AlignCenter</set>
-                                                                  </property>
-                                                              </widget>
-                                                          </item>
-                                                          <item>
-                                                              <widget class="QPushButton" name="bot_esporta">
-                                                                  <property name="sizePolicy">
-                                                                      <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-                                                                          <horstretch>0</horstretch>
-                                                                          <verstretch>0</verstretch>
-                                                                      </sizepolicy>
-                                                                  </property>
-                                                                  <property name="focusPolicy">
-                                                                      <enum>Qt::ClickFocus</enum>
-                                                                  </property>
-                                                                  <property name="text">
-                                                                      <string>Esporta</string>
                                                                   </property>
                                                               </widget>
                                                           </item>
@@ -577,6 +564,25 @@
                                                               </widget>
                                                           </item>
                                                       </layout>
+                                                  </item>
+                                                  <item>
+                                                      <layout class="QVBoxLayout" name="verticalLayout_18"/>
+                                                  </item>
+                                                  <item>
+                                                      <widget class="QPushButton" name="bot_esporta">
+                                                          <property name="sizePolicy">
+                                                              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                                                                  <horstretch>0</horstretch>
+                                                                  <verstretch>0</verstretch>
+                                                              </sizepolicy>
+                                                          </property>
+                                                          <property name="focusPolicy">
+                                                              <enum>Qt::ClickFocus</enum>
+                                                          </property>
+                                                          <property name="text">
+                                                              <string>Esporta</string>
+                                                          </property>
+                                                      </widget>
                                                   </item>
                                                   <item>
                                                       <spacer name="horizontalSpacer_12">
@@ -764,20 +770,6 @@
                                                       <widget class="QRadioButton" name="radio_colazione">
                                                           <property name="text">
                                                               <string>colazione</string>
-                                                          </property>
-                                                      </widget>
-                                                  </item>
-                                                  <item>
-                                                      <widget class="QPushButton" name="bot_aggiungiSpesa">
-                                                          <property name="text">
-                                                              <string>aggiungi spesa</string>
-                                                          </property>
-                                                      </widget>
-                                                  </item>
-                                                  <item>
-                                                      <widget class="QPushButton" name="bot_rimuoviSpesa">
-                                                          <property name="text">
-                                                              <string>rimuovi spesa</string>
                                                           </property>
                                                       </widget>
                                                   </item>
@@ -1827,7 +1819,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>862</width>
+        <width>868</width>
      <height>21</height>
     </rect>
    </property>
@@ -1841,11 +1833,6 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
     <customwidgets>
-        <customwidget>
-            <class>RedProgressButton</class>
-            <extends>QPushButton</extends>
-            <header location="global">kwidget.myprogressbutton.myprogressbutton_main</header>
-        </customwidget>
         <customwidget>
             <class>GreenProgressButton</class>
             <extends>QPushButton</extends>
@@ -1861,6 +1848,11 @@
             <extends>QDateEdit</extends>
             <header location="global">kwidget.mydateedit.mydateedit</header>
         </customwidget>
+        <customwidget>
+            <class>ColorButton</class>
+            <extends>QPushButton</extends>
+            <header>kwidget.myprogressbutton.myprogressbutton_main</header>
+        </customwidget>
     </customwidgets>
     <tabstops>
         <tabstop>bot_cancella</tabstop>
@@ -1873,7 +1865,6 @@
         <tabstop>dateEdit_dal</tabstop>
         <tabstop>dateEdit_al</tabstop>
         <tabstop>radio_colazione</tabstop>
-        <tabstop>bot_aggiungiSpesa</tabstop>
         <tabstop>spinBox_importo</tabstop>
         <tabstop>spinBox_ospiti</tabstop>
         <tabstop>spinBox_bambini</tabstop>

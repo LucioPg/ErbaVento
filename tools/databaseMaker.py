@@ -23,7 +23,7 @@ class DbMaker(object):
         "totale notti": 0,
         "numero ospiti": 0,
             "bambini": 0,
-        "spese": '',
+        "spese": {},
         "colazione": 'No',
         "stagione": '',
             "importo": 0,
@@ -131,16 +131,29 @@ class DbMaker(object):
                     database[anno][k][v]["checkOut"] = self.infoModelRedux
         return database
 
-    def checkFile(self, shortcut=''):
+    def makeSpeseDb(self):
+        speseDb = Od()
+        for anno in self.listaAnni:
+            speseDb[anno] = Od()
+            mesi = self.bisestileCheck(anno).keys()
+            for m in mesi:
+                speseDb[anno][m] = Od()
+        return speseDb
 
-        nome = 'database.pkl'
+    def checkFile(self, tipodatabase='database', shortcut=''):
+        if tipodatabase == 'database':
+            nome = 'database.pkl'
+            func = self.makeDataBase
+        else:
+            nome = 'speseDb.pkl'
+            func = self.makeSpeseDb
         try:
             # print(os.getcwd())
             with open(nome, "rb") as f:
                 fileDb = pickle.load(f)
         except FileNotFoundError:
-            print("creo il database")
-            fileDb = self.makeDataBase()
+            print("creo il database ", nome)
+            fileDb = func()
             with open(nome, "wb") as f:
                 pickle.dump(fileDb, f)
         return fileDb
@@ -166,13 +179,16 @@ class DbMaker(object):
         return fileDb
 
     @staticmethod
-    def salvaDatabase(fileDb, shortcut=''):
+    def salvaDatabase(fileDb, shortcut='', tipodatabase='database'):
         """ salva il database per l'anno indicato"""
         print("sequenza di salvataggio iniziata")
-        if shortcut != '':
-            nome = '../database.pkl'
+        if tipodatabase == 'database':
+            if shortcut != '':
+                nome = '../database.pkl'
+            else:
+                nome = 'database.pkl'
         else:
-            nome = 'database.pkl'
+            nome = 'speseDb.pkl'
         with open(nome, "wb") as f:
             pickle.dump(fileDb, f)
         print("salvataggio effettuato in: ", nome)
