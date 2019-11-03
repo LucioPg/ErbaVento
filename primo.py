@@ -56,7 +56,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             'totale notti': 0,
             "numero ospiti": 1,
             "bambini": 0,
-            "spese": {},
+            "spese": 0,
             "colazione": 'No',
             "stagione": '',
             "importo": 0,
@@ -127,8 +127,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_esporta.clicked.connect(self.exportaDb)
         self.bot_prenota.clicked.connect(self.vaiPrenotaTab)
         self.bot_annulla.clicked.connect(self.vaiCalendario)
-        self.bot_spese.clicked.connect(self.gestisciSpese)
-        self.bot_note.MPB_signal.connect(self.speseNoteShow)
+        self.bot_spese.clicked.connect(self.addSpese)
+        self.bot_note.MPB_signal.connect(self.NoteShow)
         self.tabWidget.currentChanged.connect(self.retTab)
         self.lineEdit_nome.returnPressed.connect(self.lineEditVerifica)
         self.lineEdit_cognome.returnPressed.connect(self.lineEditVerifica)
@@ -142,48 +142,65 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # STATUS BAR
         # self.statusbar.setT
 
-    def gestisciSpese(self):
+    def totaleSpeseG(self, data: QtCore.QDate):
+        tot = 0
+        a, m, g = self.amg(data)
+        if data in self.spese[a][m].keys():
+            for spesa in self.spese[a][m][data].values():
+                tot += spesa
+        return tot
+
+    def gestisciSpese(self, datat):
         try:
             # dialog = DialogInfo('Spese',table=True)
-            data = self.calendario.selectedDate()
-            a, m, g = self.amg(data)
-            # self.database[a][m][g]['checkIn']['spese']
+            a, m, g = self.amg(datat)
             spesetot = deepc(self.spese)
-            spese = spesetot[a][m].get(data, {})
+            spese = spesetot[a][m].get(datat, {})
             print('check spese ', spese)
             dialog = DialogSpese(spese)
             dialog.SPESEPRONTE.connect(lambda x: print(x))
             if dialog.exec_():
                 spese = dialog.ottieniSpese()
                 if len(spese) != 0:
-                    self.spese[a][m][data] = spese
+                    self.spese[a][m][datat] = spese
                     self.bot_spese.setState(True)
+                    tot = self.totaleSpeseG(datat)
+                    print('totale spese giornaliere: ', tot)
                 else:
-                    if data in self.spese[a][m].keys():
-                        del self.spese[a][m][data]
+                    if datat in self.spese[a][m].keys():
+                        del self.spese[a][m][datat]
                     self.bot_spese.setState(False)
+                    tot = 0
+                totSpeseMensili = 0
 
+                try:
+                    for giornoData in self.spese[a][m].keys():
+                        for spesaperitem in self.spese[a][m][giornoData].values():
+                            totSpeseMensili += spesaperitem
+                    finale = float(totSpeseMensili)
+                except TypeError:
+                    print(' TYPEERR *****************', self.spese[a][m].values())
                 dbm.salvaDatabase(self.spese, tipodatabase='spese')
-
-
+                return finale
         except:
             print(fex())
 
-    def addSpese_2(self):
+    def addSpese(self):
         try:
             # dialog = DialogInfo('Spese',table=True)
             data = self.calendario.selectedDate()
-            a, m, g = self.amg(data)
-            # self.database[a][m][g]['checkIn']['spese']
+            a, m, g = self.amg(self.calendario.selectedDate())
+            finale = self.gestisciSpese(data)
             spese = self.database[a][m][g]['checkIn']['spese']
-            dialog = DialogSpese(spese)
-            dialog.SPESEPRONTE.connect(lambda x: print(x))
-            if dialog.exec_():
-                spese = dialog.ottieniSpese()
-                # spese += dialog.guiText.textBrowser_dialog_info.toPlainText()
-                self.database[a][m][g]['checkIn']['spese'] = spese
-            if data not in self.spese.keys():
-                self.spese[data] = spese
+            print('finale ', finale)
+            if spese != finale:
+                copia = deepc(self.database[a][m][g]['checkIn'])
+                copia['spese'] = finale
+                for giorno in self.database[a][m].keys():
+                    self.database[a][m][giorno]['checkIn'] = deepc(copia)
+
+                dbm.salvaDatabase(self.database)
+
         except:
             print(fex())
 
@@ -1117,14 +1134,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.statusbar.showMessage(st)
         return
 
-    def speseNoteShow(self, info):
+    def NoteShow(self, info):
         print(info)
         try:
             a, m, g = self.amg(self.calendario.selectedDate())
             noteChiave = info.lower()
             text = self.database[a][m][g]['checkIn'][noteChiave]
             if info == 'Spese':
-                dialog = D
+                pass
             else:
                 dialog = DialogInfo(info, testo=text, showBool=True)
 
@@ -1132,7 +1149,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 if dialog.exec_():
                     nuovoTesto = dialog.guiText.textBrowser_dialog_info.toPlainText()
                     if nuovoTesto != text:
-                        self.database[a][m][g]['checkIn'][noteChiave] = nuovoTesto
+                        self.database[a][m][g]['checkIn']['spese'] = nuovoTesto
                         dbm.salvaDatabase(self.database)
         except:
             print(fex())

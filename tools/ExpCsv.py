@@ -14,7 +14,7 @@ class ExpCsv(object):
 
     def __init__(self, database, anno=None, shortcut=0):
         self._database = deepcopy(self.adjDb(database))
-        self.listak_esclusiRipetizione = ['nome', 'cognome', 'colazione', 'platform']
+        self.listak_esclusiRipetizione = ['nome', 'cognome', 'colazione', 'platform', 'spese']
         # self.listaColonne = self.build_listaColonne_old()
         self.listaColonne = []
         self._anno = anno
@@ -91,6 +91,7 @@ class ExpCsv(object):
                 dizzy = Od()
                 ieri = 1
                 listaV.clear()
+                totSpese = 0
                 for giorno in db[anno][mese]:
 
                     listaNomi_oggi = getNames(anno, mese, giorno)
@@ -145,6 +146,12 @@ class ExpCsv(object):
                                     else:
                                         dato = db[anno][mese][giorno][k]
                                 else:
+                                    if k == 'spese':
+                                        pass
+                                        # totSpese +=float(db[anno][mese][giorno][k])
+                                        # dato = totSpese
+                                    else:
+                                        pass
                                     dato = db[anno][mese][giorno][k]
                             else:
                                 nuovaPrenotazione = False
@@ -154,6 +161,7 @@ class ExpCsv(object):
                     else:
                         print("diz già presente\n\t", diz.items())
                 updated[anno][mese] = deepcopy(dizzy)
+                totSpese = 0
             lik = [x for x in diz.keys()]
             lik.insert(0, 'data')
             if self.listaColonne != lik:

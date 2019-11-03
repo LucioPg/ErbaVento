@@ -23,7 +23,7 @@ class DbMaker(object):
         "totale notti": 0,
         "numero ospiti": 0,
             "bambini": 0,
-        "spese": {},
+        "spese": 0,
         "colazione": 'No',
         "stagione": '',
             "importo": 0,

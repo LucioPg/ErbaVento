@@ -366,7 +366,8 @@ class ManagerPreno(object):
             import traceback
             print(traceback.format_exc())
 
-    def getDb(self):
+    @staticmethod
+    def getDb():
         """
         accede al database
         :return:
