@@ -32,8 +32,6 @@ class MyCalend(QtWidgets.QCalendarWidget):
         print("current: ", self.selectedDate())
         self.pen = QtGui.QPen()
         self.pen.setColor(self.pulizie)
-        print('@@@@@@@@ calendario children ', self.children())
-
     # def showPreviousMonth(self) -> None:
     #     pass
     # def showNextMonth(self) -> None:

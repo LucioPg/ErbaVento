@@ -147,12 +147,12 @@ class ExpCsv(object):
                                         dato = db[anno][mese][giorno][k]
                                 else:
                                     if k == 'spese':
-                                        pass
-                                        # totSpese +=float(db[anno][mese][giorno][k])
-                                        # dato = totSpese
+
+                                        totSpese +=float(db[anno][mese][giorno][k])
+                                        dato = totSpese
                                     else:
-                                        pass
-                                    dato = db[anno][mese][giorno][k]
+
+                                        dato = db[anno][mese][giorno][k]
                             else:
                                 nuovaPrenotazione = False
                         dizzy[giorno_data][k] = dato

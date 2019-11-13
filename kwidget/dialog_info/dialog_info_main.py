@@ -170,7 +170,13 @@ class DialogInfoSpese(GuiTable, QDialog):
         spese = {}
         for row in range(rows):
             itemR = self.tableWidget.cellWidget(row, 1)
-            valRow = int(itemR.text())
+            valore = itemR.text()
+            try:
+                valRow = int(valore)
+            except ValueError:
+                if ',' in itemR.text():
+                    valore = valore.replace(',','.')
+                valRow = float(valore)
             if valRow == 0:
                 continue
             itemC = self.tableWidget.item(row, 0)

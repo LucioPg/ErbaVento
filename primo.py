@@ -197,7 +197,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 copia = deepc(self.database[a][m][g]['checkIn'])
                 copia['spese'] = finale
                 for giorno in self.database[a][m].keys():
-                    self.database[a][m][giorno]['checkIn'] = deepc(copia)
+                    self.database[a][m][giorno]['checkIn']['spese']= deepc(copia['spese'])
 
                 dbm.salvaDatabase(self.database)
 
@@ -680,14 +680,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         spese = self.getDatabase(tipo='spese')
         return spese
 
-    def initSpeseDb_old(self):
-        speseTot = deepc(self.database)
-        for a in speseTot.keys():
-            for m in speseTot[a].keys():
-                for g in speseTot[a][m].keys():
-                    speseTot[a][m][g] = {}
-        print('controllo speseTot ', speseTot[a][m])
-
     def initStatDb(self, database={}):
         if database is None or len(database) == 0:
             database = deepc(self.database)
@@ -726,36 +718,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 formatStat = formatStuff(l)
         return stat
 
-    def initStatDb_old(self):
-        for anno in self.database.keys():
-            for mese in self.database[anno].keys():
-                for giorno in self.database[anno][mese].keys():
-                    statGiornaliere = stat[anno][mese][giorno]
-                    statGiornaliere.pop('checkIn')
-                    statGiornaliere.pop('checkOut')
-                    l = ['3 notti', '2 notti', '1 notte', 'tasse finora', 'netto finora']
-                    for k in l:
-                        if k not in statGiornaliere:
-                            statGiornaliere[k] = 0
-                    chiave = self.database[anno][mese][giorno]['checkIn']
-                    numeroNotti = int(chiave['totale notti'])
-                    if numeroNotti != 0:
-                        print(giorno, mese, anno, numeroNotti, end=' ')
-                        print()
-                    if numeroNotti >= 3:
-                        statGiornaliere['3 notti'] += 1
-                        print(" stat: ", statGiornaliere['3 notti'])
-                    elif numeroNotti == 2:
-                        statGiornaliere['2 notti'] += 1
-                    elif numeroNotti == 1:
-                        statGiornaliere['1 notte'] += 1
-                    tasse = int(chiave['tasse'])
-                    statGiornaliere['tasse finora'] += tasse
-                    netto = int(chiave['netto'])
-                    statGiornaliere['netto finora'] += netto
-
-        return stat
-
     def leggiDatabase(self, database=None):
         """
         legge il database per restituire gli elenchi delle piattaforme
@@ -777,6 +739,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.database = db.DataBase
         except:
             print(fex())
+
     @QtCore.pyqtSlot()
     def lineEditVerifica(self):
         # print('Hola ',self.bot.text())
@@ -836,7 +799,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_modifica.setEnabled(flagMod)
         # self.bot_modifica.setEnabled(True)
         # self.bot_salva.setEnabled(True)
-
 
     def periodoCambiato(self, p):
         d = self.dateEdit_dal.date()
@@ -984,7 +946,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return statusBot
 
     def riempiTabellaStat(self, info=None):
-        print('riempiTabellaStat from ', self.sender())
+        # print('riempiTabellaStat from ', self.sender())
         if info is None:
             info = deepc(self.infoSta)
         # print('mese corrente ',self.calendario.selectedDate().toString('MMM'))
@@ -994,14 +956,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         dbStat = deepc(info)
         totaleNotti = 0
         try:
-            print('ok')
-            print(dbStat[a][m].items())
             self.tableWidget_stat.setRowCount(0)
             row = 0
             for c0, c1 in dbStat[a][m].items():
                 self.tableWidget_stat.insertRow(row)
-                print(c0, ' ', c1)
-                print('row ', row)
                 item0 = QtWidgets.QTableWidgetItem()
                 item0.setText(c0)
                 item1 = QtWidgets.QTableWidgetItem()
@@ -1010,10 +968,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.tableWidget_stat.setItem(row, 1, item1)
                 row += 1
             nottiDaSommare = [x for x in dbStat[a][m].values()][:3]
-            print('nottiDaSommare', nottiDaSommare)
             for n in nottiDaSommare:
                 totaleNotti += n
-            print('total', totaleNotti)
             self.tableWidget_stat.insertRow(row)
             itemt = QtWidgets.QTableWidgetItem()
             itemt.setText(str(totaleNotti))
