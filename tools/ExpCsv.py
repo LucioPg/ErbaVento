@@ -148,7 +148,7 @@ class ExpCsv(object):
                                 else:
                                     if k == 'spese':
 
-                                        totSpese +=float(db[anno][mese][giorno][k])
+                                        totSpese +=float(db[anno][mese][giorno]['spese'])
                                         dato = totSpese
                                     else:
 
