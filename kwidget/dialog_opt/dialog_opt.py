@@ -233,9 +233,9 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             self.setProvvigione()
             self.setTasse(self.config['tasse'])
             self.combo_stagione.setCurrentIndex(self.combo_stagione.findText(self.config['stagione preferita']))
-            self.setColor()
             self.setComboPlat()
             self.displayTasseAttive()
+            self.setColor()
 
 
     def on_context_menu(self, point):
