@@ -210,7 +210,6 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     def displayTasseAttive(self):
         plat = self.combo_platform.currentText()
         act = self.config['tasse attive'][plat]
-        print("act: ", act)
         self.radio_attivaTassa.setChecked(act)
 
     def getPlatStag(self):

@@ -928,26 +928,19 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.tableWidget_info_ospite.setItem(5, 1, item)
         self.tableWidget_info_ospite.update()
         self.bot_note.setInfo(info['note'])
-        print('infoNOte ', info['note'])
-        # try:
         data = self.calendario.selectedDate()
         if data in self.spese[data.year()][data.month()].keys():
             self.bot_spese.setState(True)
         else:
             self.bot_spese.setState(False)
-        # except: print(fex())
         return statusBot
 
     def riempiTabellaStat(self, info=None):
-        print('riempi tabella stat')
-        # print('riempiTabellaStat from ', self.sender())
         if info is None:
             info = deepc(self.infoSta)
-        # print('mese corrente ',self.calendario.selectedDate().toString('MMM'))
         data = self.calendario.selectedDate()
         a, m, g = self.amg(data)
         dbStat = deepc(info)
-        totaleNotti = 0
         try:
             self.tableWidget_stat.setRowCount(0)
             row = 0
@@ -960,17 +953,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.tableWidget_stat.setItem(row, 0, item0)
                 self.tableWidget_stat.setItem(row, 1, item1)
                 row += 1
-            nottiDaSommare = [x for x in dbStat[a][m].values()][:3]
-            # for n in nottiDaSommare:
-            #     totaleNotti += n
-            # self.tableWidget_stat.insertRow(row)
-            # itemt = QtWidgets.QTableWidgetItem()
-            # itemt.setText(str(totaleNotti))
-            # self.tableWidget_stat.setItem(row, 1, itemt)
-            # itemtn = QtWidgets.QTableWidgetItem()
-            # # itemtn.setText('Notti Totali')
-            # itemtn.setText('Spese')
-            # self.tableWidget_stat.setItem(row, 0, itemtn)
             self.tableWidget_stat.update()
         except KeyError:
             print('riempi stat key err ')

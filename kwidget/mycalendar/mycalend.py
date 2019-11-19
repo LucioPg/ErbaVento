@@ -11,7 +11,7 @@ class MyCalend(QtWidgets.QCalendarWidget):
         super(MyCalend, self).__init__(parent)
         self.setGridVisible(True)
         self.setObjectName('Calendario')
-        # self.color = QtGui.QColor(self.palette().color(QtGui.QPalette.Highlight))
+        self.setVerticalHeaderFormat(0)
         self.datePrenotazioni = datePrenotazioni
         # self.listeColori = {p:col for p,col in zip(self.datePrenotazioni.keys(), )}
         # self.booking = QtGui.QColor(QtCore.Qt.cyan)
