@@ -43,6 +43,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.listeProvvigioni = {}
         self.listeTasse = {}
         self.tassa = 0
+        iconaMainWindow = QtGui.QIcon('erbavento.ico')
         datePren = {'platforms': {}}
         self.datePrenotazioni = Od(datePren)
         d = {
@@ -71,6 +72,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.infoModelRedux = Od(r)
         #  init gui
         self.setupUi(self)
+        self.setWindowIcon(iconaMainWindow)
         self.bot_note.setTipo('note')
         self.statusbar.showMessage("Ready!!!!")
         self.calendario = MyCalend(
@@ -151,6 +153,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             a, m, g = self.amg(data)
             text = self.database[a][m][g]['checkIn']['note']
             dialog = DialogInfo(testo=text, showBool=True)
+            icona = QtGui.QIcon('icona_note.ico')
+            dialog.setWindowIcon(icona)
             tempDict = deepc(self.database[a][m][g]['checkIn'])
             dialog.guiText.textBrowser_dialog_info.setText(text)
             if dialog.exec_():
