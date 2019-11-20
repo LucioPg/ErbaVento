@@ -20,17 +20,27 @@ rosso = Rosso()
 
 class ColorButton(QPushButton):
     statoCambiato = QtCore.pyqtSignal(bool)
+    tipoSpese = """QPushButton{background-color: rgba(255, 50, 50, 150);}
+                                QPushButton::pressed{background-color: rgba(155, 10, 10, 150);}"""
 
-    def __init__(self, parent=None):
+    tipoNote = """QPushButton{background-color: rgba(170, 255, 127, 150);}
+                                    QPushButton::pressed{background-color: rgba(70, 155, 27, 150);}"""
+
+    def __init__(self, parent=None, tipo=''):
         super(ColorButton, self).__init__(parent)
+        if tipo == '':
+            tipo = 'spese'
+        self.tipo = tipo
         self.state = False
         self.statoCambiato.connect(self.changeColor)
 
     # @QtCore.pyqtSlot()
     def changeColor(self, state):
         if state:
-            self.setStyleSheet("""QPushButton{background-color: rgba(255, 50, 50, 150);}
-                                QPushButton::pressed{background-color: rgba(155, 10, 10, 150);}""")
+            if self.tipo == 'spese':
+                self.setStyleSheet(self.tipoSpese)
+            elif self.tipo == 'note':
+                self.setStyleSheet(self.tipoNote)
         else:
             self.setStyleSheet("""""")
 
@@ -39,6 +49,8 @@ class ColorButton(QPushButton):
         self.state = state
         self.statoCambiato.emit(state)
 
+    def setTipo(self,tipo: str):
+        self.tipo = tipo
 
 class ProgressButton(QProgressBar):
     MPB_signal = QtCore.pyqtSignal(str)

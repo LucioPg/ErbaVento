@@ -430,7 +430,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="GreenProgressButton" name="bot_note">
+                 <widget class="ColorButton" name="bot_note">
                   <property name="minimumSize">
                    <size>
                     <width>75</width>
@@ -461,6 +461,22 @@
                 <property name="rightMargin">
                  <number>22</number>
                 </property>
+                <item>
+                 <widget class="QLabel" name="label_15">
+                  <property name="font">
+                   <font>
+                    <weight>75</weight>
+                    <bold>true</bold>
+                   </font>
+                  </property>
+                  <property name="text">
+                   <string>Stagione: </string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignCenter</set>
+                  </property>
+                 </widget>
+                </item>
                 <item>
                  <widget class="QLabel" name="label_stagione">
                   <property name="sizePolicy">
@@ -1813,11 +1829,6 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
-  <customwidget>
-   <class>GreenProgressButton</class>
-   <extends>QPushButton</extends>
-   <header location="global">kwidget.myprogressbutton.myprogressbutton_main</header>
-  </customwidget>
   <customwidget>
    <class>MyLineEdit</class>
    <extends>QLineEdit</extends>

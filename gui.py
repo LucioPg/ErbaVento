@@ -189,7 +189,7 @@ class Ui_MainWindow(object):
         self.bot_spese.setStyleSheet("")
         self.bot_spese.setObjectName("bot_spese")
         self.horizontalLayout.addWidget(self.bot_spese)
-        self.bot_note = GreenProgressButton(self.tab1)
+        self.bot_note = ColorButton(self.tab1)
         self.bot_note.setMinimumSize(QtCore.QSize(75, 0))
         self.bot_note.setMaximumSize(QtCore.QSize(75, 16777215))
         self.bot_note.setFocusPolicy(QtCore.Qt.ClickFocus)
@@ -200,6 +200,14 @@ class Ui_MainWindow(object):
         self.horizontalLayout_7.setContentsMargins(-1, -1, 22, -1)
         self.horizontalLayout_7.setSpacing(4)
         self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.label_15 = QtWidgets.QLabel(self.tab1)
+        font = QtGui.QFont()
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_15.setFont(font)
+        self.label_15.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_15.setObjectName("label_15")
+        self.horizontalLayout_7.addWidget(self.label_15)
         self.label_stagione = QtWidgets.QLabel(self.tab1)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -769,6 +777,7 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "New Column"))
         self.bot_spese.setText(_translate("MainWindow", "Spese"))
         self.bot_note.setText(_translate("MainWindow", "Note"))
+        self.label_15.setText(_translate("MainWindow", "Stagione: "))
         self.bot_cancella.setText(_translate("MainWindow", "Cancella Prenotazione"))
         self.bot_prenota.setText(_translate("MainWindow", "Prenota"))
         self.bot_esporta.setText(_translate("MainWindow", "Esporta"))
@@ -809,7 +818,7 @@ class Ui_MainWindow(object):
 
 from kwidget.mydateedit.mydateedit import MyDateEdit
 from kwidget.mylineEdit.mylineEdit import MyLineEdit
-from kwidget.myprogressbutton.myprogressbutton_main import ColorButton, GreenProgressButton
+from kwidget.myprogressbutton.myprogressbutton_main import ColorButton
 
 
 if __name__ == "__main__":

@@ -202,8 +202,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             self.setColor()
             self.displayTasseAttive()
         except KeyError:
-            print('stagione: ', stagione, ' *')
-            print('platform: ', platform, ' *')
+            print('KeyErr in displayImporti')
         except:
             print(fex())
 
