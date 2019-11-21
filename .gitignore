@@ -1,4 +1,4 @@
-*.ui
+
 !gui.ui
 !gui_option.ui
 !gui_basiccolorselector.ui
