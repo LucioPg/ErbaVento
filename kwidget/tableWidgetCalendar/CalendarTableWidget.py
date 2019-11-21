@@ -20,20 +20,32 @@ class CalendarTableWidget(Calendar,QtWidgets.QTableWidget):
         """create dict for dates in the selected Year and selected Month"""
         pass
 
+    def populateWithComplexLabels(self):
+        """populate the table with the complexlabels"""
+        pass
+
     def setCurrentPage(self):
         """set the current page shown as month for the selected year"""
+        pass
+
+    def setDayNumInComplexLabel(self):
+        """set the number of the day in the label of the complexlabel widget"""
+        pass
+
+    def setIconComplexLabel(self):
+        """set the icon for the complexlabel in the right date"""
         pass
 
     def showNextMonth(self):
         """show the next month in the table"""
         pass
 
-    def showPreviousMonth(self):
-        """show th previous month in the table"""
-        pass
-
     def showNextYear(self):
         """show the next year in the table"""
+        pass
+
+    def showPreviousMonth(self):
+        """show th previous month in the table"""
         pass
 
     def showPreviousYear(self):
