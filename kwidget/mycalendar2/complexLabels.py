@@ -19,7 +19,7 @@ class ComplexLabel(complexLabelGui, QWidget):
         self.data = data
         self.setupUi(self)
         self.tuplaFlags = (1, 0, 0)
-        self.icons = [QIcon('icons8.ico'), QIcon('sunny.ico'),QIcon('erbavento.ico')]
+        self.icons = [QIcon('iconSpese.ico'), QIcon('sunny.ico'),QIcon('erbavento.ico')]
         self.labels = [self.labSpese, self.labNote, self.labCleaning]
         # self.bot = QPushButton('click me')
         # self.verticalLayout_5.addWidget(self.bot)
@@ -160,7 +160,7 @@ if __name__ == '__main__':
     # vbox.addWidget(QLabel('hello'))
     # labIcon = QLabel()
     # icon = QIcon('sunny.ico')
-    # icon2 = QIcon('icons8.ico')
+    # icon2 = QIcon('iconSpese.ico')
     # icon.pixmap(QSize(64, 64))
     # labIcon.setPixmap(icon2.pixmap(QSize(64, 64)))
     # vbox.addWidget(labIcon)

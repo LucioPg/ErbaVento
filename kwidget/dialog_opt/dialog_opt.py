@@ -64,7 +64,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         self.popMenu.addAction(addPlat)
         self.popMenu.addSeparator()
         self.popMenu.addAction(removePlat)
-        self.optIcon = QtGui.QIcon('settingsIcon.png')
+        self.optIcon = QtGui.QIcon('./Icons/settingsIcon.png')
         self.setWindowIcon(self.optIcon)
         # funzioni pulsanti
         self.bot_aggiungiLetto.clicked.connect(self.aggiungiLetto)

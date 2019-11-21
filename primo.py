@@ -33,7 +33,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
 
-        self.settingsIcon = 'settingsIcon.png'
+        self.settingsIcon = './Icons/settingsIcon.png'
         self.colors = {}
         self.dateBooking = []
         self.dateAirbb = []
@@ -43,7 +43,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.listeProvvigioni = {}
         self.listeTasse = {}
         self.tassa = 0
-        iconaMainWindow = QtGui.QIcon('erbavento.ico')
+        iconaMainWindow = QtGui.QIcon('./Icons/erbavento.ico')
         datePren = {'platforms': {}}
         self.datePrenotazioni = Od(datePren)
         d = {
@@ -153,7 +153,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             a, m, g = self.amg(data)
             text = self.database[a][m][g]['checkIn']['note']
             dialog = DialogInfo(testo=text, showBool=True)
-            icona = QtGui.QIcon('icona_note.ico')
+            icona = QtGui.QIcon('./Icons/icona_note.ico')
             dialog.setWindowIcon(icona)
             tempDict = deepc(self.database[a][m][g]['checkIn'])
             dialog.guiText.textBrowser_dialog_info.setText(text)
@@ -557,6 +557,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             spesetot = deepc(self.spese)
             spese = spesetot[a][m].get(datat, {})
             dialog = DialogSpese(spese)
+            dialog.setWindowIcon(QtGui.QIcon('./Icons/iconSpese100.png'))
             dialog.SPESEPRONTE.connect(lambda x: print(x))
             if dialog.exec_():
                 spese = dialog.ottieniSpese()
@@ -814,26 +815,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_modifica.setEnabled(flagMod)
         # self.bot_modifica.setEnabled(True)
         # self.bot_salva.setEnabled(True)
-
-    def NoteShow(self, info):
-        print(info)
-        try:
-            a, m, g = self.amg(self.calendario.selectedDate())
-            noteChiave = info.lower()
-            text = self.database[a][m][g]['checkIn'][noteChiave]
-            if info == 'Spese':
-                pass
-            else:
-                dialog = DialogInfo(info, testo=text, showBool=True)
-
-                dialog.guiText.textBrowser_dialog_info.setText(text)
-                if dialog.exec_():
-                    nuovoTesto = dialog.guiText.textBrowser_dialog_info.toPlainText()
-                    if nuovoTesto != text:
-                        self.database[a][m][g]['checkIn']['spese'] = nuovoTesto
-                        dbm.salvaDatabase(self.database)
-        except:
-            print(fex())
 
     def periodoCambiato(self, p):
         d = self.dateEdit_dal.date()
