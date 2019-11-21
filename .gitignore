@@ -2,6 +2,7 @@
 !gui.ui
 !gui_option.ui
 !gui_basiccolorselector.ui
+!gui_calendar.ui
 !kwidget/dialog_info/*
 !requirements.txt
 *.pkl
