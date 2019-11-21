@@ -7,6 +7,11 @@ from tools.meseGiorniDictGen import MeseGiorniDictGen
 import sys
 
 
+# TODO POPOLARE LE CELLE CON LE COMPLEXLABELS
+# TODO SISTEMARE LA FUNC SELECTEDDATE PER LA CELLA CLICKATA
+# TODO SISTEMARE IL SEGNALE selectionChanged
+# TODO CREARE FUNC CHE CERCHI LA CELLA CON LA DATA SELEZIONATA
+
 class CalendarTableWidget(Calendar,QtWidgets.QTableWidget):
     #Signals:
     currentPageChanged = pyqtSignal()
@@ -92,6 +97,7 @@ class CalendarTableWidget(Calendar,QtWidgets.QTableWidget):
 
     def showToday(self):
         """show today"""
+        # todo selezionare la data di oggi e scrollare fino alla pagina corretta
         pass
 
 
