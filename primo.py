@@ -2,7 +2,8 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 from collections import OrderedDict as Od
 from copy import deepcopy as deepc
 from gui import Ui_MainWindow as mainwindow
-from kwidget.mycalendar.mycalend import MyCalend
+# from kwidget.mycalendar.mycalend import MyCalend
+from kwidget.tableWidgetCalendar.CalendarTableWidget import CalendarTableWidget as MyCalend
 from kwidget.dialog_info.dialog_info_main import DialogInfo
 from kwidget.dialog_info.dialog_info_main import DialogInfoSpese as DialogSpese
 from kwidget.dialog_opt.dialog_opt import DialogOption

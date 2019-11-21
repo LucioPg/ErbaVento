@@ -138,7 +138,7 @@ class Ui_complexLabel(object):
     def retranslateUi(self, complexLabel):
         _translate = QtCore.QCoreApplication.translate
         complexLabel.setWindowTitle(_translate("complexLabel", "Form"))
-from squaredLabel import SquaredLabel
+from kwidget.complexlabel.squaredLabel import SquaredLabel
 
 
 if __name__ == "__main__":

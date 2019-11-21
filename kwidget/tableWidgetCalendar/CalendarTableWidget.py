@@ -10,10 +10,17 @@ import sys
 class CalendarTableWidget(Calendar,QtWidgets.QTableWidget):
     #Signals:
     currentPageChanged = pyqtSignal()
+    selectionChanged = pyqtSignal()
+    yearChanged = pyqtSignal()
 
 
-    def __init__(self,parent=None):
+    def __init__(self,prenotazioni=None,pulizie=None,colors=None,parent=None):
         super(CalendarTableWidget, self).__init__(parent)
+        self.datePrenotazioni = prenotazioni
+        self.datePulizie = pulizie
+        self.colors = colors
+        self.setAlphaColors()
+        self.oggi = QDate().currentDate()
         self.setupUi(self)
 
     def createDates(self):
@@ -24,9 +31,36 @@ class CalendarTableWidget(Calendar,QtWidgets.QTableWidget):
         """populate the table with the complexlabels"""
         pass
 
+    def selectedDate(self) -> QDate:
+        """:returns the date in the selected cell"""
+        pass
+
+    def setAlphaColors(self, alpha=150):
+        """set the alpha of the color background as the value for all the colors"""
+        for color in self.colors:
+            color.setAlpha(150)
+
     def setCurrentPage(self):
         """set the current page shown as month for the selected year"""
         pass
+
+    def setDates(self,prenotazioni, pulizie, colors):
+        """mimic the old version of calendar"""
+        print('this func is obsolete, please change it as it does nothing')
+
+    def setListe(self, listaAsDict: dict = None) -> dict:
+        """mimic the old version of calendar"""
+        print('this func is obsolete, please change it')
+        if listaAsDict is None:
+            print('Attenzione la listaDizionario passata è nulla')
+            return dict()
+        listaDate = {}
+        for i in listaAsDict.keys():
+            for l in listaAsDict[i].keys():
+                for data in listaAsDict[i][l]['date']:
+                    if data not in listaDate:
+                        listaDate[data] = l
+        return listaDate
 
     def setDayNumInComplexLabel(self):
         """set the number of the day in the label of the complexlabel widget"""

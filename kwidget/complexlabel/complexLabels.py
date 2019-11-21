@@ -6,7 +6,7 @@ from PyQt5.QtGui import (QFont, QStandardItemModel, QStandardItem, QIcon, QClose
 from PyQt5.QtWidgets import (QTableView, QWidget, QAbstractItemView, QPushButton,
                              QApplication, QLabel, QGridLayout)
 
-from complex_gui import Ui_complexLabel as complexLabelGui
+from kwidget.complexlabel.complex_gui import Ui_complexLabel as complexLabelGui
 
 
 class ComplexLabel(complexLabelGui, QWidget):
