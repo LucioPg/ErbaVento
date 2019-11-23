@@ -56,7 +56,7 @@ class CalendarTableWidget(Calendar, QWidget):
                 self.indexMonth = 0
                 self.setCurrentYear(currentYear+1)
                 self.setBaseDate(self.baseDate.addMonths(1))
-                print('new Year: ', self.currentYear)
+                # print('new Year: ', self.currentYear)
 
         elif sender == 'bot_prev':
             # if currentMonth > 0:
@@ -67,12 +67,15 @@ class CalendarTableWidget(Calendar, QWidget):
                 self.indexMonth = 11
                 self.setCurrentYear(currentYear-1)
                 self.setBaseDate(self.baseDate.addMonths(-1))
-                print('new Year: ', self.currentYear)
+                # print('new Year: ', self.currentYear)
         if currentMonth != self.indexMonth:
             self.currentPageChanged.emit(self.indexMonth)
             self.combo_mesi.setCurrentIndex(self.indexMonth)
+        else: print('currentMonth didn\'t change into changeDisplayedMonth')
         if currentYear != self.currentYear:
             self.setListaGiorniDellAnno(self.createDates(self.baseDate), self.indexMonth)
+        else:
+            print('currentYear didn\'t change into changeDisplayedMonth')
 
     def changeDisplayedMonthCombo(self, index):
         """changes the current month displayed in the combo"""
@@ -173,7 +176,7 @@ class CalendarTableWidget(Calendar, QWidget):
             date = self.oggi
 
         self.baseDate = QDate(date.year(),date.month(),1)
-        print('setting baseDate', self.baseDate)
+        # print('setting baseDate', self.baseDate)
         if date.year() != self.currentYear:
             print('setBaseDate current year in aggiornamento: ')
             self.setCurrentYear(date.year())
@@ -246,6 +249,7 @@ class CalendarTableWidget(Calendar, QWidget):
                 itemWidget = self.table.cellWidget(row, col)
                 numeroGiorno = str(data.day())
                 itemWidget.setText(numeroGiorno)
+                itemWidget.setData(data)
                 if data not in self.daysInTheMonth:
                     itemWidget.setEnabled(False)
                     dateEscluse.append(data)
@@ -253,8 +257,6 @@ class CalendarTableWidget(Calendar, QWidget):
                     # print(data, ' in ', self.daysInTheMonth)
                     itemWidget.setEnabled(True)
                     pass
-        for de in dateEscluse:
-            print(de)
 
     def showNextMonth(self):
         """show the next month in the table"""
@@ -288,13 +290,33 @@ class CalendarTableWidget(Calendar, QWidget):
         self.bot_prev.clicked.connect(self.changeDisplayedMonth)
         self.currentPageChanged.connect(self.changeDisplayedMonthCombo)
         self.currentPageChanged.connect(self.setTextComplexLabels)
-
-        #todo cambiare perché non è il caso di resettare la tabella altrimenti il layout viene stravolto
-        # todo creare funz che scriva direttamente la label delle ComplexLabels
-        # self.listaGiorniDellAnnoChanged.connect(self.populateWithComplexLabels)
         self.listaGiorniDellAnnoChanged.connect(self.setTextComplexLabels)
-
         self.combo_mesi.currentIndexChanged.connect(self.setTextComplexLabels)
+        self.table.cellClicked.connect(self.clickedCell)
+
+    def clickedCell(self, row, col) ->QDate:
+        """if clicked returns the QDate setted into
+        :return data"""
+        data = self.table.cellWidget(row, col).data
+        dataMonth = data.month() - 1
+        dataYear = data.year()
+        print(data)
+        if data in self.daysInTheMonth:
+            print(dataMonth)
+        else:
+
+            print('data not in self.daysInTheMonth, setting through combo_mesi')
+            if dataMonth != self.indexMonth:
+                print('self.indexMonth needs to be updated')
+                self.indexMonth = dataMonth
+            if dataYear != self.currentYear:
+                self.currentYear = dataYear
+                print('current year has changed into ', dataYear)
+            self.changeDisplayedMonth()
+            print()
+            # self.combo_mesi.setCurrentIndex(self.indexMonth)
+
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

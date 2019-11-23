@@ -1,7 +1,7 @@
 import sys
 from traceback import format_exc as fex
 import os
-from PyQt5.QtCore import (pyqtSignal, QModelIndex)
+from PyQt5.QtCore import (pyqtSignal, QModelIndex, QDate)
 from PyQt5.QtGui import (QFont, QStandardItemModel, QStandardItem, QIcon, QCloseEvent)
 from PyQt5.QtWidgets import (QTableView, QWidget, QAbstractItemView, QPushButton,
                              QApplication, QLabel, QGridLayout)
@@ -15,7 +15,7 @@ class ComplexLabel(complexLabelGui, QWidget):
     def __init__(self,parent=None,data=None):
         super(ComplexLabel, self).__init__(parent)
         if data is None:
-            data = []
+            data = 'data not setted'
         self.data = data
         self.setupUi(self)
         self.tuplaFlags = (1, 0, 0)
@@ -37,6 +37,11 @@ class ComplexLabel(complexLabelGui, QWidget):
     def enable(self, flag=True):
         for label in self.labels:
             label.setEnabled(flag)
+
+    def setData(self, data: QDate()):
+        if data is not None:
+            self.data = data
+        return self.data
 
     def setIcona(self, label: QLabel, icon: QIcon, remove=False):
         if not remove:
