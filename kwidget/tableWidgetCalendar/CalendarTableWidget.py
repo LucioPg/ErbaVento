@@ -304,17 +304,15 @@ class CalendarTableWidget(Calendar, QWidget):
         if data in self.daysInTheMonth:
             print(dataMonth)
         else:
-
-            print('data not in self.daysInTheMonth, setting through combo_mesi')
-            if dataMonth != self.indexMonth:
-                print('self.indexMonth needs to be updated')
-                self.indexMonth = dataMonth
-            if dataYear != self.currentYear:
-                self.currentYear = dataYear
-                print('current year has changed into ', dataYear)
-            self.changeDisplayedMonth()
-            print()
-            # self.combo_mesi.setCurrentIndex(self.indexMonth)
+            if dataYear > self.currentYear:
+                self.bot_next.click()
+            elif dataYear < self.currentYear:
+                self.bot_prev.click()
+            elif dataMonth > self.indexMonth:
+                self.bot_next.click()
+            else:
+                self.bot_prev.click()
+        return data
 
 
 
