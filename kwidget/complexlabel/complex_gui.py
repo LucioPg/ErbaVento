@@ -2,10 +2,9 @@
 
 # Form implementation generated from reading ui file 'complex_gui.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.0
+# Created by: PyQt5 UI code generator 5.12.1
 #
 # WARNING! All changes made in this file will be lost!
-
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -13,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_complexLabel(object):
     def setupUi(self, complexLabel):
         complexLabel.setObjectName("complexLabel")
-        complexLabel.resize(211, 148)
+        complexLabel.resize(196, 171)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Ignored, QtWidgets.QSizePolicy.Ignored)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -33,10 +32,39 @@ class Ui_complexLabel(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lab_num.sizePolicy().hasHeightForWidth())
         self.lab_num.setSizePolicy(sizePolicy)
+        palette = QtGui.QPalette()
+        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.WindowText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Text, brush)
+        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0, 128))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.PlaceholderText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.WindowText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Text, brush)
+        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0, 128))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.PlaceholderText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(198, 198, 198))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, brush)
+        brush = QtGui.QBrush(QtGui.QColor(195, 195, 195))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Text, brush)
+        brush = QtGui.QBrush(QtGui.QColor(0, 0, 0, 128))
+        brush.setStyle(QtCore.Qt.SolidPattern)
+        palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.PlaceholderText, brush)
+        self.lab_num.setPalette(palette)
         font = QtGui.QFont()
         font.setPointSize(20)
         self.lab_num.setFont(font)
-        self.lab_num.setStyleSheet("background-color: rgba(170, 255, 127, 150);")
+        self.lab_num.setStyleSheet("")
         self.lab_num.setText("")
         self.lab_num.setAlignment(QtCore.Qt.AlignCenter)
         self.lab_num.setObjectName("lab_num")
@@ -138,6 +166,8 @@ class Ui_complexLabel(object):
     def retranslateUi(self, complexLabel):
         _translate = QtCore.QCoreApplication.translate
         complexLabel.setWindowTitle(_translate("complexLabel", "Form"))
+
+
 from kwidget.complexlabel.squaredLabel import SquaredLabel
 
 

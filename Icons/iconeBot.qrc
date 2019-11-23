@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="bots">
+    <file>nextPageIcon.png</file>
+    <file>prevPageIcon.png</file>
+  </qresource>
+</RCC>

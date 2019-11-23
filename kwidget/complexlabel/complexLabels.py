@@ -1,6 +1,6 @@
 import sys
 from traceback import format_exc as fex
-
+import os
 from PyQt5.QtCore import (pyqtSignal, QModelIndex)
 from PyQt5.QtGui import (QFont, QStandardItemModel, QStandardItem, QIcon, QCloseEvent)
 from PyQt5.QtWidgets import (QTableView, QWidget, QAbstractItemView, QPushButton,
@@ -19,7 +19,10 @@ class ComplexLabel(complexLabelGui, QWidget):
         self.data = data
         self.setupUi(self)
         self.tuplaFlags = (1, 0, 0)
-        self.icons = [QIcon('iconSpese.ico'), QIcon('sunny.ico'),QIcon('erbavento.ico')]
+        self.icons = [QIcon('../../Icons/iconSpese100.png'),
+                      QIcon('../../Icons/sunny.ico'),
+                      QIcon('../../Icons/iconaPulizie.png')
+                      ]
         self.labels = [self.labSpese, self.labNote, self.labCleaning]
         # self.bot = QPushButton('click me')
         # self.verticalLayout_5.addWidget(self.bot)
@@ -31,9 +34,13 @@ class ComplexLabel(complexLabelGui, QWidget):
     def callUser(self):
         self.changeActiveIcons()
 
+    def enable(self, flag=True):
+        for label in self.labels:
+            label.setEnabled(flag)
+
     def setIcona(self, label: QLabel, icon: QIcon, remove=False):
         if not remove:
-            label.setPixmap(icon.pixmap(64,64))
+            label.setPixmap(icon.pixmap(64, 64))
         else:
             label.clear()
 
@@ -171,12 +178,14 @@ if __name__ == '__main__':
     tab.verticalHeader().setMinimumSectionSize(100)
     tab.show()
     bot = QPushButton('click')
-    bot.clicked.connect(lambda : wid.changeActiveIcons())
+    bot.clicked.connect(lambda: wid.changeActiveIcons())
+    wid.setText('ciao')
+    # bot.clicked.connect(lambda: wid.enable(False))
+    bot.clicked.connect(lambda: wid.setEnabled(False))
     bot.setStyleSheet('background-color: green; font: 16px')
     bot.show()
     if tab.closeEvent(QCloseEvent()):
         print('close')
         bot.close()
-
     ind = QModelIndex()
     sys.exit(app.exec_())

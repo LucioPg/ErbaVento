@@ -136,6 +136,7 @@ class MeseGiorniDictGen(QObject):
         return dizAnno
     @staticmethod
     def bigList(oggi: QDate = ...) -> list:
+        """:return list with all pages for current year"""
         bigList = []
         for m in range(1, 13):
             primoDellAnno = QDate(oggi.year(), m, 1)
@@ -172,11 +173,26 @@ class MeseGiorniDictGen(QObject):
         # print(listaGiorni)
         return listaGiorni
 
+    @staticmethod
+    def giorniDelMese(data: QDate) -> list:
+        """ritorna una lista con i giorni del mese"""
+        _mese = data.month()
+        mese = data.month()
+        primo = QDate(data.year(),data.month(),1)
+        lista = []
+        while mese == _mese:
+            lista.append(primo)
+            primo = primo.addDays(1)
+            mese = primo.month()
+        return lista
+
+
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     # gen = MeseGiorniDictGen(QDate().currentDate())
-    gen = MeseGiorniDictGen.genDict(QDate().currentDate())
-
-    for k,v in gen.items():
-        print(k,v)
+    lista = MeseGiorniDictGen.giorniDelMese(QDate().currentDate())
+    for g in lista:
+        print(g)
+    sys.exit(app.exec_())

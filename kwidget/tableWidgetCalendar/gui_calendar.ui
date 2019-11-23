@@ -20,7 +20,7 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
+   <item row="1" column="0">
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
@@ -44,8 +44,11 @@
            <height>40</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true">border-image: url(:/bots/prevPageIcon.png);</string>
+         </property>
          <property name="text">
-          <string>Prev</string>
+          <string/>
          </property>
         </widget>
        </item>
@@ -151,15 +154,27 @@
            <height>40</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true">border-image: url(:/bots/nextPageIcon.png);</string>
+         </property>
          <property name="text">
-          <string>Next</string>
+          <string/>
          </property>
         </widget>
        </item>
       </layout>
      </item>
      <item>
-      <widget class="QTableWidget" name="tableWidget_calendario">
+      <widget class="QTableWidget" name="table">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
+       <property name="lineWidth">
+        <number>0</number>
+       </property>
        <property name="verticalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
@@ -167,7 +182,7 @@
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
        <property name="sizeAdjustPolicy">
-        <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
+        <enum>QAbstractScrollArea::AdjustToContents</enum>
        </property>
        <property name="autoScroll">
         <bool>false</bool>
@@ -191,10 +206,10 @@
         <bool>false</bool>
        </property>
        <property name="rowCount">
-        <number>6</number>
+        <number>0</number>
        </property>
        <property name="columnCount">
-        <number>7</number>
+        <number>0</number>
        </property>
        <attribute name="verticalHeaderVisible">
         <bool>false</bool>
@@ -202,22 +217,25 @@
        <attribute name="verticalHeaderMinimumSectionSize">
         <number>44</number>
        </attribute>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <row/>
-       <column/>
-       <column/>
-       <column/>
-       <column/>
-       <column/>
-       <column/>
-       <column/>
       </widget>
      </item>
     </layout>
+   </item>
+   <item row="0" column="0">
+    <widget class="QLabel" name="label_anno">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Anno: </string>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
@@ -228,6 +246,8 @@
    <header>kwidget.combosenzafreccia.combosenzafreccia</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../../Icons/ioneBot.qrc"/>
+ </resources>
  <connections/>
 </ui>
