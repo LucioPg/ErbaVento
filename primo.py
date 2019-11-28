@@ -91,7 +91,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # )
         self.lastMonth = None
         self.current_date = None
-        self.giornoCorrente = self.calendario.selectedDate()
+        self.giornoCorrente = QtCore.QDate().currentDate()
         self.database = self.initDatabase()
         self.calendario.currentPageChanged.connect(self.correggiDataSelected)
         self.spese = self.initSpeseDb()
@@ -103,6 +103,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         cal_layout.addWidget(self.calendario)
         self.frame_calendar.setLayout(cal_layout)
 
+        # self.calendario.table.clicked.connect(self.getInfoFromCalendar)
         self.calendario.clicked.connect(self.getInfoFromCalendar)
         self.calendario.selectionChanged.connect(self.aggiornaInfoData)
         self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
@@ -150,7 +151,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def addNote(self):
         try:
             # dialog = DialogInfo('Spese',table=True)
-            data = self.calendario.selectedDate()
+            # data = self.calendario.selectedDate()
+            data = self.calendario.currentDate
             a, m, g = self.amg(data)
             text = self.database[a][m][g]['checkIn']['note']
             dialog = DialogInfo(testo=text, showBool=True)
@@ -174,7 +176,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def addSpese(self):
         try:
             # dialog = DialogInfo('Spese',table=True)
-            data = self.calendario.selectedDate()
+            # data = self.calendario.selectedDate()
+            data = self.calendario.currentDate
             a, m, g = self.amg(data)
             finale = self.gestisciSpese(data)
             spese = self.database[a][m][g]['checkIn']['spese']
@@ -191,7 +194,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             print(fex())
 
     def aggiornaInfoData(self):
-        data = self.calendario.selectedDate()
+        # data = self.calendario.selectedDate()
+        data = self.calendario.currentDate
         domani = data.addDays(1)
         anno = data.year()
         if anno < 2018:
@@ -458,9 +462,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def correggiDataSelected(self):
         """seleziona il primo del mese se si cambia la pagina del calendario"""
-
-        data = QtCore.QDate(self.calendario.yearShown(), self.calendario.monthShown(), 1)
-        self.calendario.setSelectedDate(data)
+        print('correggiDataSelected')
+        # data = QtCore.QDate(self.calendario.yearShown(), self.calendario.monthShown(), 1)
+        # print('correggiDataSelected', data)
+        # self.calendario.setSelectedDate(data)
         self.riempiTabellaStat()
 
     def correggiPartenza(self, d):
@@ -536,7 +541,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def gestisciNote(self,info):
         try:
-            data = self.calendario.selectedDate()
+            # data = self.calendario.selectedDate()
+            data = self.calendario.currentDate
             a, m, g = self.amg(data)
             nota = self.database[a][m][g]['checkIn']['note']
             dialog = DialogInfo(info, testo=nota, showBool=True)
@@ -590,6 +596,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # a = self.calendarWidget.dateTextFormat()
         # self.calendario.set
         self.setLabel_stagione(d)
+        print('get_date current date ',d)
         self.current_date = d
         if self.lastMonth != self.current_date.month():
             self.lastMonth = self.current_date.month()
@@ -748,7 +755,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             db = Manager()
             self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
             self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
-            data = self.calendario.selectedDate()
+            #todo selectedDate restituice Qmodelindex invece che data
+            # data = self.calendario.selectedDate()
+            data = self.calendario.currentDate
             info = self.getInfoFromDate(data)
             self.setInfoFromDate(info)
             self.infoSta = self.initStatDb(db.DataBase)
@@ -825,7 +834,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.calcLordoNetto()
 
     def retTab(self, c):
-        anno = self.calendario.selectedDate().year()
+        # anno = self.calendario.selectedDate().year()
+        anno = self.calendario.currentDate.year()
         if anno < 2018:
             print("anno troppo vecchio!")
             self.tabWidget.setCurrentIndex(0)
@@ -952,7 +962,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         item = QtWidgets.QTableWidgetItem(checkOut)
         self.tableWidget_info_ospite.setItem(5, 1, item)
         self.tableWidget_info_ospite.update()
-        data = self.calendario.selectedDate()
+        # data = self.calendario.selectedDate()
+        data = self.calendario.currentDate
         if data in self.spese[data.year()][data.month()].keys():
             self.bot_spese.setState(True)
         else:
@@ -967,7 +978,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def riempiTabellaStat(self, info=None):
         if info is None:
             info = deepc(self.infoSta)
-        data = self.calendario.selectedDate()
+        # data = self.calendario.selectedDate()
+        data = self.calendario.currentDate
         a, m, g = self.amg(data)
         dbStat = deepc(info)
         try:
@@ -1047,7 +1059,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # if self.sender() is not None:
         #     sender = self.sender().objectName()
         # print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
-        data = self.get_date(self.calendario.selectedDate())
+        data = self.get_date(self.calendario.currentDate)
+        # data = self.get_date(self.calendario.selectedDate())
         domani = data.addDays(1)
         anno = data.year()
         if anno < 2018 or anno > 2028:
