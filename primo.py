@@ -104,7 +104,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.frame_calendar.setLayout(cal_layout)
 
         # self.calendario.table.clicked.connect(self.getInfoFromCalendar)
-        self.calendario.clicked.connect(self.getInfoFromCalendar)
+        self.calendario.singleClicked.connect(self.getInfoFromCalendar)
         self.calendario.selectionChanged.connect(self.aggiornaInfoData)
         self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
         # self.calendario.currentPageChanged.connect(self.riportapagina)
@@ -463,7 +463,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def correggiDataSelected(self):
         """seleziona il primo del mese se si cambia la pagina del calendario"""
-        print('correggiDataSelected')
+        # print('correggiDataSelected')
         # data = QtCore.QDate(self.calendario.yearShown(), self.calendario.monthShown(), 1)
         # print('correggiDataSelected', data)
         # self.calendario.setSelectedDate(data)
@@ -597,7 +597,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # a = self.calendarWidget.dateTextFormat()
         # self.calendario.set
         self.setLabel_stagione(d)
-        print('get_date current date ',d)
+        # print('get_date current date ',d)
         self.current_date = d
         if self.lastMonth != self.current_date.month():
             self.lastMonth = self.current_date.month()
@@ -628,6 +628,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # if self.sender() is not None:
         #     sender = self.sender().objectName()
         #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
+        # print('getInfoFromCalendar ', data)
         info = self.getInfoFromDate(data)
         self.setInfoFromDate(info)
         self.setInfoTemp(info)
@@ -965,12 +966,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.tableWidget_info_ospite.update()
         # data = self.calendario.selectedDate()
         data = self.calendario.currentDate
+        # print('data for spese and notes ', data)
         if data in self.spese[data.year()][data.month()].keys():
             self.bot_spese.setState(True)
         else:
             self.bot_spese.setState(False)
         if note != '':
-            print('verifica note: ', note)
+            # print('verifica note: ', note)
             self.bot_note.setState(True)
         else:
             self.bot_note.setState(False)

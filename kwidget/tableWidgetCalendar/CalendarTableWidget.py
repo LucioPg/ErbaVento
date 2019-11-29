@@ -16,7 +16,7 @@ class CalendarTableWidget(Calendar, QWidget):
     #Signals:
     currentPageChanged = pyqtSignal(int) #indice per il mese
     selectionChanged = pyqtSignal(QDate)
-    clicked = pyqtSignal(QDate)
+    singleClicked = pyqtSignal(QDate)
     yearChanged = pyqtSignal() #anno corrente
     listaGiorniDellAnnoChanged = pyqtSignal(int)
     headerStyleSheet = "QHeaderView::section { background-color:gray; font-size:20px; border:0px;}"
@@ -39,7 +39,7 @@ class CalendarTableWidget(Calendar, QWidget):
         self.setListaGiorniDellAnno(self.createDates())
         self.daysInTheMonth = [] #serve a evidenziare i giorni del mese corrente
         self.formatTable()
-        print('selectCEll from init')
+        # print('selectCEll from init')
         self.selectCell(self.oggi)
         self.signalsConnections()
 
@@ -84,6 +84,7 @@ class CalendarTableWidget(Calendar, QWidget):
     def clickedCell(self, row, col) ->QDate:
         """if clicked returns the QDate setted into
         :return data"""
+        # print('clickedCell')
         data = self.table.cellWidget(row, col).data
         dataMonth = data.month() - 1
         dataYear = data.year()
@@ -99,7 +100,8 @@ class CalendarTableWidget(Calendar, QWidget):
         #todo presente per debug
         # self.yearShown()
         self.currentDate = data
-        print('clicked ', data)
+        # print('clicked ', data)
+        self.singleClicked.emit(data)
         return data
 
 
@@ -377,7 +379,7 @@ class CalendarTableWidget(Calendar, QWidget):
         self.combo_mesi.currentIndexChanged.connect(self.removeSelection)
         self.table.cellClicked.connect(self.clickedCell)
         # self.table.doubleClicked.connect(lambda : print('double click needs to be forworded'))
-        self.clicked.connect(self.clickedCell)
+        # self.singleClicked.connect(self.clickedCell)
 
     def yearShown(self):
         """shows the year of the current date"""
