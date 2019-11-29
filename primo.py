@@ -143,6 +143,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.lineEdit_cognome.TABPRESSED.connect(self.lineEditVerifica)
         self.lineEdit_telefono.TABPRESSED.connect(self.lineEditVerifica)
         self.lineEdit_email.TABPRESSED.connect(self.lineEditVerifica)
+        self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
         self.giornoprecedente = self.giornoCorrente.addDays(-1)
         # STATUS BAR
         # self.statusbar.setT

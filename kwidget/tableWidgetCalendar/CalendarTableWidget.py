@@ -254,7 +254,13 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def setDates(self,prenotazioni, pulizie, colors):
         """mimic the old version of calendar"""
-        print('this func is obsolete, please change it as it does nothing')
+        # print('this func is obsolete, please change it as it does nothing')
+        print('this func (setDates)  is going to be reimplemented, please be patient')
+        #todo bisogna verificare che le date presenti nelle liste passate possano essere attivate
+        # come la selezione delle date
+        print('prenotazioni :',prenotazioni)
+        print('pulizie :',pulizie)
+        print('colori :', colors)
 
     def setIndexMonth(self,index):
         """change the index for self.listaGiorniDellAnno for the month to display"""
@@ -370,7 +376,7 @@ class CalendarTableWidget(Calendar, QWidget):
         self.combo_mesi.currentIndexChanged.connect(self.setTextComplexLabels)
         self.combo_mesi.currentIndexChanged.connect(self.removeSelection)
         self.table.cellClicked.connect(self.clickedCell)
-        self.table.doubleClicked.connect(lambda : print('double click needs to be forworded'))
+        # self.table.doubleClicked.connect(lambda : print('double click needs to be forworded'))
         self.clicked.connect(self.clickedCell)
 
     def yearShown(self):
