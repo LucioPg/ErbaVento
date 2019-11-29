@@ -6,6 +6,7 @@ from PyQt5.QtGui import (QPen, QBrush, QPainter, QColor, QIcon)
 from kwidget.tableWidgetCalendar.gui_calendar import Ui_CalendarTableWid as Calendar
 from kwidget.complexlabel.complexLabels import ComplexLabel
 from tools.meseGiorniDictGen import MeseGiorniDictGen
+from copy import deepcopy as deepc
 import sys
 
 # todo la selezione della cella deve essere connessa alla data e non alla posizione della cella, di conseguenza cambiando
@@ -21,14 +22,15 @@ class CalendarTableWidget(Calendar, QWidget):
     singleClicked = pyqtSignal(QDate)
     yearChanged = pyqtSignal() #anno corrente
     headerStyleSheet = "QHeaderView::section { background-color:gray; font-size:20px; border:0px;}"
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, spese=None):
         super(CalendarTableWidget, self).__init__(parent)
         self.setupUi(self)
         self.cellSelectedList = [None]
         self.datePrenotazioni = {}
         self.datePulizie = []
         self.colors = []
-        self.dateSpese = []
+        # self.dateSpese = []
+        self.dateSpese = {}
         self.dateNote = []
         # self.setAlphaColors()
         self.oggi = QDate().currentDate()
@@ -106,7 +108,6 @@ class CalendarTableWidget(Calendar, QWidget):
         # print('clicked ', data)
         self.singleClicked.emit(data)
         return data
-
 
     def createDates(self, data: QDate=None):
         """create dict for dates in the selected Year, divided for row (6) and colums (7)
@@ -209,6 +210,19 @@ class CalendarTableWidget(Calendar, QWidget):
             b = colorStr[4:6]
             return r, g, b
 
+    def removeSelection(self):
+        """removes the selection on the cell if the date is not the currentDate"""
+        try:
+            row = self.table.selectedIndexes()[0].row()
+            col = self.table.selectedIndexes()[0].column()
+        except IndexError:
+            self.selectCell(self.currentDate)
+            return
+        data = self.currentDate
+        _data = self.table.cellWidget(row, col).data
+        if data != _data:
+            self.table.setCurrentCell(row, col, QItemSelectionModel.Deselect)
+
     def selectedDate(self) -> QDate:
         """:returns the date in the selected cell"""
         row = self.cellSelectedList[0].row()
@@ -269,7 +283,7 @@ class CalendarTableWidget(Calendar, QWidget):
         _data = QDate(self.baseDate.year(), indexMonth+1, 1)
         self.setBaseDate(_data)
         baseDate = self.baseDate
-        print('setTextComplex baseDate', baseDate)
+        # print('setTextComplex baseDate', baseDate)
         self.daysInTheMonth = MeseGiorniDictGen.giorniDelMese(QDate(baseDate.year(), indexMonth + 1, 1))
         self.currentMonth = indexMonth + 1
         self.indexMonth = indexMonth
@@ -303,25 +317,33 @@ class CalendarTableWidget(Calendar, QWidget):
         self.currentYear = year
         self.setLabelAnno(str(year))
 
-    def setDatesIndicators(self, prenotazioni, pulizie, colors):
+    def setDatesIndicators(self, prenotazioni, pulizie, colors, spese, note):
         """mimic the old version of calendar, sets the object datePrenotazioni, datePulizie and colors"""
         print('this func (setDates)  is going to be reimplemented, please be patient')
         #todo bisogna verificare che le date presenti nelle liste passate possano essere attivate
         # come la selezione delle date
-        print('prenotazioni :', prenotazioni)
-        print('pulizie :', pulizie)
-        print('colori :', colors)
+        # print('prenotazioni :', prenotazioni)
+        # print('pulizie :', pulizie)
+        # print('colori :', colors)
         if len(colors) != 0:
             self.colors = colors
-
         if len(prenotazioni) != 0:
-            self.datePrenotazioni = prenotazioni
+            self.datePrenotazioni = deepc(prenotazioni)
         if len(pulizie) != 0:
             self.datePulizie = pulizie
+            print('pulizie setted')
+        if len(spese) > 0:
+            # print('spese setted ', spese)
+            print('spese setted ')
+            self.dateSpese = deepc(spese)
+        if len(note) > 0:
+            print('note setted')
+            self.dateNote = note
 
     def setIconsAndBooked(self, data, itemWidget):
         """provides icons for the displayed page ( not current month) """
         # itemWidget = self.findItemWidgetFromDate(data)
+        # print('setIconsAndBooked')
         self.setIconNote(data, itemWidget)
         self.setIconPulizie(data, itemWidget)
         self.setIconSpese(data, itemWidget)
@@ -330,6 +352,7 @@ class CalendarTableWidget(Calendar, QWidget):
     def setIconPulizie(self,data, itemWidget):
         """sets the pulizie icon if a displayed month has a date in self.datePulizie list"""
         # itemWidget = self.findItemWidgetFromDate(data)
+
         if data in self.datePulizie:
             itemWidget.dictFlags['pulizie'] = 1
         else:
@@ -338,10 +361,28 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def setIconSpese(self, data, itemWidget):
         """ sets the spese icon """
-        if data in self.dateSpese:
-            itemWidget.dictFlags['spese'] = 1
-        else:
-            itemWidget.dictFlags['spese'] = 0
+        # print('setIconSpese for data:', data)
+        # for anno in self.dateSpese.keys():
+        #     print('anno ',anno)
+        anno = self.currentYear
+        if not len(self.dateSpese):
+            print('dateSpese vuota')
+            return
+        for mese in self.dateSpese[anno].keys():
+            for _data, speseVal in self.dateSpese[anno][mese].items():
+                if len(speseVal) != 0:
+                    if data == _data:
+                        print('data per le spese trovata: ', data)
+                        itemWidget.dictFlags['spese'] = 1
+                    else:
+                        itemWidget.dictFlags['spese'] = 0
+                else:
+                    itemWidget.dictFlags['spese'] = 0
+        #
+        # if data in self.dateSpese:
+        #     itemWidget.dictFlags['spese'] = 1
+        # else:
+        #     itemWidget.dictFlags['spese'] = 0
         itemWidget.setActive()
 
     def setIconNote(self, data, itemWidget):
@@ -428,29 +469,25 @@ class CalendarTableWidget(Calendar, QWidget):
         """shows the year of the current date"""
         return self.currentYear
 
-    def removeSelection(self):
-        """removes the selection on the cell if the date is not the currentDate"""
-        try:
-            row = self.table.selectedIndexes()[0].row()
-            col = self.table.selectedIndexes()[0].column()
-        except IndexError:
-            self.selectCell(self.currentDate)
-            return
-        data = self.currentDate
-        _data = self.table.cellWidget(row, col).data
-        if data != _data:
-            self.table.setCurrentCell(row, col, QItemSelectionModel.Deselect)
 
 if __name__ == '__main__':
+    import pickle
+
+
+    with open('C:\\Users\\Lucio\\PycharmProjects\\ErbaVento\\speseDb.pkl', 'rb') as f:
+        spese = pickle.load(f)
     app = QtWidgets.QApplication(sys.argv)
     # dialog = QtWidgets.QMainWindow()
     dialog = QtWidgets.QWidget()
     # dialog.setFixedSize(QSize(800, 500))
     hbox = QtWidgets.QHBoxLayout()
-    simpleWidget = CalendarTableWidget(dialog)
+    simpleWidget = CalendarTableWidget(dialog, spese=spese)
     # dialog.setCentralWidget(simpleWidget)
     hbox.addWidget(simpleWidget)
     dialog.setLayout(hbox)
+
+    simpleWidget.setDatesIndicators({}, [], [], spese, [])
+    simpleWidget.dateSpese = spese
     dialog.show()
     # bt = QPushButton('click')
     # bt.clicked.connect(simpleWidget.removeSelection)
