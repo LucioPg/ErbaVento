@@ -187,19 +187,12 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def selectedDate(self) -> QDate:
         """:returns the date in the selected cell"""
-        if self.sender() is not None:
-            nome = self.sender().objectName()
-            print('selectedDate sender ', None)
-
-        # row = self.table.currentRow()
-        # col = self.table.currentColumn()
         row = self.cellSelectedList[0].row()
         col = self.cellSelectedList[0].column()
         itemWidget = self.table.cellWidget(row, col)
         print('selectedDate data ', itemWidget.data)
         self.currentDate = itemWidget.data
         return itemWidget.data
-        pass
 
     def selectCell(self, data=None):
         """ select the cell with the passed date setted into"""
@@ -217,7 +210,6 @@ class CalendarTableWidget(Calendar, QWidget):
                     self.cellSelectedList[0] = self.table.selectedIndexes()[0]
                     print('cell selected')
                     self.selectedDate()
-                    #todo sto lavorando qui per selezionare automaticamente il giorno corrente
                     return
 
     def setAlphaColors(self, alpha=150):
@@ -247,16 +239,11 @@ class CalendarTableWidget(Calendar, QWidget):
         pass
 
     def setCurrentYear(self,year):
-        if self.sender() is not None:
-            print('setCurrentYear sender ', self.sender().objectName())
-        else: print('setCurrentYear sender ',self.sender())
         self.currentYear = year
         self.setLabelAnno(str(year))
-        # self.yearChanged.emit()
 
     def setDates(self,prenotazioni, pulizie, colors):
         """mimic the old version of calendar"""
-        # print('this func is obsolete, please change it as it does nothing')
         print('this func (setDates)  is going to be reimplemented, please be patient')
         #todo bisogna verificare che le date presenti nelle liste passate possano essere attivate
         # come la selezione delle date
@@ -282,22 +269,16 @@ class CalendarTableWidget(Calendar, QWidget):
                         listaDate[data] = l
         return listaDate
 
-    def setDayNumInComplexLabel(self):
-        """set the number of the day in the label of the complexlabel widget"""
-        pass
-
     def setIconComplexLabel(self):
         """set the icon for the complexlabel in the right date"""
         pass
 
     def setLabelAnno(self,anno):
-        if self.sender() is not None:
-            print(' setLabelAnno sender', self.sender().objectName())
-        else: print(' setLabelAnno sender is None')
-        print('anno: ',anno)
+        """ sets text into the label for the year above the widget"""
         self.label_anno.setText(f'Anno: {anno}')
 
     def setListaGiorniDellAnno(self, lista: list=None, index=None):
+        """ sets the list for the 12 months of the current year with all the days that belong to"""
         if lista is not None:
             self.listaGiorniDellAnno = lista
             if index is not None:
@@ -305,22 +286,18 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def setSelectedDate(self, data):
         """set the date passed as the currentDate"""
-        if self.sender() is not None:
-            print('sender:',self.sender().objectName())
         print('setSelectedDate ', data)
         self.currentDate = data
-        #todo selezionare la currentDate
 
     def setTextComplexLabels(self, indexMonth):
         """cambia il giorno nelle celle"""
-        # indexTuple = self.getThisMonthDaysList()
         listaDaInserire = self.listaGiorniDellAnno[indexMonth]
         _data = QDate(self.baseDate.year(), indexMonth+1, 1)
         self.setBaseDate(_data)
         baseDate = self.baseDate
         print('setTextComplex baseDate', baseDate)
-        self.daysInTheMonth = MeseGiorniDictGen.giorniDelMese(QDate(baseDate.year(), indexMonth+1, 1))
-        self.currentMonth = indexMonth +1
+        self.daysInTheMonth = MeseGiorniDictGen.giorniDelMese(QDate(baseDate.year(), indexMonth + 1, 1))
+        self.currentMonth = indexMonth + 1
         self.indexMonth = indexMonth
         # print('len(self.daysInTheMonth)', len(self.daysInTheMonth))
         # print('setTextComplexLabels',self.sender().objectName())
@@ -337,7 +314,6 @@ class CalendarTableWidget(Calendar, QWidget):
                     itemWidget.setEnabled(False)
                     dateEscluse.append(data)
                 else:
-                    # print(data, ' in ', self.daysInTheMonth)
                     itemWidget.setEnabled(True)
                     pass
 
@@ -378,14 +354,9 @@ class CalendarTableWidget(Calendar, QWidget):
         self.combo_mesi.currentIndexChanged.connect(self.setTextComplexLabels)
         self.combo_mesi.currentIndexChanged.connect(self.removeSelection)
         self.table.cellClicked.connect(self.clickedCell)
-        # self.table.doubleClicked.connect(lambda : print('double click needs to be forworded'))
-        # self.singleClicked.connect(self.clickedCell)
 
     def yearShown(self):
         """shows the year of the current date"""
-        print('current date', self.currentDate)
-        print('current year', self.currentYear)
-
         return self.currentYear
 
     def removeSelection(self):
@@ -400,10 +371,6 @@ class CalendarTableWidget(Calendar, QWidget):
         _data = self.table.cellWidget(row, col).data
         if data != _data:
             self.table.setCurrentCell(row, col, QItemSelectionModel.Deselect)
-        else:
-            pass
-            # print('data is the same', data)
-            # self.selectCell(self.currentDate)
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)

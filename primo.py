@@ -246,9 +246,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         #                    'AirB&B': False,
         #                    'Privati': False}
         platforms = [p for p in self.config['platforms']]
-        # stagione = self.config['stagione preferita']
         stagione = self.combo_stagionePrenotazioni.currentText()
-        # print('stagione selez: ', stagione)
         importi = self.config['stagione'][stagione]
         self.listeImporti = {p: i for p, i in importi.items()}
         self.listeProvvigioni = {p: prov for p, prov in self.config['provvigioni'].items()}
@@ -857,7 +855,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             della prenotazione a partire dalle info
             nel box nella pagina
             del calendario"""
-        # todo aggiungere segnale alle mylineEdit perché si sblocchi il tasto salva o modifica
         try:
             info = deepc(self.infoTemp)
             if (info['nome'] and info['cognome'] and info['telefono']) == '':
@@ -1004,7 +1001,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def salvaInfo(self, modo=True):
         """modo = False # 'senza controllo' # modo = True #'con controllo'
-
         :return:
         """
         flag = bool
@@ -1030,7 +1026,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             if controllo:
                 manager.setThem()
                 print("prenotazione effettuata per tutte le date richieste")
-                # self.leggiDatabase(manager.DataBase)
                 self.leggiDatabase()
                 self.set_status_msg("Prenotazione eseguita con successo")
                 l = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_lordo,
@@ -1044,7 +1039,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             else:
                 self.set_status_msg("Le date selezionate sono occupate")
                 print("date non disponibili")
-
                 self.dialogDisponibili(listaDisponibili)
         else:
             print('salvataggio fallito')
@@ -1063,7 +1057,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         #     sender = self.sender().objectName()
         # print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         data = self.get_date(self.calendario.currentDate)
-        # data = self.get_date(self.calendario.selectedDate())
         domani = data.addDays(1)
         anno = data.year()
         if anno < 2018 or anno > 2028:
@@ -1078,14 +1071,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         """compila la tabella dal modello infoTemp"""
         self.riempiTabellaStat()
         statusBot = self.riempiTabellaPrenotazioni(info)
-        for bot in statusBot.keys():
-            pass
-            # if bot == 'note':
-            #     wid = self.bot_note
-            #
-            #     if type(wid) is not ColorButton:
-            #         print('tipologia bot: ',type(wid))
-            #         self.setProgressbutton(wid, statusBot[bot])
 
     def setInfoTemp(self, info, data=None):
 
@@ -1099,7 +1084,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a, m, g = self.amg(data)
         stagione = self.database[a][m][g]['checkIn']['stagione']
         self.label_stagione.setText(stagione)
-        # print('stagione lab ', stagione)
 
     def setMenuMain(self):
         optionMenuAction = QtWidgets.QAction(QtGui.QIcon(self.settingsIcon), 'opzioni', self)
@@ -1107,12 +1091,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         optionMenuAction.setStatusTip('Apre le impostazioni')
         optionMenuAction.triggered.connect(self.dialogOpt)
         self.menuMenu.addAction(optionMenuAction)
-
-    def setProgressbutton(self, bot, status):
-        try:
-            bot.setActive(status)
-        except:
-            print(fex())
 
     def totaleSpeseG(self, data: QtCore.QDate):
         tot = 0
