@@ -19,8 +19,8 @@ class ComplexLabel(complexLabelGui, QWidget):
         self.data = data
         self.setupUi(self)
         self.tuplaFlags = (1, 0, 0)
-        self.icons = [QIcon('../../Icons/iconSpese100.png'),
-                      QIcon('../../Icons/sunny.ico'),
+        self.icons = [QIcon('../../Icons/iconaSpese.png'),
+                      QIcon('../../Icons/iconaNote.ico'),
                       QIcon('../../Icons/iconaPulizie.png')
                       ]
         self.labels = [self.labSpese, self.labNote, self.labCleaning]
@@ -44,6 +44,7 @@ class ComplexLabel(complexLabelGui, QWidget):
         return self.data
 
     def setIcona(self, label: QLabel, icon: QIcon, remove=False):
+        """ show the passed icon into the passed label and remove the icon if param remove is True"""
         if not remove:
             label.setPixmap(icon.pixmap(64, 64))
         else:
@@ -59,17 +60,19 @@ class ComplexLabel(complexLabelGui, QWidget):
     def setFontPointSize(self, px: int):
         self.lab_num.font().setPointSize(px)
 
-    def setActive(self):
-        flags = self.tuplaFlags
+    def setActive(self, flags: tuple = ()):
+        """ it uses self.tuplaFlags or a passed tuple for setting the icons"""
+        if len(flags) < 3:
+            flags = self.tuplaFlags
         for indice, flag in enumerate(flags):
-            print('flag: ',flag)
+            print('flag: ', flag)
             label = self.labels[indice]
             icona = self.icons[indice]
             if flag:
                 self.setIcona(label, icona)
             else:
                 try:
-                    self.setIcona(label, icona,remove=True)
+                    self.setIcona(label, icona, remove=True)
                 except:
                     print(fex())
 
@@ -87,6 +90,7 @@ class ComplexLabel(complexLabelGui, QWidget):
 
 
     def changeActiveIcons(self):
+        """ testing purpouse"""
         flags = self.tuplaFlags
         if flags is not None:
             spese = flags[0]
@@ -112,7 +116,6 @@ class ComplexLabel(complexLabelGui, QWidget):
             self.setActive()
 
         # def permute(s, n, c):
-
 
 
 class Button(QWidget):
@@ -183,14 +186,11 @@ if __name__ == '__main__':
     tab.verticalHeader().setMinimumSectionSize(100)
     tab.show()
     bot = QPushButton('click')
-    bot.clicked.connect(lambda: wid.changeActiveIcons())
+    # bot.clicked.connect(lambda: wid.changeActiveIcons())
+    bot.clicked.connect(lambda: wid.setActive((1,0,0)))
     wid.setText('ciao')
     # bot.clicked.connect(lambda: wid.enable(False))
     bot.clicked.connect(lambda: wid.setEnabled(False))
     bot.setStyleSheet('background-color: green; font: 16px')
     bot.show()
-    if tab.closeEvent(QCloseEvent()):
-        print('close')
-        bot.close()
-    ind = QModelIndex()
     sys.exit(app.exec_())

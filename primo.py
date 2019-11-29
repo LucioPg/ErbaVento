@@ -73,6 +73,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.infoModelRedux = Od(r)
         #  init gui
         self.setupUi(self)
+        self.setWindowTitle('Gestionale ErbaVento')
         self.setWindowIcon(iconaMainWindow)
         self.bot_note.setTipo('note')
         self.statusbar.showMessage("Ready!!!!")
@@ -157,7 +158,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             a, m, g = self.amg(data)
             text = self.database[a][m][g]['checkIn']['note']
             dialog = DialogInfo(testo=text, showBool=True)
-            icona = QtGui.QIcon('./Icons/icona_note.ico')
+            icona = QtGui.QIcon('./Icons/iconaNote.ico')
             dialog.setWindowIcon(icona)
             tempDict = deepc(self.database[a][m][g]['checkIn'])
             dialog.guiText.textBrowser_dialog_info.setText(text)
@@ -563,7 +564,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             spesetot = deepc(self.spese)
             spese = spesetot[a][m].get(datat, {})
             dialog = DialogSpese(spese)
-            dialog.setWindowIcon(QtGui.QIcon('./Icons/iconSpese100.png'))
+            dialog.setWindowIcon(QtGui.QIcon('./Icons/iconaSpese.png'))
             dialog.SPESEPRONTE.connect(lambda x: print(x))
             if dialog.exec_():
                 spese = dialog.ottieniSpese()
