@@ -59,6 +59,8 @@ class ManagerPreno(object):
         self.dateAirbb = []
         self.datePrivati = []
         self.datePulizie = []
+        self.dateSpese = []
+        self.dateNote = []
         self.platformDict = {
             'Booking': self.dateBooking,
             'AirB&B': self.dateAirbb,
@@ -129,14 +131,48 @@ class ManagerPreno(object):
 
         return listaDisponibili
 
-    # def decMissDict(self):
-    #     def inner(func):
-    #
-
-    def setPlatformDict(self):
-        self.platformDict
-
     def platformPulizie(self, db=None):
+        if db is None:
+            db = self.DataBase
+
+        # todo evitare di caricare le date passate?
+        # print(os.getcwdb())
+        self.datePrenotazioni.clear()
+        # a, m, g = self.amg(self._dataIn)
+        for anno in db.keys():
+            for mese in db[anno].keys():
+                for giorno in db[anno][mese].keys():
+                    data = QtCore.QDate(anno, mese, giorno)
+                    checkIn = db[anno][mese][giorno]["checkIn"]
+                    plat = checkIn["platform"]
+                    pulizie = db[anno][mese][giorno]["checkOut"]['data partenza']
+                    spese = checkIn['spese']
+                    if spese is None:
+                        print('spese is None in data: ', data)
+                    note = checkIn['note']
+                    if 'platforms' not in self.datePrenotazioni:
+                        self.datePrenotazioni['platforms'] = Od()
+                    if plat != '':
+                        if plat not in self.datePrenotazioni['platforms']:
+                            dat = {'date': [data]}
+                            self.datePrenotazioni['platforms'][plat] = Od(dat)
+                            # self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor
+                        else:
+                            print("not in self.datePrenotazioni (managerprenotazioni) PLAT: ", plat, "##")
+                            self.datePrenotazioni['platforms'][plat]['date'].append(data)
+                    if pulizie != '':
+                        if pulizie not in self.datePulizie:
+                            self.datePulizie.append(pulizie)
+                    if spese > 0:
+                        if data not in self.dateSpese:
+                            self.dateSpese.append(data)
+                    if len(note) > 0:
+                        if data not in self.dateNote:
+                            self.dateNote.append(data)
+
+        return self.datePrenotazioni, self.datePulizie, self.dateSpese, self.dateNote
+
+    def platformPulizie_old(self, db=None):
         if db is None:
             db = self.DataBase
 

@@ -40,6 +40,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateAirbb = []
         self.datePrivati = []
         self.datePulizie = []
+        self.dateSpese = []
+        self.dateNote = []
         self.listeImporti = {}
         self.listeProvvigioni = {}
         self.listeTasse = {}
@@ -78,10 +80,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.bot_note.setTipo('note')
         self.statusbar.showMessage("Ready!!!!")
         self.calendario = MyCalend(
-            self.datePrenotazioni,
-            self.datePulizie,
-            self.colors,
-            parent=self.frame_calendar,
+            parent=self.frame_calendar
         )
         # self.calendario = MyCalend(
         #     self.dateAirbb,
@@ -754,8 +753,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         """
         try:
             db = Manager()
-            self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
-            self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
+            self.datePrenotazioni, self.datePulizie, self.dateSpese , self.dateNote = db.platformPulizie(database)
+            self.calendario.setDatesIndicators(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
             #todo selectedDate restituice Qmodelindex invece che data
             # data = self.calendario.selectedDate()
             data = self.calendario.currentDate
@@ -1067,6 +1066,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateEdit_al.setDate(domani)
         self.dateEdit_al.setMinimumDate(domani)
         print(f"dal {data.toString('dd-MMM-yyyy')} al {domani.toString('dd-MMM-yyyy')}")
+
+    def setIcons(self):
+        """sets the righ icons"""
+        pass
 
     def setInfoFromDate(self, info):
         """compila la tabella dal modello infoTemp"""

@@ -19,10 +19,15 @@ class ComplexLabel(complexLabelGui, QWidget):
         self.data = data
         self.setupUi(self)
         self.tuplaFlags = (1, 0, 0)
+        self.dictFlags = {'spese': 0, 'note': 0, 'pulizie': 0}
         self.icons = [QIcon('../../Icons/iconaSpese.png'),
                       QIcon('../../Icons/iconaNote.ico'),
                       QIcon('../../Icons/iconaPulizie.png')
                       ]
+        self.iconsDict = {'spese': QIcon('../../Icons/iconaSpese.png'),
+                          'note': QIcon('../../Icons/iconaNote.ico'),
+                          'pulizie': QIcon('../../Icons/iconaPulizie.png')}
+        self.labelsDict = {'spese': self.labSpese, 'note': self.labNote, 'pulizie': self.labCleaning}
         self.labels = [self.labSpese, self.labNote, self.labCleaning]
         # self.bot = QPushButton('click me')
         # self.verticalLayout_5.addWidget(self.bot)
@@ -60,7 +65,7 @@ class ComplexLabel(complexLabelGui, QWidget):
     def setFontPointSize(self, px: int):
         self.lab_num.font().setPointSize(px)
 
-    def setActive(self, flags: tuple = ()):
+    def setActiveTuple(self, flags: tuple = ()):
         """ it uses self.tuplaFlags or a passed tuple for setting the icons"""
         if len(flags) < 3:
             flags = self.tuplaFlags
@@ -69,6 +74,23 @@ class ComplexLabel(complexLabelGui, QWidget):
             label = self.labels[indice]
             icona = self.icons[indice]
             if flag:
+                self.setIcona(label, icona)
+            else:
+                try:
+                    self.setIcona(label, icona, remove=True)
+                except:
+                    print(fex())
+
+    def setActive(self):
+        """ it uses self.tuplaFlags or a passed tuple for setting the icons"""
+        flags = self.dictFlags
+        for key in flags.keys():
+            print('flag: ', key)
+            label = self.labelsDict[key]
+            # label = self.labels[indice]
+            icona = self.iconsDict[key]
+            # icona = self.icons[indice]
+            if flags[key]:
                 self.setIcona(label, icona)
             else:
                 try:
@@ -187,7 +209,8 @@ if __name__ == '__main__':
     tab.show()
     bot = QPushButton('click')
     # bot.clicked.connect(lambda: wid.changeActiveIcons())
-    bot.clicked.connect(lambda: wid.setActive((1,0,0)))
+    wid.dictFlags['spese'] = 1
+    bot.clicked.connect(lambda: wid.setActive())
     wid.setText('ciao')
     # bot.clicked.connect(lambda: wid.enable(False))
     bot.clicked.connect(lambda: wid.setEnabled(False))
