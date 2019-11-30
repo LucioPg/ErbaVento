@@ -12,6 +12,8 @@ from kwidget.complexlabel.complex_gui import Ui_complexLabel as complexLabelGui
 class ComplexLabel(complexLabelGui, QWidget):
     """Label equipped with 3 icons below. Ideal to be used into a QTableView cell"""
     iconActivated = pyqtSignal(int)
+
+    # dictFlags = {'spese': 0, 'note': 0, 'pulizie': 0}
     def __init__(self,parent=None,data=None):
         super(ComplexLabel, self).__init__(parent)
         if data is None:
@@ -20,13 +22,14 @@ class ComplexLabel(complexLabelGui, QWidget):
         self.setupUi(self)
         self.tuplaFlags = (1, 0, 0)
         self.dictFlags = {'spese': 0, 'note': 0, 'pulizie': 0}
-        self.icons = [QIcon('../../Icons/iconaSpese.png'),
-                      QIcon('../../Icons/iconaNote.ico'),
-                      QIcon('../../Icons/iconaPulizie.png')
-                      ]
-        self.iconsDict = {'spese': QIcon('../../Icons/iconaSpese.png'),
-                          'note': QIcon('../../Icons/iconaNote.ico'),
-                          'pulizie': QIcon('../../Icons/iconaPulizie.png')}
+        # self.dictFlags = {}
+        # self.icons = [QIcon('../../Icons/iconaSpese.png'),
+        #               QIcon('../../Icons/iconaNote.ico'),
+        #               QIcon('../../Icons/iconaPulizie.png')
+        #               ]
+        self.iconsDict = {'spese': QIcon('./Icons/iconaSpese.png'),
+                          'note': QIcon('./Icons/iconaNote.ico'),
+                          'pulizie': QIcon('./Icons/iconaPulizie.png')}
         self.labelsDict = {'spese': self.labSpese, 'note': self.labNote, 'pulizie': self.labCleaning}
         self.labels = [self.labSpese, self.labNote, self.labCleaning]
         # self.bot = QPushButton('click me')
@@ -51,7 +54,7 @@ class ComplexLabel(complexLabelGui, QWidget):
     def setIcona(self, label: QLabel, icon: QIcon, remove=False):
         """ show the passed icon into the passed label and remove the icon if param remove is True"""
         if not remove:
-            label.setPixmap(icon.pixmap(64, 64))
+            label.setPixmap(icon.pixmap(32, 32))
         else:
             label.clear()
 
@@ -85,18 +88,22 @@ class ComplexLabel(complexLabelGui, QWidget):
         """ it uses self.tuplaFlags or a passed tuple for setting the icons"""
         flags = self.dictFlags
         for key in flags.keys():
-            print('flag: ', key)
             label = self.labelsDict[key]
             # label = self.labels[indice]
             icona = self.iconsDict[key]
             # icona = self.icons[indice]
             if flags[key]:
                 self.setIcona(label, icona)
+                # print('flag setted: ', key, True)
             else:
                 try:
-                    self.setIcona(label, icona, remove=True)
+                    # self.setIcona(label, icona, remove=True)
+                    label.clear()
                 except:
                     print(fex())
+
+    # def setDictFlags(self,diz):
+    #     self.__setattr__('dictflags', diz)
 
     def setText(self, text: str):
         self.lab_num.setText(text)
@@ -213,6 +220,7 @@ if __name__ == '__main__':
     bot.clicked.connect(lambda: wid.setActive())
     wid.setText('ciao')
     # bot.clicked.connect(lambda: wid.enable(False))
+    # todo attenzione le icone si trovano in ../../Icons/etc...
     bot.clicked.connect(lambda: wid.setEnabled(False))
     bot.setStyleSheet('background-color: green; font: 16px')
     bot.show()

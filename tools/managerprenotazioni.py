@@ -131,6 +131,12 @@ class ManagerPreno(object):
 
         return listaDisponibili
 
+    def getDataSpese(self):
+        db = self.getDb(tipo='spese')
+        # with open(db, "rb") as f:
+        #     speseDb = pickle.load(f)
+        return db
+
     def platformPulizie(self, db=None):
         if db is None:
             db = self.DataBase
@@ -162,15 +168,17 @@ class ManagerPreno(object):
                             self.datePrenotazioni['platforms'][plat]['date'].append(data)
                     if pulizie != '':
                         if pulizie not in self.datePulizie:
+                            print('pulizie',pulizie)
                             self.datePulizie.append(pulizie)
-                    if spese > 0:
-                        if data not in self.dateSpese:
-                            self.dateSpese.append(data)
+                    # if spese > 0:
+                    #     print('spese append: ', spese)
+                    #     if data not in self.dateSpese:
+                    #         self.dateSpese.append(data)
                     if len(note) > 0:
                         if data not in self.dateNote:
                             self.dateNote.append(data)
 
-        return self.datePrenotazioni, self.datePulizie, self.dateSpese, self.dateNote
+        return self.datePrenotazioni, self.datePulizie, self.dateNote
 
     def platformPulizie_old(self, db=None):
         if db is None:
@@ -403,7 +411,7 @@ class ManagerPreno(object):
             print(traceback.format_exc())
 
     @staticmethod
-    def getDb():
+    def getDb(tipo=None):
         """
         accede al database
         :return:
@@ -413,7 +421,10 @@ class ManagerPreno(object):
         # else:
         #     database = DBM().checkFile()
         # print("prova ",database.anno)
-        database = DBM().checkFile()
+        if tipo is None:
+            database = DBM().checkFile()
+        else:
+            database = DBM().checkFile(tipodatabase='spese')
         return database
 
     def getDb_old(self, data):

@@ -40,7 +40,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateAirbb = []
         self.datePrivati = []
         self.datePulizie = []
-        self.dateSpese = []
+        # self.dateSpese = []
+        self.dateSpese = {}
         self.dateNote = []
         self.listeImporti = {}
         self.listeProvvigioni = {}
@@ -145,6 +146,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.lineEdit_email.TABPRESSED.connect(self.lineEditVerifica)
         self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
         self.giornoprecedente = self.giornoCorrente.addDays(-1)
+        self.calendario.updateIconsAndBooked()
         # STATUS BAR
         # self.statusbar.setT
 
@@ -170,6 +172,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     self.bot_note.setState(True)
                     if nuovoTesto == '':
                         self.bot_note.setState(False)
+                        if self.calendario.currentDate in self.calendario.dateNote:
+                            self.calendario.dateNote.remove(self.calendario.currentDate)
+                    else:
+                        if self.calendario.currentDate not in self.calendario.dateNote:
+                            self.calendario.dateNote.append(self.calendario.currentDate)
+                    self.calendario.updateIconsAndBooked()
         except:
             print(fex())
 
@@ -191,6 +199,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 dbm.salvaDatabase(self.database)
             self.updateInfoStat()
             self.riempiTabellaStat()
+            # print(self.dateSpese)
         except:
             print(fex())
 
@@ -753,8 +762,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         """
         try:
             db = Manager()
-            self.datePrenotazioni, self.datePulizie, self.dateSpese , self.dateNote = db.platformPulizie(database)
-            self.calendario.setDatesIndicators(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
+            # self.datePrenotazioni, self.datePulizie, self.dateSpese, self.dateNote = db.platformPulizie(database)
+            self.datePrenotazioni, self.datePulizie, self.dateNote = db.platformPulizie(database)
+            self.dateSpese = db.getDataSpese()
+            # print(' spese passate per icone:: ', self.dateSpese)
+            self.calendario.setDatesIndicators(self.datePrenotazioni,
+                                               self.datePulizie,
+                                               self.config['colori settati'],
+                                               self.dateSpese,
+                                               self.dateNote
+                                               )
+            # print('spese passate al calendario: ', self.calendario.dateSpese)
+            # print('pulizie passate al calendario: ', self.calendario.datePulizie)
             #todo selectedDate restituice Qmodelindex invece che data
             # data = self.calendario.selectedDate()
             data = self.calendario.currentDate
