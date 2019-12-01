@@ -592,13 +592,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     self.bot_spese.setState(True)
                     tot = self.totaleSpeseG(datat)
                     print('totale spese giornaliere: ', tot)
+                    self.calendario.dateSpese.append(datat)
+                    self.calendario.datesIndicatorsChanged.emit()
                 else:
                     if datat in self.spese[a][m].keys():
                         del self.spese[a][m][datat]
+                    if datat in self.calendario.dateSpese:
+                        self.calendario.dateSpese.remove(datat)
+                        self.calendario.datesIndicatorsChanged.emit()
+
                     self.bot_spese.setState(False)
                     tot = 0
-                old = deepc(self.calendario.dateSpese)
-                self.calendario.dateSpese.append(datat)
+
                 self.calendario.datesIndicatorsChanged.emit()
                 self.calendario.updateIconsAndBooked()
                 totSpeseMensili = 0
