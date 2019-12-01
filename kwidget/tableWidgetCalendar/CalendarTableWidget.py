@@ -273,19 +273,25 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def setBooked(self, data, itemWidget):
         """"changes the background for the date passed"""
+        itemWidget = self.findItemWidgetFromDate(data)
+        styleSheet = ""
         for plat in self.datePrenotazioni['platforms'].keys():
             # itemWidget = self.findItemWidgetFromDate(data)
-            print('setbooked plat:',plat,self.datePrenotazioni['platforms'][plat]['date'])
-            print((data))
+            print('setbooked plat:', plat, self.datePrenotazioni['platforms'][plat]['date'])
+            print(data)
+            if data.day() == 25:
+                print('pippo')
             if data in self.datePrenotazioni['platforms'][plat]['date']:
                 color = self.colors[plat]
                 r, g, b = self.reformatColor(color)
                 styleSheet = f"background-color: rgba({r},{g},{b},150)"
+                break
                 # print('setbooked '+ styleSheet)
-            else:
-                styleSheet = ""
-            print('setbooked ' + styleSheet)
-            itemWidget.lab_num.setStyleSheet(styleSheet)
+            # else:
+            #     styleSheet = ""
+
+        print('setbooked ' + styleSheet)
+        itemWidget.lab_num.setStyleSheet(styleSheet)
 
     def setComplexLabels(self, indexMonth):
         """cambia il giorno nelle celle"""

@@ -360,7 +360,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.leggiDatabase(database)
             self.leggiDatabase()
 
-            self.calendario.updateCells()
+            # self.calendario.updateCells()
             self.set_status_msg('Cancellazione effettuata')
 
     def checkAval(self, dal, al):
