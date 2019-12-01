@@ -383,18 +383,19 @@ class CalendarTableWidget(Calendar, QWidget):
             for _data, speseVal in self.dateSpese[anno][mese].items():
                 if len(speseVal) != 0:
                     if data == _data:
-                        print('data found', speseVal)
-                        itemWidget.dictFlags['spese'] = 1
-                    # else:
-                    #     itemWidget.dictFlags['spese'] = 0
-                # else:
-                #     itemWidget.dictFlags['spese'] = 0
+                        print('data found', itemWidget.data)
+                        if _data == itemWidget.data:
+                            itemWidget.dictFlags['spese'] = 1
+                    else:
+                        itemWidget.dictFlags['spese'] = 0
+                else:
+                    itemWidget.dictFlags['spese'] = 0
         #
         # if data in self.dateSpese:
         #     itemWidget.dictFlags['spese'] = 1
         # else:
         #     itemWidget.dictFlags['spese'] = 0
-        print(data.day(),' dictFlags setted: ',itemWidget.dictFlags)
+        # print(data.day(),' dictFlags setted: ',itemWidget.dictFlags)
         itemWidget.setActive()
 
     def setIconNote(self, data, itemWidget):

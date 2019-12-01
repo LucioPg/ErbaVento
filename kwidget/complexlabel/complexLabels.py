@@ -27,6 +27,9 @@ class ComplexLabel(complexLabelGui, QWidget):
         #               QIcon('../../Icons/iconaNote.ico'),
         #               QIcon('../../Icons/iconaPulizie.png')
         #               ]
+        # self.iconsDict = {'spese': QIcon('../../Icons/iconaSpese.png'),
+        #                   'note': QIcon('../../Icons/iconaNote.ico'),
+        #                   'pulizie': QIcon('../../Icons/iconaPulizie.png')}
         self.iconsDict = {'spese': QIcon('./Icons/iconaSpese.png'),
                           'note': QIcon('./Icons/iconaNote.ico'),
                           'pulizie': QIcon('./Icons/iconaPulizie.png')}

@@ -586,8 +586,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         del self.spese[a][m][datat]
                     self.bot_spese.setState(False)
                     tot = 0
+                old = deepc(self.calendario.dateSpese)
+                self.calendario.dateSpese = deepc(self.spese)
+                self.calendario.updateIconsAndBooked()
                 totSpeseMensili = 0
-
                 try:
                     for giornoData in self.spese[a][m].keys():
                         for spesaperitem in self.spese[a][m][giornoData].values():
