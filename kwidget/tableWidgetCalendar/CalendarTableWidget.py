@@ -29,8 +29,8 @@ class CalendarTableWidget(Calendar, QWidget):
         self.datePrenotazioni = {}
         self.datePulizie = []
         self.colors = []
-        # self.dateSpese = []
-        self.dateSpese = {}
+        self.dateSpese = []
+        # self.dateSpese = {}
         self.dateNote = []
         # self.setAlphaColors()
         self.oggi = QDate().currentDate()
@@ -211,9 +211,9 @@ class CalendarTableWidget(Calendar, QWidget):
                 colorStr = colorStr.replace('#', '')
             else:
                 raise Exception('color is not hex format')
-            r = colorStr[:2]
-            g = colorStr[2:4]
-            b = colorStr[4:6]
+            r = int(colorStr[:2], 16)
+            g = int(colorStr[2:4], 16)
+            b = int(colorStr[4:6], 16)
             return r, g, b
 
     def removeSelection(self):
@@ -273,14 +273,18 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def setBooked(self, data, itemWidget):
         """"changes the background for the date passed"""
-        for plat in self.datePrenotazioni.keys():
+        for plat in self.datePrenotazioni['platforms'].keys():
             # itemWidget = self.findItemWidgetFromDate(data)
-            if data in self.datePrenotazioni[plat]:
+            print('setbooked plat:',plat,self.datePrenotazioni['platforms'][plat]['date'])
+            print((data))
+            if data in self.datePrenotazioni['platforms'][plat]['date']:
                 color = self.colors[plat]
                 r, g, b = self.reformatColor(color)
-                styleSheet = f"""background-color: rgba({r},{g},{b},150)"""
+                styleSheet = f"background-color: rgba({r},{g},{b},150)"
+                # print('setbooked '+ styleSheet)
             else:
                 styleSheet = ""
+            print('setbooked ' + styleSheet)
             itemWidget.lab_num.setStyleSheet(styleSheet)
 
     def setComplexLabels(self, indexMonth):
@@ -326,11 +330,6 @@ class CalendarTableWidget(Calendar, QWidget):
     def setDatesIndicators(self, prenotazioni, pulizie, colors, spese, note):
         """mimic the old version of calendar, sets the object datePrenotazioni, datePulizie and colors"""
         print('this func (setDates)  is going to be reimplemented, please be patient')
-        #todo bisogna verificare che le date presenti nelle liste passate possano essere attivate
-        # come la selezione delle date
-        # print('prenotazioni :', prenotazioni)
-        # print('pulizie :', pulizie)
-        # print('colori :', colors)
         if len(colors) != 0:
             self.colors = colors
         if len(prenotazioni) != 0:
@@ -341,8 +340,13 @@ class CalendarTableWidget(Calendar, QWidget):
             print('pulizie setted')
         if len(spese) > 0:
             # print('spese setted ', spese)
+            print('spese passate al calendario', spese)
+            for anno in spese.keys():
+                for mese in spese[anno].keys():
+                    for data in spese[anno][mese].keys():
+                        self.dateSpese.append(data)
+            # self.dateSpese = deepc(spese)
             print('spese setted ')
-            self.dateSpese = deepc(spese)
         if len(note) > 0:
             print('note setted')
             self.dateNote = note
@@ -379,23 +383,29 @@ class CalendarTableWidget(Calendar, QWidget):
         # print('anno ',anno)
         if not len(self.dateSpese):
             return
-        for mese in self.dateSpese[anno].keys():
-            for _data, speseVal in self.dateSpese[anno][mese].items():
-                if len(speseVal) != 0:
-                    if data == _data:
-                        print('data found', itemWidget.data)
-                        if _data == itemWidget.data:
-                            itemWidget.dictFlags['spese'] = 1
-                    else:
-                        itemWidget.dictFlags['spese'] = 0
-                else:
-                    itemWidget.dictFlags['spese'] = 0
-        #
-        # if data in self.dateSpese:
-        #     itemWidget.dictFlags['spese'] = 1
-        # else:
-        #     itemWidget.dictFlags['spese'] = 0
-        # print(data.day(),' dictFlags setted: ',itemWidget.dictFlags)
+        itemWidget = self.findItemWidgetFromDate(data)
+        if data in self.dateSpese:
+            if data == itemWidget.data:
+                itemWidget.dictFlags['spese'] = 1
+        else:
+            itemWidget.dictFlags['spese'] = 0
+        # for mese in self.dateSpese[anno].keys():
+        #     for _data, speseVal in self.dateSpese[anno][mese].items():
+        #         if len(speseVal) != 0:
+        #             if data == _data:
+        #                 print('data found', itemWidget.data)
+        #                 if _data == itemWidget.data:
+        #                     itemWidget.dictFlags['spese'] = 1
+        #             else:
+        #                 itemWidget.dictFlags['spese'] = 0
+        #         else:
+        #             itemWidget.dictFlags['spese'] = 0
+        # #
+        # # if data in self.dateSpese:
+        # #     itemWidget.dictFlags['spese'] = 1
+        # # else:
+        # #     itemWidget.dictFlags['spese'] = 0
+        # # print(data.day(),' dictFlags setted: ',itemWidget.dictFlags)
         itemWidget.setActive()
 
     def setIconNote(self, data, itemWidget):
@@ -516,5 +526,6 @@ if __name__ == '__main__':
     dialog.show()
     # bt = QPushButton('click')
     # bt.clicked.connect(simpleWidget.removeSelection)
+    # bt.clicked.connect(lambda :print(len(dir(simpleWidget))))
     # bt.show()
     sys.exit(app.exec_())

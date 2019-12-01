@@ -587,7 +587,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     self.bot_spese.setState(False)
                     tot = 0
                 old = deepc(self.calendario.dateSpese)
-                self.calendario.dateSpese = deepc(self.spese)
+                self.calendario.dateSpese.append(datat)
+                self.calendario.datesIndicatorsChanged.emit()
                 self.calendario.updateIconsAndBooked()
                 totSpeseMensili = 0
                 try:
