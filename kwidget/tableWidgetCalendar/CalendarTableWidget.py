@@ -279,17 +279,11 @@ class CalendarTableWidget(Calendar, QWidget):
             # itemWidget = self.findItemWidgetFromDate(data)
             print('setbooked plat:', plat, self.datePrenotazioni['platforms'][plat]['date'])
             print(data)
-            if data.day() == 25:
-                print('pippo')
             if data in self.datePrenotazioni['platforms'][plat]['date']:
                 color = self.colors[plat]
                 r, g, b = self.reformatColor(color)
                 styleSheet = f"background-color: rgba({r},{g},{b},150)"
                 break
-                # print('setbooked '+ styleSheet)
-            # else:
-            #     styleSheet = ""
-
         print('setbooked ' + styleSheet)
         itemWidget.lab_num.setStyleSheet(styleSheet)
 
@@ -374,6 +368,10 @@ class CalendarTableWidget(Calendar, QWidget):
         # print('data passed', data)
         # print('datePulizie', self.datePulizie)
         # print('setting icon pulizie: ',itemWidget.dictFlags['pulizie'])
+        itemWidget = self.findItemWidgetFromDate(data)
+        if data.day()+1 == 26:
+            print('cazzu cazzu')
+            print('datePulizie', self.datePulizie)
         if data in self.datePulizie:
             itemWidget.dictFlags['pulizie'] = 1
         else:

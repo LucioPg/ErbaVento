@@ -335,11 +335,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except:
             print(fex())
 
-    def cancellaprenot(self, wrnMode=True):
+    def cancellaprenot(self, wrnMode=False):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
         print('cancella')
-        if wrnMode:
+        if  wrnMode:
             if self.warnMsg():
                 manager = Manager(info=self.infoTemp)
                 manager.canc()
@@ -348,8 +348,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 # self.leggiDatabase(manager.DataBase)
                 # self.leggiDatabase(database)
                 self.leggiDatabase()
-
-                self.calendario.updateCells()
+                print('cancellazione current date: ', self.calendario.currentDate)
+                giornoPulizie = self.calendario.currentDate.addDays(1)
+                if giornoPulizie in self.datePulizie:
+                    self.datePulizie.remove(giornoPulizie)
+                if giornoPulizie in self.calendario.datePulizie:
+                    self.calendario.datePulizie.remove(giornoPulizie)
+                    self.calendario.updateIconsAndBooked()
+                # self.calendario.updateCells()
                 self.set_status_msg('Cancellazione effettuata')
         else:
             manager = Manager(info=self.infoTemp)
@@ -359,9 +365,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.leggiDatabase(manager.DataBase)
             # self.leggiDatabase(database)
             self.leggiDatabase()
-
+            giornoPulizie = self.calendario.currentDate.addDays(1)
+            if giornoPulizie in self.datePulizie:
+                self.datePulizie.remove(giornoPulizie)
+            if giornoPulizie in self.calendario.datePulizie:
+                self.calendario.datePulizie.remove(giornoPulizie)
+                self.calendario.updateIconsAndBooked()
             # self.calendario.updateCells()
-            self.set_status_msg('Cancellazione effettuata')
+            self.set_status_msg('Cancellazione effettuata without warnig')
 
     def checkAval(self, dal, al):
         giorniPermanenza = dal.daysTo(al)
@@ -832,7 +843,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             if len(listaDisponibili) == giorniPermanenza:
                 print('modifica ok')
                 print('prima cancello')
-                self.cancellaprenot(wrnMode=False)
+                self.cancellaprenot(wrnMode=True)
                 print('poi salvo...')
                 self.salvaInfo(modo=False)
             else:
