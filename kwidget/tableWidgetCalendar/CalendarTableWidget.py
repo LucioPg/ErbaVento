@@ -64,7 +64,7 @@ class CalendarTableWidget(Calendar, QWidget):
                 self.indexMonth = 0
                 self.setCurrentYear(currentYear+1)
                 self.setBaseDate(self.baseDate.addMonths(1))
-                # print('new Year: ', self.currentYear)
+                print('new Year: ', self.currentYear)
 
         elif sender == 'bot_prev':
             # if currentMonth > 0:
@@ -75,7 +75,7 @@ class CalendarTableWidget(Calendar, QWidget):
                 self.indexMonth = 11
                 self.setCurrentYear(currentYear-1)
                 self.setBaseDate(self.baseDate.addMonths(-1))
-                # print('new Year: ', self.currentYear)
+                print('new Year: ', self.currentYear)
         if currentMonth != self.indexMonth:
             self.currentPageChanged.emit(self.indexMonth)
             self.combo_mesi.setCurrentIndex(self.indexMonth)
@@ -163,19 +163,6 @@ class CalendarTableWidget(Calendar, QWidget):
         self.table.verticalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.combo_mesi.setCurrentIndex(self.indexMonth)
 
-    # def getThisMonthDaysList(self) -> tuple:
-    #     """find and returns the rows and columns into self.listaGiorniDellAnno as tuple"""
-    #     # todo Obsoleta ---> cancellare
-    #     for row in self.listaGiorniDellAnno:
-    #         indexRow = self.listaGiorniDellAnno.index(row)
-    #         for col in row:
-    #             indexCol = self.listaGiorniDellAnno[indexRow].index(col)
-    #             if self.baseDate in col:
-    #                 pass
-    #                 # return (indexRow, indexCol)
-    #     else:
-    #         print('CalendarTableWidget: getThisMonthDaysList: il giorno attuale non è presente nella lista dell\'anno')
-
     def monthShown(self):
         print('currentDate: ',self.currentDate)
         print('currentMonth: ',self.currentMonth)
@@ -183,11 +170,6 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def populateWithComplexLabels(self):
         """populate the table with the complexlabels"""
-
-        #ottengo la lista dei giorni di questo mese
-        # indexTuple = self.getThisMonthDaysList()
-        # listaDaInserire = self.listaGiorniDellAnno[indexTuple[0]]
-        listaDaInserire = self.listaGiorniDellAnno[self.indexMonth]
         # setting righe e colonne
         self.table.setRowCount(0)
         self.table.setColumnCount(0)
@@ -240,11 +222,6 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def selectCell(self, data=None):
         """ select the cell with the passed date setted into"""
-        # print('clicked')
-        # data = QDate().currentDate()
-        # if data is None:
-        #     data = self.oggi
-
         for row in range(6):
             for col in range(7):
                 itemWidget = self.table.cellWidget(row, col)
@@ -266,7 +243,6 @@ class CalendarTableWidget(Calendar, QWidget):
             date = self.oggi
         # print('setBaseDate ', date)
         self.baseDate = QDate(date.year(),date.month(),1)
-        # print('setting baseDate', self.baseDate)
         if date.year() != self.currentYear:
             self.setCurrentYear(date.year())
             self.setListaGiorniDellAnno(self.createDates(date))
@@ -276,9 +252,6 @@ class CalendarTableWidget(Calendar, QWidget):
         itemWidget = self.findItemWidgetFromDate(data)
         styleSheet = ""
         for plat in self.datePrenotazioni['platforms'].keys():
-            # itemWidget = self.findItemWidgetFromDate(data)
-            # print('setbooked plat:', plat, self.datePrenotazioni['platforms'][plat]['date'])
-            # print(data)
             if data in self.datePrenotazioni['platforms'][plat]['date']:
                 color = self.colors[plat]
                 r, g, b = self.reformatColor(color)
@@ -317,13 +290,13 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def setCurrentMonth(self,month):
         self.currentMonth = month
-        print('setcurrentMonth ',month)
+        print('setcurrentMonth ', month)
 
     def setCurrentPage(self):
         """set the current page shown as month for the selected year"""
         pass
 
-    def setCurrentYear(self,year):
+    def setCurrentYear(self, year):
         self.currentYear = year
         self.setLabelAnno(str(year))
 
@@ -339,8 +312,7 @@ class CalendarTableWidget(Calendar, QWidget):
             self.datePulizie = pulizie
             print('pulizie setted')
         if len(spese) > 0:
-            # print('spese setted ', spese)
-            print('spese passate al calendario', spese)
+            print('spese setted ')
             for anno in spese.keys():
                 for mese in spese[anno].keys():
                     for data in spese[anno][mese].keys():
@@ -352,11 +324,12 @@ class CalendarTableWidget(Calendar, QWidget):
             self.dateNote = note
         self.datesIndicatorsChanged.emit()
 
-    def setIconsAndBooked(self, data=None, itemWidget=None):
+    def setIconsAndBooked(self, data=None):
         """provides icons for the displayed page ( not current month) """
         # itemWidget = self.findItemWidgetFromDate(data)
         # print('setIconsAndBooked')
         data = self._dataToSet
+        itemWidget = self.findItemWidgetFromDate(data)
         self.setIconNote(data, itemWidget)
         self.setIconPulizie(data, itemWidget)
         self.setIconSpese(data, itemWidget)
@@ -368,10 +341,7 @@ class CalendarTableWidget(Calendar, QWidget):
         # print('data passed', data)
         # print('datePulizie', self.datePulizie)
         # print('setting icon pulizie: ',itemWidget.dictFlags['pulizie'])
-        itemWidget = self.findItemWidgetFromDate(data)
-        if data.day()+1 == 26:
-            print('cazzu cazzu')
-            print('datePulizie', self.datePulizie)
+        # itemWidget = self.findItemWidgetFromDate(data)
         if data in self.datePulizie:
             itemWidget.dictFlags['pulizie'] = 1
         else:
@@ -380,36 +350,14 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def setIconSpese(self, data, itemWidget):
         """ sets the spese icon """
-        # print('setIconSpese for data:', data)
-        # for anno in self.dateSpese.keys():
-        #     print('anno ',anno)
-        anno = self.currentYear
-        # print('anno ',anno)
         if not len(self.dateSpese):
             return
-        itemWidget = self.findItemWidgetFromDate(data)
+        # itemWidget = self.findItemWidgetFromDate(data)
         if data in self.dateSpese:
             if data == itemWidget.data:
                 itemWidget.dictFlags['spese'] = 1
         else:
             itemWidget.dictFlags['spese'] = 0
-        # for mese in self.dateSpese[anno].keys():
-        #     for _data, speseVal in self.dateSpese[anno][mese].items():
-        #         if len(speseVal) != 0:
-        #             if data == _data:
-        #                 print('data found', itemWidget.data)
-        #                 if _data == itemWidget.data:
-        #                     itemWidget.dictFlags['spese'] = 1
-        #             else:
-        #                 itemWidget.dictFlags['spese'] = 0
-        #         else:
-        #             itemWidget.dictFlags['spese'] = 0
-        # #
-        # # if data in self.dateSpese:
-        # #     itemWidget.dictFlags['spese'] = 1
-        # # else:
-        # #     itemWidget.dictFlags['spese'] = 0
-        # # print(data.day(),' dictFlags setted: ',itemWidget.dictFlags)
         itemWidget.setActive()
 
     def setIconNote(self, data, itemWidget):
@@ -423,20 +371,6 @@ class CalendarTableWidget(Calendar, QWidget):
     def setIndexMonth(self,index):
         """change the index for self.listaGiorniDellAnno for the month to display"""
         self.indexMonth = index
-
-    def setListe(self, listaAsDict: dict = None) -> dict:
-        """mimic the old version of calendar"""
-        print('this func is obsolete, please change it')
-        if listaAsDict is None:
-            print('Attenzione la listaDizionario passata è nulla')
-            return dict()
-        listaDate = {}
-        for i in listaAsDict.keys():
-            for l in listaAsDict[i].keys():
-                for data in listaAsDict[i][l]['date']:
-                    if data not in listaDate:
-                        listaDate[data] = l
-        return listaDate
 
     def setLabelAnno(self,anno):
         """ sets text into the label for the year above the widget"""
@@ -476,7 +410,6 @@ class CalendarTableWidget(Calendar, QWidget):
 
     def showToday(self):
         """show today"""
-        # todo selezionare la data di oggi e scrollare fino alla pagina corretta
         pass
 
     def signalsConnections(self):
@@ -501,7 +434,7 @@ class CalendarTableWidget(Calendar, QWidget):
                 itemWidget = self.table.cellWidget(row, col)
                 data = itemWidget.data
                 self.forwardData(data)
-                self.setIconsAndBooked(data=None, itemWidget=itemWidget)
+                self.setIconsAndBooked(data=None)
 
     def yearShown(self):
         """shows the year of the current date"""
