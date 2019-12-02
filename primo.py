@@ -198,7 +198,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 # self.database[a][m][g]['checkIn'] = deepc(copia)
                 for giorno in self.database[a][m].keys():
                     self.database[a][m][giorno]['checkIn']['spese'] = finale
-                    print(self.database[a][m][giorno]['checkIn'])
 
                 dbm.salvaDatabase(self.database)
             self.updateInfoStat()
@@ -342,8 +341,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def cancellaprenot(self, wrnMode=False):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
-        print('cancella')
-        if  wrnMode:
+        # print('cancella', self.infoTemp)
+        if (self.infoTemp['nome'] or self.infoModel['cognome']) == '':
+            self.set_status_msg('Niente da cancellare')
+            return
+        if not wrnMode:
             if self.warnMsg():
                 manager = Manager(info=self.infoTemp)
                 manager.canc()
@@ -678,8 +680,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return info
 
     def importAdj(self):
-        if self.sender() is not None:
-            print(self.sender().objectName())
         totOspiti = self.spinBox_bambini.value() + self.spinBox_ospiti.value()
         maxOspiti = self.config['numero letti']
         if totOspiti >= maxOspiti:

@@ -321,7 +321,11 @@ class ManagerPreno(object):
                 checkIn, checkOut, nome, cognome = self.findDate(self.DataBase, data)
                 if (checkIn['nome'] == self._nome or checkIn['cognome'] == self._cognome) and checkIn[
                     'data arrivo'] == self._dataIn:
+                    spese = checkIn['spese']
+                    note  = checkIn['note']
                     checkIn = deepc(DBM.INFOMODEL)
+                    checkIn['spese'] = spese
+                    checkIn['note'] = note
                     checkOut = deepc(DBM.INFOMODELREDUX)
                     a, m, g = self.amg(data)
                     self.DataBase[a][m][g]['checkIn'] = checkIn
