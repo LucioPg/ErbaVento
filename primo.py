@@ -76,6 +76,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.infoModelRedux = Od(r)
         #  init gui
         self.setupUi(self)
+        self.setWindowModality(QtCore.Qt.WindowModal)
         self.setWindowTitle('Gestionale ErbaVento')
         self.setWindowIcon(iconaMainWindow)
         self.bot_note.setTipo('note')
@@ -584,7 +585,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             spese = spesetot[a][m].get(datat, {})
             dialog = DialogSpese(spese)
             dialog.setWindowIcon(QtGui.QIcon('./Icons/iconaSpese.png'))
-            dialog.SPESEPRONTE.connect(lambda x: print(x))
+
+            dialog.SPESEPRONTE.connect(lambda x: print('spese pronte',x))
+            # dialog.setModal(True)
             if dialog.exec_():
                 spese = dialog.ottieniSpese()
                 if len(spese) != 0:

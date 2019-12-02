@@ -12,7 +12,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_DialogInfoSpese(object):
     def setupUi(self, DialogInfoSpese):
         DialogInfoSpese.setObjectName("DialogInfoSpese")
-        DialogInfoSpese.setWindowModality(QtCore.Qt.WindowModal)
+        # DialogInfoSpese.setWindowModality(QtCore.Qt.WindowModal)
         DialogInfoSpese.resize(400, 300)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)

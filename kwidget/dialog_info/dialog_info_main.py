@@ -96,20 +96,23 @@ class DialogInfoSpese(GuiTable, QDialog):
     SPESEPRONTE = QtCore.pyqtSignal(dict)
 
     def __init__(self, spese: dict, parent=None):
+        print('dialog spese')
         super(DialogInfoSpese, self).__init__(parent)
         self.setupUi(self)
+        # self.setModal(True)
         self.listaTipi = []
         self.spese = spese
         self.vecchieSpese = deepc(self.spese)
         self.tableWidget.setRowCount(0)
         self.riempiTable()
+        # self.setWindowModality(QtCore.Qt.WindowModal)
         self.tableWidget.itemChanged.connect(lambda x: self.gotoLine(x.row()))
         self.bot_addLine.clicked.connect(self.addNewLine)
         self.bot_removeLine.clicked.connect(self.cancellaSpesa)
         self.bot_ok.clicked.connect(self.accept)
         self.bot_esci.clicked.connect(self.close)
         self.tableWidget.EDITFINISHED.connect(self.returnPressed)
-        self.show()
+        # self.show()
 
     def addLine(self, new=False, nome='Nuova Spesa', euro=0):
         def updateTypes(self, tipo):
@@ -249,7 +252,7 @@ class DialogInfo(QDialog):
         else:
             self.guiTable = GuiTable()
             self.guiTable.setupUi(self)
-        self.show()
+        # self.show()
 
 
 if __name__ == "__main__":
