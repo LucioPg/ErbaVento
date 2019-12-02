@@ -277,14 +277,14 @@ class CalendarTableWidget(Calendar, QWidget):
         styleSheet = ""
         for plat in self.datePrenotazioni['platforms'].keys():
             # itemWidget = self.findItemWidgetFromDate(data)
-            print('setbooked plat:', plat, self.datePrenotazioni['platforms'][plat]['date'])
-            print(data)
+            # print('setbooked plat:', plat, self.datePrenotazioni['platforms'][plat]['date'])
+            # print(data)
             if data in self.datePrenotazioni['platforms'][plat]['date']:
                 color = self.colors[plat]
                 r, g, b = self.reformatColor(color)
                 styleSheet = f"background-color: rgba({r},{g},{b},150)"
                 break
-        print('setbooked ' + styleSheet)
+        # print('setbooked ' + styleSheet)
         itemWidget.lab_num.setStyleSheet(styleSheet)
 
     def setComplexLabels(self, indexMonth):
