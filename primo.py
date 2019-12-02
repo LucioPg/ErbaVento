@@ -195,10 +195,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 copia = deepc(self.database[a][m][g]['checkIn'])
                 copia['spese'] = finale
                 print(copia['note'])
-                self.database[a][m][g]['checkIn'] = deepc(copia)
-                # for giorno in self.database[a][m].keys():
-                #     self.database[a][m][giorno]['checkIn'] = deepc(copia)
-                #     print(self.database[a][m][giorno]['checkIn'])
+                # self.database[a][m][g]['checkIn'] = deepc(copia)
+                for giorno in self.database[a][m].keys():
+                    self.database[a][m][giorno]['checkIn']['spese'] = finale
+                    print(self.database[a][m][giorno]['checkIn'])
 
                 dbm.salvaDatabase(self.database)
             self.updateInfoStat()
