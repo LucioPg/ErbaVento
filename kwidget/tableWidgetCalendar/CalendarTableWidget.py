@@ -347,13 +347,17 @@ class CalendarTableWidget(Calendar, QWidget):
     def setIconSpese(self, data, itemWidget):
         """ sets the spese icon """
         if not len(self.dateSpese):
-            return
-        # itemWidget = self.findItemWidgetFromDate(data)
-        if data in self.dateSpese:
-            if data == itemWidget.data:
-                itemWidget.dictFlags['spese'] = 1
-        else:
             itemWidget.dictFlags['spese'] = 0
+        else:
+        # itemWidget = self.findItemWidgetFromDate(data)
+            if data in self.dateSpese:
+                if data == itemWidget.data:
+                    itemWidget.dictFlags['spese'] = 1
+                else:
+                    itemWidget.dictFlags['spese'] = 0
+                    # print('dateSpese',self.dateSpese)
+            else:
+                itemWidget.dictFlags['spese'] = 0
         itemWidget.setActive()
 
     def setIconNote(self, data, itemWidget):

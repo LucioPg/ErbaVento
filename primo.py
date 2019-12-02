@@ -194,8 +194,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             if spese != finale:
                 copia = deepc(self.database[a][m][g]['checkIn'])
                 copia['spese'] = finale
-                for giorno in self.database[a][m].keys():
-                    self.database[a][m][giorno]['checkIn'] = deepc(copia)
+                print(copia['note'])
+                self.database[a][m][g]['checkIn'] = deepc(copia)
+                # for giorno in self.database[a][m].keys():
+                #     self.database[a][m][giorno]['checkIn'] = deepc(copia)
+                #     print(self.database[a][m][giorno]['checkIn'])
 
                 dbm.salvaDatabase(self.database)
             self.updateInfoStat()
