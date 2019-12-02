@@ -63,7 +63,9 @@ class CalendarTableWidget(Calendar, QWidget):
             else:
                 self.indexMonth = 0
                 self.setCurrentYear(currentYear+1)
+                print('baseDate before', self.baseDate)
                 self.setBaseDate(self.baseDate.addMonths(1))
+                print('baseDate after', self.baseDate)
                 print('new Year: ', self.currentYear)
 
         elif sender == 'bot_prev':
@@ -77,9 +79,11 @@ class CalendarTableWidget(Calendar, QWidget):
                 self.setBaseDate(self.baseDate.addMonths(-1))
                 print('new Year: ', self.currentYear)
         if currentMonth != self.indexMonth:
+            print(f'currentPageChanged.emit({self.indexMonth})')
             self.currentPageChanged.emit(self.indexMonth)
             self.combo_mesi.setCurrentIndex(self.indexMonth)
         if currentYear != self.currentYear:
+            print('current year changed')
             self.setListaGiorniDellAnno(self.createDates(self.baseDate), self.indexMonth)
 
     def changeDisplayedMonthCombo(self, index):
@@ -89,11 +93,15 @@ class CalendarTableWidget(Calendar, QWidget):
     def clickedCell(self, row, col) ->QDate:
         """if clicked returns the QDate setted into
         :return data"""
-        # print('clickedCell')
+        print(f'clickedCell row{row} col{col}')
         itemWidget = self.table.cellWidget(row, col)
         data = itemWidget.data
         dataMonth = data.month() - 1
         dataYear = data.year()
+        self.currentDate = data
+        print('cell clicked flags: ', itemWidget.dictFlags)
+        print('cell clicked flags currentDate: ', data)
+        print('cell clicked flags item date: ', itemWidget.data)
         if data not in self.daysInTheMonth:
             if dataYear > self.currentYear:
                 self.bot_next.click()
@@ -104,11 +112,12 @@ class CalendarTableWidget(Calendar, QWidget):
             else:
                 self.bot_prev.click()
         #todo presente per debug
-        # self.yearShown()
-        self.currentDate = data
+        print(self.yearShown())
+
         # print('clicked ', data)
         self.singleClicked.emit(data)
-        print('cell clicked flags: ', itemWidget.dictFlags)
+        itemWidgetData = itemWidget.data
+
         return data
 
     def createDates(self, data: QDate=None):
@@ -116,6 +125,7 @@ class CalendarTableWidget(Calendar, QWidget):
             """
         if data is None:
             data = self.oggi
+        # print('CREATEDATES DATA', data)
         dateList = MeseGiorniDictGen.bigList(data)
         return dateList
 
@@ -242,21 +252,25 @@ class CalendarTableWidget(Calendar, QWidget):
         if date is None:
             date = self.oggi
         # print('setBaseDate ', date)
-        self.baseDate = QDate(date.year(),date.month(),1)
-        if date.year() != self.currentYear:
-            self.setCurrentYear(date.year())
-            self.setListaGiorniDellAnno(self.createDates(date))
+        self.baseDate = QDate(date.year(), date.month(), 1)
+        # print(f'setBaseDAte: {date.year()} {self.currentYear}')
+        # if date.year() != self.currentYear:
+        #     self.setCurrentYear(date.year())
+        #     self.setListaGiorniDellAnno(self.createDates(date))
 
     def setBooked(self, data, itemWidget):
         """"changes the background for the date passed"""
-        itemWidget = self.findItemWidgetFromDate(data)
+        # itemWidget = self.findItemWidgetFromDate(data)
         styleSheet = ""
-        for plat in self.datePrenotazioni['platforms'].keys():
-            if data in self.datePrenotazioni['platforms'][plat]['date']:
-                color = self.colors[plat]
-                r, g, b = self.reformatColor(color)
-                styleSheet = f"background-color: rgba({r},{g},{b},150)"
-                break
+        try:
+            for plat in self.datePrenotazioni['platforms'].keys():
+                if data in self.datePrenotazioni['platforms'][plat]['date']:
+                    color = self.colors[plat]
+                    r, g, b = self.reformatColor(color)
+                    styleSheet = f"background-color: rgba({r},{g},{b},150)"
+                    break
+        except KeyError:
+            print('remove try/exc')
         # print('setbooked ' + styleSheet)
         itemWidget.lab_num.setStyleSheet(styleSheet)
 
@@ -264,6 +278,7 @@ class CalendarTableWidget(Calendar, QWidget):
         """cambia il giorno nelle celle"""
         listaDaInserire = self.listaGiorniDellAnno[indexMonth]
         _data = QDate(self.baseDate.year(), indexMonth+1, 1)
+        print('setComplexLabels',_data.year())
         self.setBaseDate(_data)
         baseDate = self.baseDate
         # print('setTextComplex baseDate', baseDate)
@@ -322,6 +337,7 @@ class CalendarTableWidget(Calendar, QWidget):
         if len(note) > 0:
             print('note setted')
             self.dateNote = note
+        print('datesIndicatorsChanged.emit()')
         self.datesIndicatorsChanged.emit()
 
     def setIconsAndBooked(self, data=None):
@@ -329,13 +345,14 @@ class CalendarTableWidget(Calendar, QWidget):
         # itemWidget = self.findItemWidgetFromDate(data)
         # print('setIconsAndBooked')
         data = self._dataToSet
+        # print('data to set iconsAndBooked', data)
         itemWidget = self.findItemWidgetFromDate(data)
         self.setIconNote(data, itemWidget)
         self.setIconPulizie(data, itemWidget)
         self.setIconSpese(data, itemWidget)
         self.setBooked(data, itemWidget)
 
-    def setIconPulizie(self,data, itemWidget):
+    def setIconPulizie(self, data, itemWidget):
         """sets the pulizie icon if a displayed month has a date in self.datePulizie list"""
         # itemWidget = self.findItemWidgetFromDate(data)
         # print('data passed', data)
@@ -381,6 +398,7 @@ class CalendarTableWidget(Calendar, QWidget):
         if lista is not None:
             self.listaGiorniDellAnno = lista
             if index is not None:
+                print(f'listaGiorniDellAnnoChanged.emit({index})')
                 self.listaGiorniDellAnnoChanged.emit(index)
 
     def setSelectedDate(self, data):
@@ -422,13 +440,18 @@ class CalendarTableWidget(Calendar, QWidget):
         self.currentPageChanged.connect(self.removeSelection)
         self.currentPageChanged.connect(self.updateIconsAndBooked)
         self.listaGiorniDellAnnoChanged.connect(self.setComplexLabels)
+        self.listaGiorniDellAnnoChanged.connect(self.updateIconsAndBooked)
         self.combo_mesi.currentIndexChanged.connect(self.setComplexLabels)
         self.combo_mesi.currentIndexChanged.connect(self.removeSelection)
         self.table.cellClicked.connect(self.clickedCell)
         self.datesIndicatorsChanged.connect(self.updateIconsAndBooked)
 
     def updateIconsAndBooked(self):
-        print('updating Icons')
+        # print('updating Icons indexMonth', self.indexMonth)
+        listaDaInserire = self.listaGiorniDellAnno[self.indexMonth]
+        # print('lista da inserire')
+        for x in listaDaInserire:
+            print(x)
         for row in range(6):
             for col in range(7):
                 itemWidget = self.table.cellWidget(row, col)
