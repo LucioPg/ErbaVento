@@ -200,9 +200,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     # self.database[a][m][giorno]['checkIn']['spese'] = finale
 
                 dbm.salvaDatabase(self.database)
-            self.updateInfoStat()
-            # self.riempiTabellaStat()
-            # print(self.dateSpese)
+                # self.updateInfoStat()
+
         except:
             print(fex())
 
@@ -612,18 +611,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     self.bot_spese.setState(False)
                     tot = 0
 
-                self.calendario.datesIndicatorsChanged.emit()
-                self.calendario.updateIconsAndBooked()
-                totSpeseMensili = 0
-                try:
-                    for giornoData in self.spese[a][m].keys():
-                        for spesaperitem in self.spese[a][m][giornoData].values():
-                            totSpeseMensili += spesaperitem
-                    finale = float(totSpeseMensili)
-                except TypeError:
-                    print(' TYPEERR *****************', self.spese[a][m].values())
-                dbm.salvaDatabase(self.spese, tipodatabase='spese')
-                return finale
+            self.calendario.datesIndicatorsChanged.emit()
+            self.calendario.updateIconsAndBooked()
+            totSpeseMensili = 0
+            try:
+                for giornoData in self.spese[a][m].keys():
+                    for spesaperitem in self.spese[a][m][giornoData].values():
+                        totSpeseMensili += spesaperitem
+                finale = float(totSpeseMensili)
+            except TypeError:
+                print(' TYPEERR *****************', self.spese[a][m].values())
+            dbm.salvaDatabase(self.spese, tipodatabase='spese')
+            return finale
         except:
             print(fex())
 
