@@ -159,18 +159,23 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # data = self.calendario.selectedDate()
             data = self.calendario.currentDate
             a, m, g = self.amg(data)
-            text = self.database[a][m][g]['checkIn']['note']
+            database = self.getDatabase(a)
+            # text = self.database[a][m][g]['checkIn']['note']
+            text = database[a][m][g]['checkIn']['note']
             dialog = DialogInfo(testo=text, showBool=True)
             icona = QtGui.QIcon('./Icons/iconaNote.ico')
             dialog.setWindowIcon(icona)
-            tempDict = deepc(self.database[a][m][g]['checkIn'])
+            # tempDict = deepc(self.database[a][m][g]['checkIn'])
+            tempDict = deepc(database[a][m][g]['checkIn'])
             dialog.guiText.textBrowser_dialog_info.setText(text)
             if dialog.exec_():
                 nuovoTesto = dialog.guiText.textBrowser_dialog_info.toPlainText()
                 if nuovoTesto != text:
                     tempDict['note'] = nuovoTesto
-                    self.database[a][m][g]['checkIn'] = tempDict
-                    dbm.salvaDatabase(self.database)
+                    # self.database[a][m][g]['checkIn'] = tempDict
+                    database[a][m][g]['checkIn'] = tempDict
+                    dbm.salvaDatabase(database)
+                    self.database = deepc(database)
                     self.bot_note.setState(True)
                     if nuovoTesto == '':
                         self.bot_note.setState(False)
@@ -180,6 +185,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         if self.calendario.currentDate not in self.calendario.dateNote:
                             self.calendario.dateNote.append(self.calendario.currentDate)
                     self.calendario.updateIconsAndBooked()
+                    info = self.getInfo(a,m,g)
+                    self.setInfoTemp(info)
         except:
             print(fex())
 
@@ -631,7 +638,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # self.calendario.set
         self.setLabel_stagione(d)
         # print('get_date current date ',d)
+        # self.current_date = d
+        # self.calendario.currentDate = d
         self.current_date = d
+        print(self.calendario.currentDate,d)
         if self.lastMonth != self.current_date.month():
             self.lastMonth = self.current_date.month()
         # print(d.month(),'<<<<',self.calendario.month())
@@ -648,7 +658,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         try:
             database = self.getDatabase()
             # print("getinfo database keys:\n", database.keys())
-            info = database[a][m][g]["checkIn"]
+            info = deepc(database[a][m][g]["checkIn"])
+            print("info['note'] from getInfo", info['note'])
             # print('getInfo', info)
         except KeyError:
             print("keyerr getInfo evinterf")
@@ -886,6 +897,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             del calendario"""
         try:
             info = deepc(self.infoTemp)
+            print('infoTemp in riempi_campi_prenotazioni', self.infoTemp)
             if (info['nome'] and info['cognome'] and info['telefono']) == '':
                 self.modificaOsalva()
             else:
@@ -1107,7 +1119,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.riempiTabellaStat()
         statusBot = self.riempiTabellaPrenotazioni(info)
 
-    def setInfoTemp(self, info, data=None):
+    def setInfoTemp(self, info):
 
         if info is None:
             self.infoTemp = deepc(self.infoModel)
