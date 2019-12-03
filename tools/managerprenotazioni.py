@@ -161,7 +161,7 @@ class ManagerPreno(object):
                             self.datePrenotazioni['platforms'][plat] = Od(dat)
                             # self.datePrenotazioni['platforms'][plat]['colore'] = QtGui.QColor
                         else:
-                            print("not in self.datePrenotazioni (managerprenotazioni) PLAT: ", plat, "##")
+                            # print("not in self.datePrenotazioni (managerprenotazioni) PLAT: ", plat, "##")
                             self.datePrenotazioni['platforms'][plat]['date'].append(data)
                     if pulizie != '':
                         if pulizie not in self.datePulizie:
@@ -275,21 +275,28 @@ class ManagerPreno(object):
         database = deepc(self.getDb())
 
         data = self.getData()
+        data1 = self.getData()
         if data is None:
             print("fornire un info model - setThem")
             return
+        notedict = deepc(self._info)
+        note = notedict['note']
+        self._info['note'] = ''
+        a1, m1, g1 = data1.year(), data1.month(), data1.day()
         while data < self._dataOut:
-            a, m, g = self.amg(data)
+            a2, m2, g2 = self.amg(data)
             #     if a != annoIn:
             #         database = databaseOut
-            database[a][m][g]['checkIn'] = self._info
+            database[a2][m2][g2]['checkIn'] = deepc(self._info)
             data = data.addDays(1)
             if data == self._dataOut:
                 # print("giorno stabilito")
                 infoRedux = self.buildInfoRed()
-                a1, m2, g3 = self.amg(data)
-                database[a1][m2][g3]['checkOut'] = deepc(infoRedux)
+                a3, m3, g3 = self.amg(data)
+                database[a3][m3][g3]['checkOut'] = deepc(infoRedux)
                 break
+        database[a1][m1][g1]['checkIn'] = deepc(notedict)
+        # database[a1][m1][m1]['checkIn']['note'] = note
         self.DataBase = deepc(database)
         self.salvaDatabase(database)
 

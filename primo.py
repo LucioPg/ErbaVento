@@ -185,8 +185,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         if self.calendario.currentDate not in self.calendario.dateNote:
                             self.calendario.dateNote.append(self.calendario.currentDate)
                     self.calendario.updateIconsAndBooked()
-                    info = self.getInfo(a,m,g)
-                    self.setInfoTemp(info)
+                    # info = self.getInfo(a,m,g)
+                    # self.setInfoTemp(info)
         except:
             print(fex())
 
@@ -228,7 +228,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # if self.sender() is not None:
         #     sender = self.sender().objectName()
         #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
-
+        print('aggiornaInfoData')
         self.setInfoTemp(self.getInfoFromDate(data))
         if self.infoTemp['data arrivo'] is None:
             self.bot_cancella.setEnabled(False)
@@ -674,7 +674,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         # print('getInfoFromCalendar ', data)
         info = self.getInfoFromDate(data)
+        if info is None:
+            print('info is None from getInfoFromCalendar')
         self.setInfoFromDate(info)
+
         self.setInfoTemp(info)
         return info
 
@@ -686,6 +689,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         a, m, g = self.amg(data)
         info = self.getInfo(a, m, g)
         if info is None:
+            print('info is None in getInfoFromDate')
             info = deepc(self.infoModel)
         return info
 
@@ -921,7 +925,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # except:
             #     print(fex())
             self.plainTextEdit_note.clear()
-            self.plainTextEdit_note.insertPlainText(info['note'])
+            try:
+                infoNote = self.getInfoFromDate(info['data arrivo'])
+            except AttributeError:
+                infoNote = info
+            self.plainTextEdit_note.insertPlainText(infoNote['note'])
             self.radio_colazione.setChecked(info['colazione'] == 'Si')
             # self.importAdj(self.spinBox_bambini.value() + self.spinBox_ospiti.value())
             stagione = info['stagione']
@@ -1116,7 +1124,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def setInfoFromDate(self, info):
         """compila la tabella dal modello infoTemp"""
-        self.riempiTabellaStat()
+        self.updateInfoStat()
+        # self.riempiTabellaStat()
         statusBot = self.riempiTabellaPrenotazioni(info)
 
     def setInfoTemp(self, info):
