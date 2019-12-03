@@ -146,6 +146,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.lineEdit_telefono.TABPRESSED.connect(self.lineEditVerifica)
         self.lineEdit_email.TABPRESSED.connect(self.lineEditVerifica)
         self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
+        self.calendario.currentPageChanged.connect(self.updateInfoStat)
         self.giornoprecedente = self.giornoCorrente.addDays(-1)
         self.calendario.updateIconsAndBooked()
         # STATUS BAR
@@ -185,8 +186,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def addSpese(self):
         try:
-            # dialog = DialogInfo('Spese',table=True)
-            # data = self.calendario.selectedDate()
             data = self.calendario.currentDate
             a, m, g = self.amg(data)
             finale = self.gestisciSpese(data)
@@ -194,14 +193,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             if spese != finale:
                 copia = deepc(self.database[a][m][g]['checkIn'])
                 copia['spese'] = finale
-                print(copia['note'])
-                # self.database[a][m][g]['checkIn'] = deepc(copia)
                 for giorno in self.database[a][m].keys():
-                    self.database[a][m][giorno]['checkIn']['spese'] = finale
+                    note = self.database[a][m][giorno]['checkIn']['note']
+                    copia['note'] = note
+                    self.database[a][m][giorno]['checkIn'] = deepc(copia)
+                    # self.database[a][m][giorno]['checkIn']['spese'] = finale
 
                 dbm.salvaDatabase(self.database)
             self.updateInfoStat()
-            self.riempiTabellaStat()
+            # self.riempiTabellaStat()
             # print(self.dateSpese)
         except:
             print(fex())
@@ -706,7 +706,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return config
 
     def initDatabase(self, anno=None):
-        # anno = self.calendario.yearShown()
         if anno is None:
             anno = QtCore.QDate().currentDate().year()
         self.database = self.getDatabase()
@@ -746,35 +745,26 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         statG = deepc(database)
         stat = deepc(database)
-        l = ['3 Notti', '2 Notti', '1 Notte', 'Tasse finora', 'Netto finora']
-        formatStat = formatStuff(l)
+        listaKeysStat = ['3 Notti', '2 Notti', '1 Notte', 'Tasse finora', 'Netto finora', 'Spese finora']
+        for anno in stat.keys():
+            for mese in stat[anno].keys():
+                stat[anno][mese] = {k: 0 for k in listaKeysStat}
         for anno in database.keys():
             for mese in database[anno].keys():
-                stat[anno][mese] = {}
-                formatStat = formatStuff(l)
                 for giorno in database[anno][mese].keys():
-                    statGiornaliere = statG[anno][mese][giorno]
-                    chiave = database[anno][mese][giorno]['checkIn']
+                    chiave = deepc(database[anno][mese][giorno]['checkIn'])
                     numeroNotti = int(chiave['totale notti'])
-                    try:
-                        formatStat['Spese finora'] = int(chiave['spese'])
-                    except TypeError:
-                        pass
-                        # print(database[anno][mese][giorno])
-                        # print(anno, mese, giorno)
-                        # raise TypeError
+                    stat[anno][mese]['Spese finora'] = int(chiave['spese'])
                     if numeroNotti >= 3:
-                        formatStat['3 Notti'] += 1
+                        stat[anno][mese]['3 Notti'] += 1
                     elif numeroNotti == 2:
-                        formatStat['2 Notti'] += 1
+                        stat[anno][mese]['2 Notti'] += 1
                     elif numeroNotti == 1:
-                        formatStat['1 Notte'] += 1
+                        stat[anno][mese]['1 Notte'] += 1
                     tasse = int(chiave['tasse'])
-                    formatStat['Tasse finora'] += tasse
+                    stat[anno][mese]['Tasse finora'] += tasse
                     netto = int(chiave['netto'])
-                    formatStat['Netto finora'] += netto
-                stat[anno][mese] = deepc(formatStat)
-                formatStat = formatStuff(l)
+                    stat[anno][mese]['Netto finora'] += netto
         return stat
 
     def leggiDatabase(self, database=None):
@@ -787,18 +777,14 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         """
         try:
             db = Manager()
-            # self.datePrenotazioni, self.datePulizie, self.dateSpese, self.dateNote = db.platformPulizie(database)
             self.datePrenotazioni, self.datePulizie, self.dateNote = db.platformPulizie(database)
             self.dateSpese = db.getDataSpese()
-            # print(' spese passate per icone:: ', self.dateSpese)
             self.calendario.setDatesIndicators(self.datePrenotazioni,
                                                self.datePulizie,
                                                self.config['colori settati'],
                                                self.dateSpese,
                                                self.dateNote
                                                )
-            # print('spese passate al calendario: ', self.calendario.dateSpese)
-            # print('pulizie passate al calendario: ', self.calendario.datePulizie)
             #todo selectedDate restituice Qmodelindex invece che data
             # data = self.calendario.selectedDate()
             data = self.calendario.currentDate
@@ -1023,8 +1009,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if info is None:
             info = deepc(self.infoSta)
         # data = self.calendario.selectedDate()
+        # print('mese mostrato dal calendario:',self.calendario.currentMonth)
         data = self.calendario.currentDate
         a, m, g = self.amg(data)
+        m = self.calendario.currentMonth
         dbStat = deepc(info)
         try:
             self.tableWidget_stat.setRowCount(0)
@@ -1171,7 +1159,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.importAdj()
 
     def updateInfoStat(self):
+        print('update infosta')
         self.infoSta = self.initStatDb()
+        self.riempiTabellaStat()
 
     def vaiCalendario(self):
         self.tabWidget.setCurrentIndex(0)

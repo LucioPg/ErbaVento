@@ -152,9 +152,6 @@ class ManagerPreno(object):
                     checkIn = db[anno][mese][giorno]["checkIn"]
                     plat = checkIn["platform"]
                     pulizie = db[anno][mese][giorno]["checkOut"]['data partenza']
-                    spese = checkIn['spese']
-                    if spese is None:
-                        print('spese is None in data: ', data)
                     note = checkIn['note']
                     if 'platforms' not in self.datePrenotazioni:
                         self.datePrenotazioni['platforms'] = Od()

@@ -10,5 +10,7 @@ try:
     os.system('del "..\database.pkl"')
 except:
     print(fex())
+
+print('databases deleted')
 # for d in lista:
 #     check_call(['del', d],shell=True)
