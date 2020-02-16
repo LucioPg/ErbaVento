@@ -664,35 +664,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 formatStat = formatStuff(l)
         return stat
 
-    def initStatDb_old(self):
-        for anno in self.database.keys():
-            for mese in self.database[anno].keys():
-                for giorno in self.database[anno][mese].keys():
-                    statGiornaliere = stat[anno][mese][giorno]
-                    statGiornaliere.pop('checkIn')
-                    statGiornaliere.pop('checkOut')
-                    l = ['3 notti', '2 notti', '1 notte', 'tasse finora', 'netto finora']
-                    for k in l:
-                        if k not in statGiornaliere:
-                            statGiornaliere[k] = 0
-                    chiave = self.database[anno][mese][giorno]['checkIn']
-                    numeroNotti = int(chiave['totale notti'])
-                    if numeroNotti != 0:
-                        print(giorno, mese, anno, numeroNotti, end=' ')
-                        print()
-                    if numeroNotti >= 3:
-                        statGiornaliere['3 notti'] += 1
-                        print(" stat: ", statGiornaliere['3 notti'])
-                    elif numeroNotti == 2:
-                        statGiornaliere['2 notti'] += 1
-                    elif numeroNotti == 1:
-                        statGiornaliere['1 notte'] += 1
-                    tasse = int(chiave['tasse'])
-                    statGiornaliere['tasse finora'] += tasse
-                    netto = int(chiave['netto'])
-                    statGiornaliere['netto finora'] += netto
 
-        return stat
 
     def leggiDatabase(self, database=None):
         """
