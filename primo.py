@@ -9,6 +9,7 @@ from tools.ExpCsv import ExpCsv as excsv
 from tools.databaseMaker import DbMaker as dbm
 from tools.managerprenotazioni import ManagerPreno as Manager
 from traceback import format_exc as fex
+from pprint import pprint
 import inspect
 import os
 import sys
@@ -158,6 +159,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return
 
     def aggiornaInfoData(self):
+        print('calendario selection changes')
         data = self.calendario.selectedDate()
         domani = data.addDays(1)
         anno = data.year()
@@ -525,6 +527,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         #     sender = self.sender().objectName()
         #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
         info = self.getInfoFromDate(data)
+        pprint(info)
         self.setInfoFromDate(info)
         self.setInfoTemp(info)
         return info
@@ -677,6 +680,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         try:
             db = Manager()
             self.datePrenotazioni, self.datePulizie = db.platformPulizie(database)
+            print('datePrenotazioni', self.datePrenotazioni)
             self.calendario.setDates(self.datePrenotazioni, self.datePulizie, self.config['colori settati'])
             self.infoSta = self.initStatDb(db.DataBase)
             self.riempiTabellaStat()

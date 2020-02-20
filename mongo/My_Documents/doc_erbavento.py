@@ -3,6 +3,42 @@ from pprint import pprint
 from PyQt5.QtCore import QDate
 from datetime import datetime
 import string
+import itertools
+
+class DateExc(NotUniqueError):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+    def __str__(self):
+        if self.message:
+            return f'{self.__class__.__name__},  {self.message}'
+
+class OspiteExc(Exception):
+    def __init__(self, *args):
+        if args:
+            self.message = args[0]
+        else:
+            self.message = None
+
+    def __str__(self):
+        if self.message:
+            return f'{self.__class__.__name__},  {self.message}'
+        else:
+            return 'Errore validazione Ospite'
+
+# class OspiteIllegalName(OspiteExc):
+class OspiteIllegalName(Exception):
+    def __init__(self, *args):
+        # super(OspiteIllegalName, self).__init__(*args)
+        self.message = 'Il nome o il cognome non è valido'
+
+    def __str__(self):
+        if self.message:
+            return f'{self.__class__.__name__},  {self.message}'
+        else:
+            return 'Errore validazione Ospite'
 
 class QDateField(DateTimeField):
     """ Custom field to manage PyQt5.QtCore.QDate object"""
@@ -30,22 +66,33 @@ class QDateField(DateTimeField):
 
 class Prenotazione(Document):
     """ central class joining dates and users"""
-    # ospite_id = StringField(required=True)  # needs to be referenced
+
+    stagioni = [
+        'Alta',
+        'Media',
+        'Bassa'
+    ]
+
     ospite_id = ReferenceField('Ospite', required=True)
     giorni = ReferenceField('DatePrenotazioni',required=True)
-    totale_notti = IntField(default=1)
-    totale_ospiti = IntField(default=1)
-    totale_bambini = IntField(default=0)
+    stagione = StringField(choices=stagioni, default='Alta')
+    platform = StringField(required=1, default='Privato')
+    totale_notti = IntField(default=None)
+    totale_ospiti = IntField(default=None)
+    totale_bambini = IntField(default=None)
     colazione = BooleanField(default=False)
-    spese = FloatField(default=0.0)
-    importo = FloatField(default=50.0)
+    # spese = FloatField(default=0.0)
+    spese = 0
+    importo = FloatField(default=0.0)
     tasse = FloatField(default=0.0)
+    _tassa_giornaliera = 2
+    _giorni_tassati = 3
     lordo = FloatField(default=0.0)
     netto = FloatField(default=0.0)
-    note = StringField(max_length=200)
-    arrivo = QDateField(required=True)  # needs to be computed
-    ultimo_giorno = QDateField(required=True)  # needs to be computed
-    giorno_pulizie = QDateField(required=True)  # needs to be computed
+    note = StringField(default='Questa è una nota', max_length=200)
+    arrivo = QDateField(required=True)
+    ultima_notte = QDateField(required=True)
+    giorno_pulizie = QDateField(required=True)
 
 
     def clean(self):
@@ -53,12 +100,12 @@ class Prenotazione(Document):
         self.check_max_bambini()
         self._compute_giorni()
         self._compute_arrivo()
-        self._compute_ultimo_giorno()
+        self._compute_ultima_notte()
         self._compute_giorno_pulizie()
         self._compute_totale_notti()
-        self._compute_netto()
-        self._compute_tasse()
-        self._compute_lordo()
+        # self._compute_netto()
+        # self._compute_tasse()
+        # self._compute_lordo()
 
 
 
@@ -80,14 +127,14 @@ class Prenotazione(Document):
     def _compute_arrivo(self):
         self.arrivo = min(self._giorni)
 
-    def _compute_ultimo_giorno(self):
-        self.ultimo_giorno = max(self._giorni)
+    def _compute_ultima_notte(self):
+        self.ultima_notte = max(self._giorni)
 
     def _compute_giorno_pulizie(self):
-        self.giorno_pulizie = self.ultimo_giorno.addDays(1)
+        self.giorno_pulizie = self.ultima_notte.addDays(1)
 
     def _compute_totale_notti(self):
-        self.totale_notti = self.arrivo.daysTo(self.ultimo_giorno) + 1
+        self.totale_notti = self.arrivo.daysTo(self.giorno_pulizie)
 
     def _compute_lordo(self):
         self.lordo = self.netto + self.tasse + self.spese
@@ -98,7 +145,7 @@ class Prenotazione(Document):
     def _compute_tasse(self):
         tasse = 0
         contatore = 1
-        permanenza = self.arrivo.daysTo(self.ultimo_giorno) + 1
+        permanenza = self.arrivo.daysTo(self.ultima_notte) + 1
         print('confronta permanenza con tot_notti ', permanenza == self.totale_notti)
         print(f'permanenza {permanenza}')
         mese = self.arrivo.month()
@@ -108,8 +155,8 @@ class Prenotazione(Document):
             if data.month() != mese:
                 contatore = 0
                 mese = data.month()
-            if contatore < 3:
-                tasse += 2
+            if contatore < self._giorni_tassati:
+                tasse += self._tassa_giornaliera
                 print(f'tasse: {tasse} data: {data}')
                 contatore += 1
 
@@ -138,6 +185,7 @@ class Ospite(Document):
 
     def clean(self):
         self.validate_phonenumber()
+        self.validate_nome_cognome()
         self._compute_identificativo()
 
 
@@ -148,7 +196,13 @@ class Ospite(Document):
         special_chars = set(string.punctuation.replace('+', ''))
         for number in self.telefono:
             if number.isalpha() or number in special_chars:
-                raise ValidationError('Il campo numero di telefono non è valido')
+                raise OspiteExc('Il campo numero di telefono non è valido')
+
+    def validate_nome_cognome(self):
+        alpha = set(list(string.ascii_letters + "' ") + [None])
+        for lettera_nome, lettera_cognome in itertools.zip_longest(self.nome, self.cognome, fillvalue=None):
+            if (lettera_nome or lettera_cognome) not in alpha :
+                raise OspiteIllegalName
 
     #### COMPUTE ####
     def _compute_identificativo(self):
@@ -158,19 +212,15 @@ class Ospite(Document):
 class DatePrenotazioni(Document):
     """ doc for dates info"""
 
-    stagioni = [
-        'Alta',
-        'Media',
-        'Bassa'
-    ]
+
     ospite = ReferenceField('Ospite')
     prenotazione = ReferenceField('Prenotazione')
     giorni = ListField(QDateField(), unique=True)
-    totale_ospiti = IntField(default=1)
-    totale_bambini = IntField(default=0)
-    colazione = BooleanField(default=False)
+    # totale_ospiti = IntField(default=1)
+    # totale_bambini = IntField(default=0)
+    # colazione = BooleanField(default=False)
     spese = FloatField(default=0.0)
-    stagione = StringField(choices=stagioni, default='Alta')   # needs to be referenced
+
     # is_arrivo = BooleanField()
     # is_partenza = BooleanField()
     # is_booked = BooleanField()

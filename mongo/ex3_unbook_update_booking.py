@@ -17,9 +17,27 @@ if __name__ == '__main__':
         ospite = Ospite(nome=nome, cognome=cognome, telefono=telefono)
         return ospite  # it does not save for checking for dates during booking
 
-    def create_prenotazione_doc(ospite, date_document):
+    def create_prenotazione_doc(ospite,
+                                date_document,
+                                platform,
+                                stagione,
+                                importo,
+                                totale_ospiti,
+                                totale_bambini,
+                                note,
+                                colazione):
+        return Prenotazione(ospite_id=ospite, giorni=date_document,
+                            totale_ospiti=totale_ospiti, totale_bambini=totale_bambini,
+                            importo=importo, platform=platform, stagione=stagione).save()
 
-        return Prenotazione(ospite_id=ospite, giorni=date_document).save()
+        # if stagione and platform:
+        #     return Prenotazione(ospite_id=ospite, giorni=date_document, platform=platform, stagione=stagione).save()
+        # elif stagione and not platform:
+        #     Prenotazione(ospite_id=ospite, giorni=date_document, stagione=stagione).save()
+        # elif platform and not stagione:
+        #     Prenotazione(ospite_id=ospite, giorni=date_document, platform=platform).save()
+        # else:
+        #     Prenotazione(ospite_id=ospite, giorni=date_document).save()
 
     def queries_ospite(identificativo):
         return Ospite.objects.get(identificativo=identificativo)
@@ -36,14 +54,31 @@ if __name__ == '__main__':
         if dates:
             return Prenotazione.objects.get(giorni=dates)
 
-    def create_prenotazione(ospite, dates):
-        prenotazione = create_prenotazione_doc(ospite,dates)
+    def create_prenotazione(ospite, dates, platform, stagione,importo,
+                                    totale_ospiti,
+                                    totale_bambini,
+                                    note,
+                                    colazione):
+        prenotazione = create_prenotazione_doc(ospite,
+                                               dates,
+                                               platform,
+                                               stagione,
+                                               importo,
+                                               totale_ospiti,
+                                               totale_bambini,
+                                               note,
+                                               colazione)
         ospite.prenotazioni.append(prenotazione)
         dates.prenotazione = prenotazione
         dates.save()
         ospite.save()
 
-    def book(ospite=None, identificativo=None, nome=None, cognome=None, telefono=None, dates=None):
+    def book(ospite=None, identificativo=None,
+             nome=None, cognome=None, telefono=None,
+             dates=None, platform='Privato', stagione='alta',
+             totale_ospiti=1, totale_bambini=0,
+             colazione=False, importo = 50.0, note=''
+             ):
 
         if dates:  # it checks if dates are present before confirm the creation of an useless user
             if not ospite:
@@ -63,9 +98,17 @@ if __name__ == '__main__':
                 date_document = DatePrenotazioni(
                     giorni=dates,
                     ospite=ospite,
-                    stagione='Alta'
                 ).save()
-                create_prenotazione(ospite, date_document)
+                create_prenotazione(ospite,
+                                    date_document,
+                                    platform,
+                                    stagione,
+                                    importo,
+                                    totale_ospiti,
+                                    totale_bambini,
+                                    note,
+                                    colazione
+                                    )
             except Exception as e:
                 print(e)
                 if not len(ospite.prenotazioni):
@@ -98,14 +141,35 @@ if __name__ == '__main__':
     def update_booking(dates_to_update=None, prenotazione=None):
 
         if dates_to_update and prenotazione:
+            stagione = prenotazione.stagione
+            platform= prenotazione.platform
+            totale_ospiti = prenotazione.totale_ospiti
+            totale_bambini = prenotazione.totale_bambini
+            colazione = prenotazione.colazione
+            importo = prenotazione.importo
+            giorni_tassati = prenotazione._giorni_tassati
+            tassa_giornaliera = prenotazione._tassa_giornaliera
             un_book(prenotazione, preserve=True)
             book(ospite=prenotazione.ospite_id, dates=dates_to_update)
         else:
             print('date di prenotazione necessarie')
             # create_prenotazione_doc(ospite)
 
-    book(nome='Pepped', cognome='sotto', identificativo='Peppedsotto111', telefono='111', dates=dateList_2)
-    book(nome='filippo', cognome='sopra', telefono='111', dates=dateList)
+    def clear_all():
+        for ospite in Ospite.objects:
+            delete_ospite(ospite)
+
+
+
+
+
+    # book(nome='Pepped', cognome='sotto', identificativo='Peppedsotto111', telefono='111', dates=dateList_2)
+    # book(nome='filippo', cognome='sopra', telefono='111',
+    #      dates=dateList, platform='Booking', stagione='Bassa', totale_ospiti=5)
+    clear_all()
+    # book(nome='filippo', cognome='sopra', telefono='111',
+    #      dates=dateList_3, platform='AirB&B', stagione='Media', totale_ospiti=4, totale_bambini=2)
+    # book(nome='filippo', cognome='sopra', telefono='111', dates=dateList_3, platform='Booking', stagione='Media')
     # book(nome='filippo', cognome='sopra', telefono='111', dates=dateList_3)
     # prenotazione = queries_dates(dateList_2).prenotazione
     # prenotazione = queries_dates(dateList).prenotazione

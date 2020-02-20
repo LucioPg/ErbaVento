@@ -91,7 +91,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                     self.config['stagione'][sta]['importi'][platAddPlat] = importi
                 self.config['provvigioni'][platAddPlat] = 0.0
                 self.config['tasse attive'][platAddPlat] = self.radio_attivaTassa.isChecked()
-                self.saveConfig(self.fileConf, self.config)
+                self.saveConfig(config_file.fileConf, self.config)
                 self.chooseColor(platAddPlat)
                 self.setComboPlat()
                 self.combo_platform.setCurrentIndex(self.combo_platform.findText(platAddPlat))
@@ -249,8 +249,8 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             json.dump(config, fileconfig, indent=4, sort_keys=True)
 
     def saveConfigBot(self):
-        fileConf = os.path.join(os.getcwd(), self.fileConf)
-        self.saveConfig(fileConf, self.config)
+        # fileConf = os.path.join(os.getcwd(), self.fileConf)
+        self.saveConfig(config_file.fileConf, self.config)
 
     def setColor(self):
         plat = self.combo_platform.currentText()
