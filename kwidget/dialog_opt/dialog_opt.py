@@ -7,43 +7,20 @@ from kwidget.singleline.singleline import MySimpleLinEditDialog as SimpleLine
 import json
 from copy import deepcopy
 from traceback import format_exc as fex
+import config_file
+# from config_file import (fileConf,
+#                          defaultTasse,
+#                          defaultTasseAttive,
+#                          defaultPlatforms,
+#                          defaultImporti,
+#                          defaultProvvigioni,
+#                          defaultConfig)
 import os
 
 
 
 class DialogOption(DialogOptionGui, QtWidgets.QDialog):
-    fileConf = 'config.json'
-    defaultTasse = 2
-    defaultTasseAttive = {'Booking': False,
-                          'AirB&B': False,
-                          'Privati': False}
-    defaultPlatforms = {'Booking': QtGui.QColor(QtCore.Qt.cyan).name(),
-                        'AirB&B': QtGui.QColor(QtCore.Qt.darkRed).name(),
-                        'Privati': QtGui.QColor(QtCore.Qt.darkGreen).name()
-                        }
-    defaultImporti = {'Booking': [72, 74, 92, 111, 130],
-                      'AirB&B': [64, 65, 85, 100, 117],
-                      'Privati': [72, 74, 92, 111, 130]}
-    defaultProvvigioni = {'Booking': 0.15, 'AirB&B': 0.03, 'Privati': 0}
-    defaultConfig = {'numero letti': 5,
-                     'platforms': defaultPlatforms,
-                     'stagione': {
-                         'Alta': {
-                             'importi': defaultImporti
-                         },
-                         'Bassa': {
-                             'importi': defaultImporti
-                         },
-                         'Media': {
-                             'importi': defaultImporti
-                         }
-                     },
-                     'provvigioni': {pl: prov for pl, prov in defaultProvvigioni.items()},
-                     'stagione preferita': 'Media',
-                     'tasse': defaultTasse,
-                     'tasse attive': defaultTasseAttive,
-                     'colori settati': deepcopy(defaultPlatforms)
-                     }
+
     config = {}
 
     def __init__(self, parent=None):
@@ -105,7 +82,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                     self.config['stagione'][sta]['importi'][platAddPlat] = importi
                 self.config['provvigioni'][platAddPlat] = 0.0
                 self.config['tasse attive'][platAddPlat] = self.radio_attivaTassa.isChecked()
-                self.saveConfig(self.fileConf, self.config)
+                self.saveConfig(config_file.fileConf, self.config)
                 self.chooseColor(platAddPlat)
                 self.setComboPlat()
                 self.combo_platform.setCurrentIndex(self.combo_platform.findText(platAddPlat))
@@ -124,16 +101,16 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     @classmethod
     def checkConfigFile(cls):
         try:
-            fileConf = os.path.join(os.getcwd(), cls.fileConf)
+            fileConf = os.path.join(os.getcwd(), config_file.fileConf)
 
             with open(fileConf, 'r') as fileconfig:
                 config = json.load(fileconfig)
                 cls.config = config
             # print(self.config)
         except FileNotFoundError:
-            config = deepcopy(cls.defaultConfig)
+            config = deepcopy(config_file.defaultConfig)
             cls.config = config
-            cls.saveConfig(cls.fileConf, cls.config)
+            cls.saveConfig(config_file.fileConf, cls.config)
             print('File di configurazione creato')
         return config
 
@@ -261,8 +238,8 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             json.dump(config, fileconfig, indent=4, sort_keys=True)
 
     def saveConfigBot(self):
-        fileConf = os.path.join(os.getcwd(), self.fileConf)
-        self.saveConfig(fileConf, self.config)
+        # fileConf = os.path.join(os.getcwd(), self.fileConf)
+        self.saveConfig(config_file.fileConf, self.config)
 
     def setColor(self):
         plat = self.combo_platform.currentText()

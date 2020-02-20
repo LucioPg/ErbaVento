@@ -1,17 +1,14 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-images_dir = QtCore.QFileInfo(__file__).absolutePath() + '/images'
+
 class MyCalend(QtWidgets.QCalendarWidget):
     YEARCHANGED = QtCore.pyqtSignal(str)
 
-    def __init__(
-            # self, dateListAir:dict, dateListBooking, dateListPrivati, pulizieList, parent=None
-            self, datePrenotazioni, pulizieList, colors: dict, parent=None
-    ):
+    def __init__(self, datePrenotazioni, datePulizie, colors: dict, parent=None):
         super(MyCalend, self).__init__(parent)
         self.setGridVisible(True)
         self.setObjectName('Calendario')
-        self.setVerticalHeaderFormat(0)
+        # self.color = QtGui.QColor(self.palette().color(QtGui.QPalette.Highlight))
         self.datePrenotazioni = datePrenotazioni
         # self.listeColori = {p:col for p,col in zip(self.datePrenotazioni.keys(), )}
         # self.booking = QtGui.QColor(QtCore.Qt.cyan)
@@ -19,14 +16,13 @@ class MyCalend(QtWidgets.QCalendarWidget):
         # self.airbb = QtGui.QColor(QtCore.Qt.darkGreen)
         self.pulizie = QtGui.QColor(QtCore.Qt.magenta)
         self.colors = colors
-        self.listeDate = {}
         for color in self.colors:
             color.setAlpha(150)
         # self.selectionChanged.connect(self.updateCells)
         # self.dateList_booking = dateListBooking
         # self.dateList_air = dateListAir
         # self.dateList_privati = dateListPrivati
-        self.pulizieList = pulizieList
+        self.datePulizie = datePulizie
         # self.dateList = [QtCore.QDate(2019, 8, 13)]
         self.rightDate = None
         print("current: ", self.selectedDate())
@@ -38,14 +34,6 @@ class MyCalend(QtWidgets.QCalendarWidget):
     # def showNextMonth(self) -> None:
     #     pass
 
-    def setListe(self, fe):
-        listaDate = {}
-        for i in fe.keys():
-            for l in fe[i].keys():
-                for data in fe[i][l]['date']:
-                    if data not in listaDate:
-                        listaDate[data] = l
-        return listaDate
 
 
     def paintCell(self, painter, rect, date):
@@ -54,14 +42,40 @@ class MyCalend(QtWidgets.QCalendarWidget):
         painter.setPen(self.pen)
         #                                       self.datePrenotazioni['platforms'][plat]['date']
         # highlight a particular date
-        platKeys = [k for k in self.datePrenotazioni['platforms']]
         try:
-            if date in self.listeDate:
-                plat = self.listeDate[date]
+            # for plat in self.datePrenotazioni['platforms']:
+            #     if date in self.datePrenotazioni['platforms'][plat]['date']:
+            #         # painter.fillRect(rect, QtGui.QColor(QtCore.Qt.cyan))
+            #         colore = self.colors[plat]
+            #         # if 'green' in colore.__dict__:
+            #         print(colore)
+            #         for attr, value in QtCore.Qt.__dict__.items():
+            #             if attr != 'red':
+            #                 if value == colore:
+            #                     if QtGui.QColor(attr).isValid():
+            #                         trueColor = QtCore.Qt.GlobalColor(value)
+            #                         print('valido ', trueColor)
+            #                         # trueColor = QtCore.Qt.red
+            #                         break
+            #                 # painter.fillRect(rect, QtGui.QColor(QtCore.Qt.red))
+            #             else:
+            #                 trueColor = QtCore.Qt.red
+            #
+            #         # painter.fillRect(rect, QtGui.QColor(self.colors[plat]))
+            #         painter.fillRect(rect, trueColor)
+            #         # print('colore: ', self.datePrenotazioni['platforms'][plat]['colore'].name())
+            #
+            #     if date in self.pulizieList:
+            #         painter.drawRect(rect.adjusted(0, 0, -1, -1))
+            # print(self.listeDate)
+
+
+            if date in self.datePrenotazioni:
+                plat = self.datePrenotazioni[date]
                 colore = QtGui.QColor(self.colors[plat])
                 colore.setAlpha(150)
                 painter.fillRect(rect, colore)
-            if date in self.pulizieList:
+            if date in self.datePulizie:
                 painter.drawRect(rect.adjusted(0, 0, -1, -1))
 
         except:
@@ -84,7 +98,7 @@ class MyCalend(QtWidgets.QCalendarWidget):
 
 
     def setDatePulizie(self, pl):
-        self.pulizieList = pl
+        self.datePulizie = pl
         # self.updateCells()
 
     def setColors(self, colorText):
@@ -98,14 +112,8 @@ class MyCalend(QtWidgets.QCalendarWidget):
     def setDates(self, prenotazioni, pulizie, colors: dict):
         # for plat, color in colors.items():
         #     self.colors[plat] = self.setColors(color)
+        # print(prenotazioni)
         self.colors = colors
         self.datePrenotazioni = prenotazioni
-        self.listeDate = self.setListe(prenotazioni)
         self.setDatePulizie(pulizie)
         self.updateCells()
-
-
-class Model(QtCore.QAbstractItemModel):
-    def __init__(self, rows, columns, parent=None):
-        super(Model, self).__init__(parent)
-        self.services = QtGui.QIcon(images_dir + '/services.png')
