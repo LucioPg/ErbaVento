@@ -306,8 +306,9 @@ class CalendarTableWidget(Calendar, QWidget):
         """sets the object datePrenotazioni, datePulizie and colors"""
         if len(colors) != 0:
             self.colors = colors
-        if len(prenotazioni) != 0:
-            self.datePrenotazioni = deepc(prenotazioni)
+        self.datePrenotazioni = deepc(prenotazioni)
+        # if len(prenotazioni) != 0:
+        #     self.datePrenotazioni = deepc(prenotazioni)
             # print('prenotazioni setted')
         if len(pulizie) != 0:
             self.datePulizie = pulizie
@@ -319,7 +320,7 @@ class CalendarTableWidget(Calendar, QWidget):
             # print('spese setted ')
         if len(note) > 0:
             # print('note setted')
-            self.dateNote = note
+            self.dateNote = list(set(note))
         self.datesIndicatorsChanged.emit()
 
     def setIconsAndBooked(self, data=None):

@@ -262,6 +262,20 @@ class MongoConnection:
                 'prenotazione': prenotazione
                 }
 
+    def get_prenotazione_from_nota_doc(self, nota_doc):
+        try:
+            return Prenotazione.objects.get(note=nota_doc)
+        except DoesNotExist:
+            return None
+
+    def get_prenotazione_from_date(self, data):
+        try:
+            for prenotazione in Prenotazione.objects:
+                if data in prenotazione.giorni.giorni:
+                    return prenotazione
+        except DoesNotExist:
+            return None
+
     def info_from_date(self, data):
         for prenotazione in Prenotazione.objects:
             if data in prenotazione.giorni.giorni:
