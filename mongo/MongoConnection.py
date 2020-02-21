@@ -6,6 +6,8 @@ from PyQt5.QtCore import QDate
 DateExc = DateExc
 OspiteExc = OspiteExc
 OspiteIllegalName = OspiteIllegalName
+SpeseGiornaliere = SpeseGiornaliere
+SpeseMensili = SpeseMensili
 
 
 class MongoConnection:
@@ -163,7 +165,6 @@ class MongoConnection:
         ospite = prenotazione.ospite_id
         dates = prenotazione.giorni
         ospite.prenotazioni.remove(prenotazione)
-        print('prenotazioni rimanenti: ', ospite.prenotazioni)
         if not ospite.prenotazioni and not preserve:
             ospite.delete()
         else:
@@ -260,13 +261,10 @@ class MongoConnection:
                 'note': note,
                 'prenotazione': prenotazione
                 }
+
     def info_from_date(self, data):
         for prenotazione in Prenotazione.objects:
             if data in prenotazione.giorni.giorni:
-                print('info_from_Date',prenotazione.note)
-                if prenotazione.note != '':
-                    print('info from date')
-                    # self.update_note(prenotazione.note, self.get_note(data))
                 return {'nome': prenotazione.ospite_id.nome,
                 'cognome': prenotazione.ospite_id.cognome,
                 'telefono': prenotazione.ospite_id.telefono,
@@ -300,18 +298,14 @@ class MongoConnection:
     def get_note(self, data, _create=False):
         try:
             dt = datetime(data.year(), data.month(), data.day())
-            print(f'dt {dt}  data {data}')
             note_doc = Note.objects.get(data=dt)
-            print('(get_note)note_doc ', note_doc.data, note_doc.note, note_doc.id)
             return note_doc
         except DoesNotExist:
             if _create:
-                print('creation note')
                 return self.create_notes(data, '')
             else:
                 return None
-        # except Exception as e:
-        #     print(e)
+
     def get_all_note(self):
         for nota in Note.objects:
             yield nota
@@ -323,3 +317,65 @@ class MongoConnection:
         except Exception as e:
             print(e)
 
+    def get_spese_mensili(self, data_di_riferimento):
+        try:
+            return SpeseMensili.objects.get(data_di_riferimento=data_di_riferimento)
+        except DoesNotExist:
+            return None
+
+    def get_spesa_giornaliera(self, data):
+        try:
+            return SpeseGiornaliere.objects.get(data=data)
+        except DoesNotExist:
+            return None
+
+    def update_spesa_giornaliera(self,spesa_giornaliera_doc, spese_dict):
+        spese = [(nome, spesa) for nome, spesa in spese_dict.items()]
+        if spese != spesa_giornaliera_doc.spese:
+            if not spese:
+                spesa_giornaliera_doc.delete()
+                for mese in SpeseMensili.objects:
+                    if spesa_giornaliera_doc in mese.spese_giornaliere:
+                        mese.spese_giornaliere.remove(spesa_giornaliera_doc)
+                    if not mese.spese_giornaliere:
+                        mese.delete()
+
+                    else:
+                        mese.save()
+                return False
+            else:
+                spesa_giornaliera_doc.spese = spese
+                spesa_giornaliera_doc.save()
+                return True
+
+
+    def create_spesa_giornaliera(self,data, spese_dict):
+        if spese_dict:
+            spesa_giornaliera = SpeseGiornaliere(data=data, spese=[(nome, spesa) for nome, spesa in spese_dict.items()]).save()
+            if spesa_giornaliera:
+                data_di_riferimento = QDate(data.year(), data.month(), 1)
+                spesa_mensile = self.get_spese_mensili(data_di_riferimento)
+                if spesa_mensile:
+                    if spesa_giornaliera not in spesa_mensile.spese_giornaliere:
+                        spesa_mensile.spese_giornaliere.append(spesa_giornaliera)
+                    spesa_mensile.save()
+                else:
+                    spesa_mensile = SpeseMensili(anno=data.year(),
+                                             mese=data.month(),
+                                             data_di_riferimento=data_di_riferimento,
+                                             spese_giornaliere=[spesa_giornaliera]).save()
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    def check_spesa(self,data):
+        try:
+            spesa = SpeseGiornaliere.objects.get(data=data)
+            return True
+        except DoesNotExist:
+            return False
+
+    def get_spese_date(self):
+        return [spese.data for spese in SpeseGiornaliere.objects]

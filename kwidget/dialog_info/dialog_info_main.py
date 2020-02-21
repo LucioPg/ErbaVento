@@ -150,7 +150,8 @@ class DialogInfoSpese(GuiTable, QDialog):
     def cancellaSpesa(self):
         row = self.tableWidget.currentRow()
         print('cancella ', row)
-        if row > 0:
+        row_count = self.tableWidget.rowCount()
+        if row_count:
             self.tableWidget.removeRow(row)
         else:
             self.tableWidget.setRowCount(0)
@@ -175,7 +176,7 @@ class DialogInfoSpese(GuiTable, QDialog):
             itemR = self.tableWidget.cellWidget(row, 1)
             valore = itemR.text()
             try:
-                valRow = int(valore)
+                valRow = float(valore)
             except ValueError:
                 if ',' in itemR.text():
                     valore = valore.replace(',','.')
@@ -184,7 +185,8 @@ class DialogInfoSpese(GuiTable, QDialog):
                 continue
             itemC = self.tableWidget.item(row, 0)
             chiaveCol = itemC.text()
-            spese[chiaveCol] = valRow
+            spese[chiaveCol] = spese.get(chiaveCol, 0.0) + valRow
+            # spese[chiaveCol] = valRow
         self.spese = deepc(spese)
         self.SPESEPRONTE.emit(self.spese)
         return self.spese

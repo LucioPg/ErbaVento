@@ -314,10 +314,7 @@ class CalendarTableWidget(Calendar, QWidget):
             # print('pulizie setted')
         if len(spese) > 0:
             # print('spese setted ')
-            for anno in spese.keys():
-                for mese in spese[anno].keys():
-                    for data in spese[anno][mese].keys():
-                        self.dateSpese.append(data)
+            self.dateSpese = spese
             # self.dateSpese = deepc(spese)
             # print('spese setted ')
         if len(note) > 0:

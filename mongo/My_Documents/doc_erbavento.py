@@ -260,3 +260,45 @@ class Note(Document):
 
     data = QDateField(required=1, unique=1)
     note = StringField()
+
+class SpeseListField(ListField):
+    pass
+class SpeseGiornaliere(Document):
+
+    data = QDateField(unique=1, required=1)
+    spese = ListField( required=1)
+    tot_spese_giornaliere = FloatField(default=0.0)
+
+    def clean(self):
+        self.validate_spese()
+        self._compute_tot_spese_giornaliere()
+
+    def validate_spese(self):
+        for lista_spesa in self.spese:
+            if type(lista_spesa) is not tuple:
+                print('validate_spese ',lista_spesa)
+                lista_spesa = tuple(lista_spesa)
+                # raise ValidationError("lista della spesa deve essere una tupla")
+                # raise ValidationError("lista della spesa deve essere una tupla")
+            if len(lista_spesa) != 2:
+                raise ValidationError('manca o il nome della spesa o importo')
+            if type(lista_spesa[0]) is not str or type(lista_spesa[1]) is not float:
+                raise ValidationError("il nome o l'importo non sono nel formato corretto")
+        print('validate_spese ',self.spese)
+    def _compute_tot_spese_giornaliere(self):
+        self.tot_spese_giornaliere = sum([spesa[1] for spesa in self.spese])
+
+class SpeseMensili(Document):
+
+    anno = IntField(required=1)
+    mese = IntField(required=1)
+    data_di_riferimento = QDateField(required=1)
+    spese_giornaliere = ListField(ReferenceField('SpeseGiornaliere'))
+    spese_mensili = FloatField(default=0.0)
+
+    def clean(self):
+        self._compute_spese_mensili()
+
+    def _compute_spese_mensili(self):
+        for spesa_giornaliera in self.spese_giornaliere:
+            self.spese_mensili += sum([spesa[1] for spesa in spesa_giornaliera.spese])
