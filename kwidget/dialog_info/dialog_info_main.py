@@ -229,7 +229,7 @@ class DialogInfo(QDialog):
         if not table:
             self.guiText = GuiText()
             self.guiText.setupUi(Dialog=self)
-            print("self.testo ", self.testo)
+            # print("self.testo ", self.testo)
             try:
                 self.guiText.textBrowser_dialog_info.setText(self.testo)
             except:

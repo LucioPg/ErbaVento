@@ -158,6 +158,8 @@ if __name__ == '__main__':
     def clear_all():
         for ospite in Ospite.objects:
             delete_ospite(ospite)
+        for nota in Note.objects:
+            nota.delete()
 
 
 

@@ -42,6 +42,9 @@ class OspiteIllegalName(Exception):
 
 class QDateField(DateTimeField):
     """ Custom field to manage PyQt5.QtCore.QDate object"""
+    def __init__(self, *args, **kwargs):
+        super(QDateField, self).__init__(*args, **kwargs)
+        self.counter = 0
     def validate(self, value):
         new_value = self.to_mongo(value)
         if not isinstance(new_value, datetime):
@@ -49,8 +52,18 @@ class QDateField(DateTimeField):
 
     def to_mongo(self, value):
         """ the QDate needs to be converted into datetime before sending to mongo"""
-        pyValue = value.toPyDate()
-        return datetime(pyValue.year, pyValue.month, pyValue.day)
+
+        try:
+            if not isinstance(value, datetime) or not value:
+                pdate = value.toPyDate()
+                return datetime(pdate.year, pdate.month, pdate.day)
+            else:
+                return value
+        except AttributeError:
+            return value
+
+        # pyValue = value.toPyDate()
+        # return datetime(pyValue.year, pyValue.month, pyValue.day)
 
     def to_python(self, value):
         if not isinstance(value, QDate):
@@ -60,7 +73,6 @@ class QDateField(DateTimeField):
             return value
 
     def prepare_query_value(self, op, value):
-        """ maybe useless"""
         return super(QDateField, self).prepare_query_value(op, self.to_mongo(value))
 
 
@@ -89,7 +101,8 @@ class Prenotazione(Document):
     _giorni_tassati = 3
     lordo = FloatField(default=0.0)
     netto = FloatField(default=0.0)
-    note = StringField(default='Questa è una nota', max_length=200)
+    # note = StringField(default='Questa è una nota', max_length=200)
+    note = ReferenceField('Note')
     arrivo = QDateField(required=True)
     ultima_notte = QDateField(required=True)
     giorno_pulizie = QDateField(required=True)
@@ -242,4 +255,8 @@ class DatePrenotazioni(Document):
     #### COMPUTE ####
 
 
+class Note(Document):
+    """ bind notes with dates"""
 
+    data = QDateField(required=1, unique=1)
+    note = StringField()

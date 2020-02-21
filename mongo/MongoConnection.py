@@ -148,7 +148,7 @@ class MongoConnection:
                                     netto,
                                     tasse
                                     )
-                return prenotazione.giorno_pulizie
+                return prenotazione
             except NotUniqueError as e:
                 print(e, 'interno')
                 if not len(ospite.prenotazioni):
@@ -169,8 +169,17 @@ class MongoConnection:
         else:
             ospite.save()
         dates.delete()
+        note = prenotazione.note
+        filtro = '\nNote Prenotazione:\n'
+        if note and filtro in note.note:
+            note_splitted = note.note.split(filtro)
+            note.note = note_splitted[0]
+            if not note.note:
+                note.delete()
+            else:
+                note.save()
         prenotazione.delete()
-        return True
+        return note
 
     def delete_ospite(self,ospite=None, identificativo=None):
         if not self.CONNECTED:
@@ -226,10 +235,38 @@ class MongoConnection:
     #         print(prenotazione)
     #         if data in prenotazione.giorni.giorni:
     #             return {'nome': prenotazione.ospite_id.nome,
-
+    def get_info_from_prenotazione(self, prenotazione):
+        if prenotazione.note:
+            note = prenotazione.note.note
+        else:
+            note = ''
+        return {'nome': prenotazione.ospite_id.nome,
+                'cognome': prenotazione.ospite_id.cognome,
+                'telefono': prenotazione.ospite_id.telefono,
+                'email': prenotazione.ospite_id.email,
+                'platform': prenotazione.platform,
+                'data arrivo': prenotazione.arrivo,
+                'data partenza': prenotazione.giorno_pulizie,
+                'totale notti': prenotazione.totale_notti,
+                'numero ospiti': prenotazione.totale_ospiti,
+                'bambini': prenotazione.totale_bambini,
+                'spese': '',
+                'colazione': prenotazione.colazione,
+                'stagione': prenotazione.stagione,
+                'importo': prenotazione.importo,
+                'lordo': prenotazione.lordo,
+                'tasse': prenotazione.tasse,
+                'netto': prenotazione.netto,
+                'note': note,
+                'prenotazione': prenotazione
+                }
     def info_from_date(self, data):
         for prenotazione in Prenotazione.objects:
             if data in prenotazione.giorni.giorni:
+                print('info_from_Date',prenotazione.note)
+                if prenotazione.note != '':
+                    print('info from date')
+                    # self.update_note(prenotazione.note, self.get_note(data))
                 return {'nome': prenotazione.ospite_id.nome,
                 'cognome': prenotazione.ospite_id.cognome,
                 'telefono': prenotazione.ospite_id.telefono,
@@ -250,3 +287,39 @@ class MongoConnection:
                 'note': prenotazione.note,
                 'prenotazione': prenotazione
                         }
+
+    def create_notes(self, data, note):
+        try:
+            nota = Note(data=data, note=note).save()
+            return nota
+        except NotUniqueError:
+            self.update_note(note, self.get_note(data))
+
+
+
+    def get_note(self, data, _create=False):
+        try:
+            dt = datetime(data.year(), data.month(), data.day())
+            print(f'dt {dt}  data {data}')
+            note_doc = Note.objects.get(data=dt)
+            print('(get_note)note_doc ', note_doc.data, note_doc.note, note_doc.id)
+            return note_doc
+        except DoesNotExist:
+            if _create:
+                print('creation note')
+                return self.create_notes(data, '')
+            else:
+                return None
+        # except Exception as e:
+        #     print(e)
+    def get_all_note(self):
+        for nota in Note.objects:
+            yield nota
+
+    def update_note(self,nuove_note, note_doc):
+        try:
+            note_doc.note += f'\n{nuove_note}'
+            note_doc.save()
+        except Exception as e:
+            print(e)
+
