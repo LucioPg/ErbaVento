@@ -404,7 +404,8 @@ class MongoConnection:
         anno, mese = data.year(), data.month()
         # emb_spesa_giornaliera = SpeseGiornaliere()
         try:
-            return SpeseMensili(anno=anno, mese=mese, data_di_riferimento=self.make_data_ref(data)).save()
+            spesa_mensile = SpeseMensili(anno=anno, mese=mese, data_di_riferimento=self.make_data_ref(data)).save()
+
         except NotUniqueError as e:
             print(e)
             try:
@@ -461,10 +462,6 @@ class MongoConnection:
                                              mese=data.month(),
                                              data_di_riferimento=data_di_riferimento,
                                              spese_giornaliere=[spesa_giornaliera]).save()
-                statistiche = self.get_stat(data,spese_mensili=spesa_mensile, _create=1)
-                if statistiche:
-                    statistiche.spese_mensili_obj = spesa_mensile
-                    statistiche.save()
                 return True
             else:
                 return False
@@ -496,16 +493,12 @@ class MongoConnection:
         #         for data in mensile.spese_giornaliere:
 
 
-    def get_spese_date_old(self):
-        return [spese.data for spese in SpeseGiornaliere.objects]
 
-    def get_stat_from_prenotazione(self, prenotazione):
-        pass
 
     def get_stat(self, data, data_doc=None, spese_mensili=None, _create=0):
-        anno, mese = data.year(), data.month()
         try:
-            stat = StatiSticheMensili.objects.get(anno=anno, mese=mese)
+            # stat = StatiSticheMensili.objects.get(anno=anno, mese=mese)
+            stat = StatiSticheMensili.objects.get(identificativo=self.make_data_ref(data))
             if data_doc and data_doc not in stat.date_prenotate:
                 print('get_stat ',data_doc)
                 stat.date_prenotate.append(data_doc)
