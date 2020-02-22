@@ -264,15 +264,29 @@ class Note(Document):
     data = QDateField(required=1, unique=1)
     note = StringField()
 
-class SpeseGiornaliere(Document):
+class SpeseGiornaliere(EmbeddedDocument):
 
     data = QDateField(unique=1, required=1)
-    spese = ListField( required=1)
+    # spese = ListField( required=1)
+    spese = DictField()
     tot_spese_giornaliere = FloatField(default=0.0)
+    old_spese = None
 
     def clean(self):
-        self.validate_spese()
+        print('clean emb')
+        # self.validate_spese()
         self._compute_tot_spese_giornaliere()
+
+    def set_spese(self, _spese):
+        print('setspese emb')
+        self.old_spese = self.spese
+        self.spese = _spese
+        try:
+            # self.validate_spese()
+            self._compute_tot_spese_giornaliere()
+        except Exception as e:
+            self.spese = self.old_spese
+            print('setSpese_SpeseGiorn, ', e)
 
     def validate_spese(self):
         for lista_spesa in self.spese:
@@ -286,15 +300,18 @@ class SpeseGiornaliere(Document):
             if type(lista_spesa[0]) is not str or type(lista_spesa[1]) is not float:
                 raise ValidationError("il nome o l'importo non sono nel formato corretto")
         print('validate_spese ',self.spese)
+
     def _compute_tot_spese_giornaliere(self):
-        self.tot_spese_giornaliere = sum([spesa[1] for spesa in self.spese])
+        # self.tot_spese_giornaliere = sum([spesa[1] for spesa in self.spese])
+        self.tot_spese_giornaliere = sum([spesa for spesa in self.spese.values()])
 
 class SpeseMensili(Document):
 
     anno = IntField(required=1)
     mese = IntField(required=1)
-    data_di_riferimento = QDateField(required=1)
-    spese_giornaliere = ListField(ReferenceField('SpeseGiornaliere'))
+    data_di_riferimento = QDateField(required=1, unique=1)
+    # spese_giornaliere = ListField(ReferenceField('SpeseGiornaliere'))
+    spese_giornaliere = EmbeddedDocumentListField(SpeseGiornaliere)
     spese_mensili = FloatField(default=0.0)
 
     def clean(self):

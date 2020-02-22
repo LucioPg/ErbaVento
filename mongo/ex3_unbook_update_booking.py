@@ -40,8 +40,8 @@ if __name__ == '__main__':
             delete_ospite(ospite)
         for nota in Note.objects:
             nota.delete()
-        for spesa_giornaliera in SpeseGiornaliere.objects:
-            spesa_giornaliera.delete()
+        # for spesa_giornaliera in SpeseGiornaliere.objects:
+        #     spesa_giornaliera.delete()
         for spesa_mensile in SpeseMensili.objects:
             spesa_mensile.delete()
         for statistica in StatiSticheMensili.objects:

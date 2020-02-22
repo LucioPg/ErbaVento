@@ -355,13 +355,25 @@ class MongoConnection:
         try:
             return SpeseMensili.objects.get(data_di_riferimento=data_di_riferimento)
         except DoesNotExist:
-            return None
+            print('SpeseMensili does not exist, proceed with creation')
+            return self.create_spesa_mensile(data_di_riferimento)
 
-    def get_spesa_giornaliera(self, data):
+    def get_spesa_giornaliera(self, data, spesa_mensile):
         try:
-            return SpeseGiornaliere.objects.get(data=data)
+
+            if isinstance(spesa_mensile, SpeseMensili):
+                spese_giornaliere = [giornaliera for giornaliera in spesa_mensile.spese_giornaliere if giornaliera.data == data]
+                if spese_giornaliere:
+                    return spese_giornaliere[0]
+                else:
+                    spese_giornaliere = SpeseGiornaliere(data=data, spese={})
+                    spesa_mensile.spese_giornaliere.append(spese_giornaliere)
+                    spesa_mensile.save()
+                    return spese_giornaliere
+
+            return None, None
         except DoesNotExist:
-            return None
+            return None, None
 
     def update_spesa_giornaliera(self,spesa_giornaliera_doc, spese_dict):
         spese = [(nome, spesa) for nome, spesa in spese_dict.items()]
@@ -387,6 +399,47 @@ class MongoConnection:
                 spesa_giornaliera_doc.save()
                 return True
 
+
+    def create_spesa_mensile(self, data):
+        anno, mese = data.year(), data.month()
+        # emb_spesa_giornaliera = SpeseGiornaliere()
+        try:
+            return SpeseMensili(anno=anno, mese=mese, data_di_riferimento=self.make_data_ref(data)).save()
+        except NotUniqueError as e:
+            print(e)
+            try:
+                return SpeseMensili.objects.get(data_di_riferimento=self.make_data_ref(data))
+            except DoesNotExist as e:
+                print(e)
+                return None
+
+
+    def make_data_ref(self, data):
+        return QDate(data.year(), data.month(), 1)
+
+    def get_spesa_mensile(self, data):
+        try:
+            return SpeseMensili.objects.get(data_di_riferimento=self.make_data_ref(data))
+        except DoesNotExist:
+            return self.create_spesa_mensile(data)
+    def create_em_spesa_giornaliera(self, data, spese_dict):
+        try:
+            return SpeseGiornaliere(data=data, spese_dict=spese_dict)
+        except NotUniqueError as e:
+            print(e)
+            return None
+
+    def update_emb_spesa_giornaliera(self, data, spese_dict):
+        try:
+            data_ref = QDate(data.year(), data.month(), 1)
+            mensile = SpeseMensili.objects(data_di_riferimento=data_ref)
+            giornaliera = [doc for doc in mensile.spese_giornaliere if doc.data == data][0]
+            if giornaliera:
+                giornaliera.set_spese(spese_dict)
+            else:
+                return None
+        except Exception as e:
+            print(e)
 
     def create_spesa_giornaliera(self,data, spese_dict):
         if spese_dict:
@@ -420,12 +473,30 @@ class MongoConnection:
 
     def check_spesa(self,data):
         try:
-            spesa = SpeseGiornaliere.objects.get(data=data)
-            return True
+            mensile = self.get_spese_mensili(self.make_data_ref(data))
+            for giornaliera in mensile.spese_giornaliere:
+                if giornaliera.spese and giornaliera.data == data:
+                    return True
+                elif not giornaliera.spese:
+                    mensile.spese_giornaliere.remove(giornaliera)
+                    if mensile.spese_giornaliere:
+                        mensile.save()
+                    else:
+                        mensile.delete()
+            return False
         except DoesNotExist:
             return False
 
     def get_spese_date(self):
+        # d = [data for mensile in SpeseMensili.objects for data in mensile.spese_giornaliere if mensile.spese_giornaliere]
+        d = [giornaliera.data   for mensile in SpeseMensili.objects for giornaliera in mensile.spese_giornaliere if mensile.spese_giornaliere]
+        return d
+        # for mensile in SpeseMensili.objects:
+        #     if mensile.spese_giornaliere:
+        #         for data in mensile.spese_giornaliere:
+
+
+    def get_spese_date_old(self):
         return [spese.data for spese in SpeseGiornaliere.objects]
 
     def get_stat_from_prenotazione(self, prenotazione):

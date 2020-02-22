@@ -230,6 +230,60 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def addSpese(self):
         try:
             data = self.calendario.currentDate
+            print(data)
+            spesa_mensile = self.mongo.get_spesa_mensile(self.mongo.make_data_ref(data))
+            spesa_giornaliera = self.mongo.get_spesa_giornaliera(data, spesa_mensile)
+            if not spesa_giornaliera and not spesa_mensile:
+                return
+            # spesa_mensile = self.mongo.creat
+
+            spese_dict = spesa_giornaliera.spese
+            dialog = DialogSpese(spese_dict)
+            dialog.setWindowIcon(QtGui.QIcon('./Icons/iconaSpese.png'))
+
+            # dialog.SPESEPRONTE.connect(lambda x: print('spese pronte', x))
+            # dialog.setModal(True)
+            if dialog.exec_():
+                spese_dict_dialog = dialog.ottieniSpese()
+                status_bot = False
+                if spese_dict != spese_dict_dialog:
+                    if spese_dict_dialog:
+                        if spesa_giornaliera:
+                            spesa_giornaliera.set_spese(spese_dict_dialog)
+                            spesa_mensile.save()
+                            status_bot = True
+                        else:
+                            status_bot = False
+                    else:
+                        if spesa_giornaliera in spesa_mensile.spese_giornaliere:
+                            spesa_mensile.spese_giornaliere.remove(spesa_giornaliera)
+                            spesa_mensile.save()
+                        if not spesa_mensile.spese_giornaliere:
+                            print('ancora presente')
+                            spesa_mensile.delete()
+                else:
+                    if not spese_dict:
+                        if spesa_giornaliera in spesa_mensile.spese_giornaliere:
+                            spesa_mensile.spese_giornaliere.remove(spesa_giornaliera)
+                            spesa_mensile.save()
+                        if not spesa_mensile.spese_giornaliere:
+                            spesa_mensile.delete()
+
+                self.bot_spese.setState(status_bot)
+                if status_bot:
+                    if data not in self.calendario.dateSpese:
+                        self.calendario.dateSpese.append(data)
+                else:
+                    if data in self.calendario.dateSpese:
+                        self.calendario.dateSpese.remove(data)
+                self.calendario.updateIconsAndBooked()
+        except:
+            print(fex())
+
+    @QtCore.pyqtSlot()
+    def addSpese_old(self):
+        try:
+            data = self.calendario.currentDate
             spesa_giornaliera = self.mongo.get_spesa_giornaliera(data)
             if spesa_giornaliera:
                 spese_dict = {spesa[0]: spesa[1] for spesa in spesa_giornaliera.spese}
