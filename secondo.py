@@ -233,8 +233,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             print(data)
             spesa_mensile = self.mongo.get_spesa_mensile(self.mongo.make_data_ref(data))
             spesa_giornaliera = self.mongo.get_spesa_giornaliera(data, spesa_mensile)
+
             if not spesa_giornaliera and not spesa_mensile:
                 return
+            statistiche = self.mongo.get_stat(data=data, data_doc=None, spese_mensili=spesa_mensile, _create=1)
             # spesa_mensile = self.mongo.creat
 
             spese_dict = spesa_giornaliera.spese
@@ -252,7 +254,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                             spesa_giornaliera.set_spese(spese_dict_dialog)
                             spesa_mensile.save()
                             status_bot = True
+                            statistiche.save()
                         else:
+                            print('dfafadfafadfaddddddddddddd')
                             status_bot = False
                     else:
                         if spesa_giornaliera in spesa_mensile.spese_giornaliere:
@@ -261,6 +265,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         if not spesa_mensile.spese_giornaliere:
                             print('ancora presente')
                             spesa_mensile.delete()
+                            statistiche.spese_mensili_obj = None
+                        statistiche.save()
                 else:
                     if not spese_dict:
                         if spesa_giornaliera in spesa_mensile.spese_giornaliere:
@@ -268,6 +274,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                             spesa_mensile.save()
                         if not spesa_mensile.spese_giornaliere:
                             spesa_mensile.delete()
+                            statistiche.spese_mensili_obj = None
+                        statistiche.save()
                         status_bot = False
                     else:
                         status_bot = True
