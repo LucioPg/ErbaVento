@@ -1,5 +1,0 @@
-dal terminale
-
-pyinstaller primo.py -n Erbavento --hidden-import PyQt5.sip --noconsole -F
-
--F è stato aggiunto per fare un file singolo, ma non è stato ancora provato
