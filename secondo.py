@@ -268,6 +268,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                             spesa_mensile.save()
                         if not spesa_mensile.spese_giornaliere:
                             spesa_mensile.delete()
+                        status_bot = False
+                    else:
+                        status_bot = True
 
                 self.bot_spese.setState(status_bot)
                 if status_bot:
@@ -302,13 +305,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         status_bot = self.mongo.update_spesa_giornaliera(spesa_giornaliera, spese_dict_dialog)
                     else:
                         status_bot = self.mongo.create_spesa_giornaliera(data, spese_dict_dialog)
+
+                else:
+                    if spese_dict:
+                        status_bot = True
                 self.bot_spese.setState(status_bot)
                 if status_bot:
                     if data not in self.calendario.dateSpese:
                         self.calendario.dateSpese.append(data)
                 else:
-                    if data in self.calendario.dateSpese:
-                        self.calendario.dateSpese.remove(data)
+                    if not spese_dict:
+                        if data in self.calendario.dateSpese:
+                            self.calendario.dateSpese.remove(data)
                 self.calendario.updateIconsAndBooked()
         except:
             print(fex())
