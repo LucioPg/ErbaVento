@@ -85,6 +85,7 @@ class Prenotazione(Document):
         'Bassa'
     ]
 
+    statistiche = ReferenceField('StatisticheMensili')
     ospite_id = ReferenceField('Ospite', required=True)
     giorni = ReferenceField('DatePrenotazioni',required=True)
     stagione = StringField(choices=stagioni, default='Alta')
@@ -229,9 +230,7 @@ class DatePrenotazioni(Document):
     ospite = ReferenceField('Ospite')
     prenotazione = ReferenceField('Prenotazione')
     giorni = ListField(QDateField(), unique=True)
-    # totale_ospiti = IntField(default=1)
-    # totale_bambini = IntField(default=0)
-    # colazione = BooleanField(default=False)
+    data = QDateField(unique=1)
     spese = FloatField(default=0.0)
 
     # is_arrivo = BooleanField()
@@ -240,6 +239,7 @@ class DatePrenotazioni(Document):
 
     def clean(self):
         self.check_sequence_for_days()
+        self._compute_data()
 
     #### CHECKS ####
 
@@ -253,7 +253,9 @@ class DatePrenotazioni(Document):
         except ValueError as e:
             return print(e)
     #### COMPUTE ####
-
+    def _compute_data(self):
+        if self.giorni:
+            self.data = self.giorni[0]
 
 class Note(Document):
     """ bind notes with dates"""
@@ -261,8 +263,6 @@ class Note(Document):
     data = QDateField(required=1, unique=1)
     note = StringField()
 
-class SpeseListField(ListField):
-    pass
 class SpeseGiornaliere(Document):
 
     data = QDateField(unique=1, required=1)
@@ -300,5 +300,54 @@ class SpeseMensili(Document):
         self._compute_spese_mensili()
 
     def _compute_spese_mensili(self):
+        self.spese_mensili = 0
         for spesa_giornaliera in self.spese_giornaliere:
-            self.spese_mensili += sum([spesa[1] for spesa in spesa_giornaliera.spese])
+            self.spese_mensili += spesa_giornaliera.tot_spese_giornaliere
+
+class StatiSticheMensili(Document):
+
+
+    anno = IntField(required=1)
+    mese = IntField(required=1)
+    identificativo = QDateField(required=1, unique=1)
+    date_prenotate = ListField(ReferenceField('DatePrenotazioni'), default=[])
+    notti_3 = IntField(required=1, default=0)  # da prenotazioni
+    notti_2 = IntField(required=1, default=0)  # da prenotazioni
+    notte_1 = IntField(required=1, default=0)  # da prenotazioni
+    totale_notti = IntField(required=1, default=0)  # da prenotazioni
+    tasse_mensili = FloatField(required=1, default=0.0)  # da prenotazioni
+    netto_mensile = FloatField(required=1, default=0.0)  # da prenotazioni
+    spese_mensili_obj = ReferenceField('SpeseMensili')
+    spese_mensili = FloatField(required=1, default=0.0)
+    totale_ospiti = IntField(required=1, default=0)  # da prenotazioni
+    totale_bambini = IntField(required=1, default=0)  # da prenotazioni
+
+    def clean(self):
+        self._compute_identificativo()
+        self._compute_spese_mensili()
+        self._compute_from_prenotazioni()
+
+    def _compute_identificativo(self):
+        self.identificativo = QDate(self.anno, self.mese, 1)
+
+    def _compute_spese_mensili(self):
+        if self.spese_mensili_obj:
+            self.spese_mensili = self.spese_mensili_obj.spese_mensili
+
+    def _compute_from_prenotazioni(self):
+        for data in self.date_prenotate:
+            if data:
+                for prenotazione in data.prenotazione:
+                    totale_notti = prenotazione.totale_notti
+                    self.totale_notti += totale_notti
+                    if totale_notti >= 3:
+                        self.notti_3 +=1
+                    elif totale_notti == 2:
+                        self.notti_2 += 1
+                    else:
+                        self.notte_1 += 1
+                    self.totale_ospiti += prenotazione.totale_ospiti
+                    self.totale_bambini += prenotazione.totale_bambini
+                    self.netto_mensile += prenotazione.netto
+                    self.tasse_mensili += prenotazione.tasse
+

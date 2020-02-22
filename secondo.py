@@ -244,19 +244,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 spese_dict_dialog = dialog.ottieniSpese()
                 status_bot = False
                 if spese_dict != spese_dict_dialog:
-                    # status_bot = True
-
                     if spesa_giornaliera:
-
-
                         status_bot = self.mongo.update_spesa_giornaliera(spesa_giornaliera, spese_dict_dialog)
-
                     else:
-                        # lista_tuple_spese = [(nome, spesa) for nome, spesa in spese_dict_dialog.items()]
-                        # return self.mongo.create_spesa_giornaliera(data, lista_tuple_spese)
                         status_bot = self.mongo.create_spesa_giornaliera(data, spese_dict_dialog)
-
                 self.bot_spese.setState(status_bot)
+                if status_bot:
+                    if data not in self.calendario.dateSpese:
+                        self.calendario.dateSpese.append(data)
+                else:
+                    if data in self.calendario.dateSpese:
+                        self.calendario.dateSpese.remove(data)
+                self.calendario.updateIconsAndBooked()
         except:
             print(fex())
 

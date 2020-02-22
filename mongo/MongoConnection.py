@@ -8,6 +8,7 @@ OspiteExc = OspiteExc
 OspiteIllegalName = OspiteIllegalName
 SpeseGiornaliere = SpeseGiornaliere
 SpeseMensili = SpeseMensili
+StatiSticheMensili = StatiSticheMensili
 
 
 class MongoConnection:
@@ -41,11 +42,12 @@ class MongoConnection:
                                 colazione,
                                 lordo,
                                 netto,
-                                tasse):
+                                tasse,
+                                statistiche):
         return Prenotazione(ospite_id=ospite, giorni=date_document,
                             totale_ospiti=totale_ospiti, totale_bambini=totale_bambini,
                             importo=importo, platform=platform, stagione=stagione, note=note, colazione=colazione,
-                            lordo=lordo, netto=netto, tasse=tasse).save()
+                            lordo=lordo, netto=netto, tasse=tasse, statistiche=statistiche).save()
 
         # if stagione and platform:
         #     return Prenotazione(ospite_id=ospite, giorni=date_document, platform=platform, stagione=stagione).save()
@@ -69,7 +71,11 @@ class MongoConnection:
         for date_doc in  DatePrenotazioni.objects:
             if dates == date_doc.giorni:
                 return date_doc
-
+    def get_date_doc(self, data):
+        try:
+            date_doc = DatePrenotazioni.objects.get(data=data)
+        except DoesNotExist:
+            return None
     def queries_prenotazioni(self,dates=None):
         if dates:
             return Prenotazione.objects.get(giorni=dates)
@@ -81,7 +87,8 @@ class MongoConnection:
                                     colazione,
                                     lordo,
                                     netto,
-                                    tasse):
+                                    tasse,
+                                    statistiche):
         prenotazione = self.create_prenotazione_doc(ospite,
                                                     dates,
                                                     platform,
@@ -93,7 +100,8 @@ class MongoConnection:
                                                     colazione,
                                                     lordo,
                                                     netto,
-                                                    tasse)
+                                                    tasse,
+                                                    statistiche)
         ospite.prenotazioni.append(prenotazione)
         dates.prenotazione = prenotazione
         dates.save(clean=False)
@@ -137,6 +145,7 @@ class MongoConnection:
                     giorni=dates,
                     ospite=ospite,
                 ).save()
+                stat = self.get_stat(data=dates[0], data_doc=date_document, _create=1)
                 prenotazione = self.create_prenotazione(ospite,
                                     date_document,
                                     platform,
@@ -148,7 +157,8 @@ class MongoConnection:
                                     colazione,
                                     lordo,
                                     netto,
-                                    tasse
+                                    tasse,
+                                    stat
                                     )
                 return prenotazione
             except NotUniqueError as e:
@@ -179,6 +189,10 @@ class MongoConnection:
                 note.delete()
             else:
                 note.save()
+        statistiche = self.get_stat(dates[0])
+        if prenotazione in statistiche.prenotazioni:
+            statistiche.prenotazioni.remove(prenotazione)
+            statistiche.save()
         prenotazione.delete()
         return note
 
@@ -347,15 +361,19 @@ class MongoConnection:
         spese = [(nome, spesa) for nome, spesa in spese_dict.items()]
         if spese != spesa_giornaliera_doc.spese:
             if not spese:
+
                 spesa_giornaliera_doc.delete()
                 for mese in SpeseMensili.objects:
-                    if spesa_giornaliera_doc in mese.spese_giornaliere:
-                        mese.spese_giornaliere.remove(spesa_giornaliera_doc)
-                    if not mese.spese_giornaliere:
-                        mese.delete()
+                    if mese.mese == spesa_giornaliera_doc.data.month() and mese.anno == spesa_giornaliera_doc.data.year():
+                        statistiche = StatiSticheMensili.objects.get(mese=mese.mese)
+                        if spesa_giornaliera_doc in mese.spese_giornaliere:
+                            mese.spese_giornaliere.remove(spesa_giornaliera_doc)
+                        if not mese.spese_giornaliere:
+                            mese.delete()
+                        else:
+                            mese.save()
 
-                    else:
-                        mese.save()
+                        statistiche.save()
                 return False
             else:
                 spesa_giornaliera_doc.spese = spese
@@ -373,11 +391,20 @@ class MongoConnection:
                     if spesa_giornaliera not in spesa_mensile.spese_giornaliere:
                         spesa_mensile.spese_giornaliere.append(spesa_giornaliera)
                     spesa_mensile.save()
+
+                        # if not statistiche.spese_mensili:
+                        #     statistiche.spese_mensili = spesa_mensile
+                        #     statistiche.save()
+
                 else:
                     spesa_mensile = SpeseMensili(anno=data.year(),
                                              mese=data.month(),
                                              data_di_riferimento=data_di_riferimento,
                                              spese_giornaliere=[spesa_giornaliera]).save()
+                statistiche = self.get_stat(data,spese_mensili=spesa_mensile, _create=1)
+                if statistiche:
+                    statistiche.spese_mensili_obj = spesa_mensile
+                    statistiche.save()
                 return True
             else:
                 return False
@@ -393,3 +420,59 @@ class MongoConnection:
 
     def get_spese_date(self):
         return [spese.data for spese in SpeseGiornaliere.objects]
+
+    def get_stat_from_prenotazione(self, prenotazione):
+        pass
+
+    def get_stat(self, data, data_doc=None, spese_mensili=None, _create=0):
+        anno, mese = data.year(), data.month()
+        try:
+            stat = StatiSticheMensili.objects.get(anno=anno, mese=mese)
+            if data_doc and data_doc not in stat.date_prenotate:
+                print('get_stat ',data_doc)
+                stat.date_prenotate.append(data_doc)
+                stat.save()
+            return stat
+        except DoesNotExist:
+            if _create:
+                self.create_stat_doc(data, data_doc, spese_mensili)
+
+    def create_stat_doc(self, data, data_doc=None, spese_mensili_obj=None):
+        anno, mese = data.year(), data.month()
+        try:
+            stat = StatiSticheMensili(anno=anno, mese=mese, spese_mensili_obj=spese_mensili_obj)
+            # stat = self.get_stat(data, data_doc, spese_mensili_obj)
+            if data_doc:
+                stat.date_prenotate.append(data_doc)
+            if spese_mensili_obj:
+                stat.spese_mensili_obj= spese_mensili_obj
+            stat.save()
+            return stat
+        except NotUniqueError as e:
+            print(e)
+            stat = self.get_stat(data, data_doc, spese_mensili_obj)
+        return stat
+
+    # def get_stat(self, date):
+    #     stat = {}
+    #     listaKeysStat = ['3 Notti', '2 Notti', '1 Notte', 'Tasse finora', 'Netto finora', 'Spese finora']
+    #     for anno in stat.keys():
+    #         for mese in stat[anno].keys():
+    #             stat[anno][mese] = {k: 0 for k in listaKeysStat}
+    #     for anno in database.keys():
+    #         for mese in database[anno].keys():
+    #             for giorno in database[anno][mese].keys():
+    #                 chiave = deepc(database[anno][mese][giorno]['checkIn'])
+    #                 numeroNotti = int(chiave['totale notti'])
+    #                 stat[anno][mese]['Spese finora'] = int(chiave['spese'])
+    #                 if numeroNotti >= 3:
+    #                     stat[anno][mese]['3 Notti'] += 1
+    #                 elif numeroNotti == 2:
+    #                     stat[anno][mese]['2 Notti'] += 1
+    #                 elif numeroNotti == 1:
+    #                     stat[anno][mese]['1 Notte'] += 1
+    #                 tasse = int(chiave['tasse'])
+    #                 stat[anno][mese]['Tasse finora'] += tasse
+    #                 netto = int(chiave['netto'])
+    #                 stat[anno][mese]['Netto finora'] += netto
+    #     return stat

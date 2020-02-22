@@ -164,6 +164,8 @@ if __name__ == '__main__':
             spesa_giornaliera.delete()
         for spesa_mensile in SpeseMensili.objects:
             spesa_mensile.delete()
+        for statistica in StatiSticheMensili.objects:
+            statistica.delete()
 
 
 
