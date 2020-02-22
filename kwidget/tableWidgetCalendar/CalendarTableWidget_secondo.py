@@ -449,8 +449,8 @@ if __name__ == '__main__':
     import pickle
 
 
-    with open('C:\\Users\\Lucio\\PycharmProjects\\ErbaVento\\speseDb.pkl', 'rb') as f:
-        spese = pickle.load(f)
+    # with open('C:\\Users\\Lucio\\PycharmProjects\\ErbaVento\\speseDb.pkl', 'rb') as f:
+    #     spese = pickle.load(f)
     app = QtWidgets.QApplication(sys.argv)
     # dialog = QtWidgets.QMainWindow()
     dialog = QtWidgets.QWidget()
@@ -462,7 +462,7 @@ if __name__ == '__main__':
     hbox.addWidget(simpleWidget)
     dialog.setLayout(hbox)
 
-    simpleWidget.setDatesIndicators({}, [QtCore.QDate(2019, 11, 30)], [], spese, [])
+    simpleWidget.setDatesIndicators({}, [QtCore.QDate(2019, 11, 30)], [], {}, [])
     # simpleWidget.dateSpese = spese
     dialog.show()
     # bt = QPushButton('click')
