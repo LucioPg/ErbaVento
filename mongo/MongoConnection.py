@@ -296,10 +296,14 @@ class MongoConnection:
         except DoesNotExist:
             return None
 
-    def info_from_date(self, data):
-        for prenotazione in Prenotazione.objects:
-            if data in prenotazione.giorni.giorni:
-                return {'nome': prenotazione.ospite_id.nome,
+    def info_from_date(self, data, prenotazione=None):
+        if not prenotazione:
+            for prenotazione_ in Prenotazione.objects:
+                if data in prenotazione_.giorni.giorni:
+                    prenotazione = prenotazione_
+        if not prenotazione:
+            return None
+        return {'nome': prenotazione.ospite_id.nome,
                 'cognome': prenotazione.ospite_id.cognome,
                 'telefono': prenotazione.ospite_id.telefono,
                 'email': prenotazione.ospite_id.email,
@@ -318,7 +322,7 @@ class MongoConnection:
                 'netto': prenotazione.netto,
                 'note': prenotazione.note,
                 'prenotazione': prenotazione
-                        }
+                }
 
     def create_notes(self, data, note):
         try:
