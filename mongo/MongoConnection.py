@@ -42,12 +42,11 @@ class MongoConnection:
                                 colazione,
                                 lordo,
                                 netto,
-                                tasse,
-                                statistiche):
+                                tasse):
         return Prenotazione(ospite_id=ospite, giorni=date_document,
                             totale_ospiti=totale_ospiti, totale_bambini=totale_bambini,
                             importo=importo, platform=platform, stagione=stagione, note=note, colazione=colazione,
-                            lordo=lordo, netto=netto, tasse=tasse, statistiche=statistiche).save()
+                            lordo=lordo, netto=netto, tasse=tasse).save()
 
         # if stagione and platform:
         #     return Prenotazione(ospite_id=ospite, giorni=date_document, platform=platform, stagione=stagione).save()
@@ -88,7 +87,7 @@ class MongoConnection:
                                     lordo,
                                     netto,
                                     tasse,
-                                    statistiche):
+                                    ):
         prenotazione = self.create_prenotazione_doc(ospite,
                                                     dates,
                                                     platform,
@@ -101,7 +100,7 @@ class MongoConnection:
                                                     lordo,
                                                     netto,
                                                     tasse,
-                                                    statistiche)
+                                                    )
         ospite.prenotazioni.append(prenotazione)
         dates.prenotazione = prenotazione
         dates.save(clean=False)
@@ -145,7 +144,6 @@ class MongoConnection:
                     giorni=dates,
                     ospite=ospite,
                 ).save()
-                stat = self.get_stat(data=dates[0], data_doc=date_document, _create=1)
                 prenotazione = self.create_prenotazione(ospite,
                                     date_document,
                                     platform,
@@ -158,8 +156,16 @@ class MongoConnection:
                                     lordo,
                                     netto,
                                     tasse,
-                                    stat
+
                                     )
+
+                date_document.prenotazione = prenotazione
+                date_document.save()
+                stat = self.get_stat(data=dates[0], data_doc=date_document, _create=1)
+
+                prenotazione.save()
+                prenotazione.statistiche = stat
+                prenotazione.save()
                 return prenotazione
             except NotUniqueError as e:
                 print(e, 'interno')
@@ -189,9 +195,9 @@ class MongoConnection:
                 note.delete()
             else:
                 note.save()
-        statistiche = self.get_stat(dates[0])
-        if prenotazione in statistiche.prenotazioni:
-            statistiche.prenotazioni.remove(prenotazione)
+        statistiche = self.get_stat(dates.giorni[0])
+        if prenotazione.giorni in statistiche.date_prenotate:
+            statistiche.date_prenotate.remove(prenotazione.giorni)
             statistiche.save()
         prenotazione.delete()
         return note
@@ -369,6 +375,7 @@ class MongoConnection:
                         if spesa_giornaliera_doc in mese.spese_giornaliere:
                             mese.spese_giornaliere.remove(spesa_giornaliera_doc)
                         if not mese.spese_giornaliere:
+                            statistiche.spese_mensili_obj = None
                             mese.delete()
                         else:
                             mese.save()
@@ -435,7 +442,7 @@ class MongoConnection:
             return stat
         except DoesNotExist:
             if _create:
-                self.create_stat_doc(data, data_doc, spese_mensili)
+                return self.create_stat_doc(data, data_doc, spese_mensili)
 
     def create_stat_doc(self, data, data_doc=None, spese_mensili_obj=None):
         anno, mese = data.year(), data.month()

@@ -85,7 +85,7 @@ class Prenotazione(Document):
         'Bassa'
     ]
 
-    statistiche = ReferenceField('StatisticheMensili')
+    statistiche = ReferenceField('StatiSticheMensili')
     ospite_id = ReferenceField('Ospite', required=True)
     giorni = ReferenceField('DatePrenotazioni',required=True)
     stagione = StringField(choices=stagioni, default='Alta')
@@ -135,6 +135,7 @@ class Prenotazione(Document):
 
 
     #### COMPUTED #####
+
     def _compute_giorni(self):
         self._giorni = self.giorni.giorni
 
@@ -332,22 +333,35 @@ class StatiSticheMensili(Document):
 
     def _compute_spese_mensili(self):
         if self.spese_mensili_obj:
-            self.spese_mensili = self.spese_mensili_obj.spese_mensili
+            try:
+                self.spese_mensili = self.spese_mensili_obj.spese_mensili
+            except:
+                self.spese_mensili = None
 
     def _compute_from_prenotazioni(self):
+        self.totale_notti = 0
+        self.totale_bambini = 0
+        self.totale_ospiti = 0
+        self.netto_mensile = 0
+        self.tasse_mensili = 0
+        self.notte_1 = 0
+        self.notti_2 = 0
+        self.notti_3 = 0
+
         for data in self.date_prenotate:
             if data:
-                for prenotazione in data.prenotazione:
-                    totale_notti = prenotazione.totale_notti
-                    self.totale_notti += totale_notti
-                    if totale_notti >= 3:
-                        self.notti_3 +=1
-                    elif totale_notti == 2:
-                        self.notti_2 += 1
-                    else:
-                        self.notte_1 += 1
-                    self.totale_ospiti += prenotazione.totale_ospiti
-                    self.totale_bambini += prenotazione.totale_bambini
-                    self.netto_mensile += prenotazione.netto
-                    self.tasse_mensili += prenotazione.tasse
 
+                totale_notti = data.prenotazione.totale_notti
+                self.totale_notti += totale_notti
+                if totale_notti >= 3:
+                    self.notti_3 +=1
+                elif totale_notti == 2:
+                    self.notti_2 += 1
+                else:
+                    self.notte_1 += 1
+                self.totale_ospiti += data.prenotazione.totale_ospiti
+                self.totale_bambini += data.prenotazione.totale_bambini
+                self.netto_mensile += data.prenotazione.netto
+                self.tasse_mensili += data.prenotazione.tasse
+
+        self.netto_mensile -= self.spese_mensili

@@ -166,7 +166,10 @@ if __name__ == '__main__':
             spesa_mensile.delete()
         for statistica in StatiSticheMensili.objects:
             statistica.delete()
-
+        for data in DatePrenotazioni.objects:
+            data.delete()
+        for prenotazione in Prenotazione.objects:
+            prenotazione.delete()
 
 
 
