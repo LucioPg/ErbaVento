@@ -117,7 +117,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.current_date = None
         self.giornoCorrente = QtCore.QDate().currentDate()
         # self.database = self.initDatabase()
-        self.calendario.currentPageChanged.connect(self.correggiDataSelected)
+        self.calendario.currentPageChanged.connect(self.mese_calendario_cambiato)
         # self.spese = self.initSpeseDb()
         self.spese = ''
         self.config = self.initConfig()
@@ -288,6 +288,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     if data in self.calendario.dateSpese:
                         self.calendario.dateSpese.remove(data)
                 self.calendario.updateIconsAndBooked()
+                self.initStatDb()
         except:
             print(fex())
 
@@ -571,14 +572,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 stagione, totale_ospiti, totale_bambini, colazione, note_doc,\
                 importo, lordo, netto, tasse
 
-    def correggiDataSelected(self):
+    def mese_calendario_cambiato(self):
         """seleziona il primo del mese se si cambia la pagina del calendario"""
-        # print('correggiDataSelected')
-        # data = QtCore.QDate(self.calendario.yearShown(), self.calendario.monthShown(), 1)
-        # print('correggiDataSelected', data)
-        # self.calendario.setSelectedDate(data)
-        pass
-        # self.riempiTabellaStat()
+        self.initStatDb()
 
     def correggiPartenza(self, d):
         """
@@ -720,6 +716,42 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 print(len(v))
             print('err key: ', len(platform))
 
+    def initStatDb(self):
+        data = QtCore.QDate(self.calendario.currentYear, self.calendario.currentMonth, 1)
+        stat = self.mongo.get_stat(data=data)
+        if stat:
+            spese = stat['spese_mensili'] + stat['tasse_mensili']
+            self.infoSta = Od({'3 Notti': stat['notti_3'],
+                               '2 Notti': stat['notti_2'],
+                               '1 Notte': stat['notte_1'],
+                               'Totale Ospiti': stat['totale_ospiti'],
+                               'Netto mensile': stat['netto_mensile'],
+                               'Spese mensili': spese})
+            # return {}
+            # listaKeysStat = ['3 Notti', '2 Notti', '1 Notte', 'Tasse finora', 'Netto finora', 'Spese finora']
+            # for anno in stat.keys():
+            #     for mese in stat[anno].keys():
+            #         stat[anno][mese] = {k: 0 for k in listaKeysStat}
+            # for anno in database.keys():
+            #     for mese in database[anno].keys():
+            #         for giorno in database[anno][mese].keys():
+            #             chiave = deepc(database[anno][mese][giorno]['checkIn'])
+            #             numeroNotti = int(chiave['totale notti'])
+            #             stat[anno][mese]['Spese finora'] = int(chiave['spese'])
+            #             if numeroNotti >= 3:
+            #                 stat[anno][mese]['3 Notti'] += 1
+            #             elif numeroNotti == 2:
+            #                 stat[anno][mese]['2 Notti'] += 1
+            #             elif numeroNotti == 1:
+            #                 stat[anno][mese]['1 Notte'] += 1
+            #             tasse = int(chiave['tasse'])
+            #             stat[anno][mese]['Tasse finora'] += tasse
+            #             netto = int(chiave['netto'])
+            #             stat[anno][mese]['Netto finora'] += netto
+
+        else:
+            self.infoSta = {}
+        self.riempiTabellaStat()
 
     def make_datePrenotazioni_template(self, platforms):
         self.datePrenotazioni =  {plat: {} for plat in platforms}
@@ -833,6 +865,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.calendario.dateNote += [nota.data for nota in self.mongo.get_all_note()]
         self.datePrenotazioni, self.datePulizie = self.mongo.get_prenotazioni_pulizie()
         self.dateSpese = self.mongo.get_spese_date()
+        self.initStatDb()
         oggi = QtCore.QDate().currentDate()
         info = self.mongo.info_from_date(oggi)
         self.toggle_button_cancella(info)
@@ -1032,6 +1065,34 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.check_note(note)
         self.check_spese(self.calendario.currentDate)
         return statusBot
+
+    def riempiTabellaStat(self):
+        try:
+
+            for row in range(self.tableWidget_stat.rowCount()):
+                item_name = self.tableWidget_stat.verticalHeaderItem(row).text()
+                text = str(self.infoSta.get(item_name, ''))
+                item = self.tableWidget_stat.item(row,0)
+                if not item:
+                    item = QtWidgets.QTableWidgetItem()
+                    self.tableWidget_stat.setItem(row,0,item)
+                item.setText(text)
+            self.tableWidget_stat.update()
+
+            row = 0
+            # for c0, c1 in dbStat[a][m].items():
+            #     self.tableWidget_stat.insertRow(row)
+            #     item0 = QtWidgets.QTableWidgetItem()
+            #     item0.setText(c0)
+            #     item1 = QtWidgets.QTableWidgetItem()
+            #     item1.setText(str(c1))
+            #     self.tableWidget_stat.setItem(row, 0, item0)
+            #     self.tableWidget_stat.setItem(row, 1, item1)
+            #     row += 1
+            # self.tableWidget_stat.update()
+        except KeyError:
+            print('riempi stat key err ')
+            # print(dbStat.keys())
 
     def check_spese(self, data):
         self.bot_spese.setState(self.mongo.check_spesa(data))

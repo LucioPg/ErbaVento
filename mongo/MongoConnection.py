@@ -353,6 +353,7 @@ class MongoConnection:
 
     def get_spese_mensili(self, data_di_riferimento):
         try:
+            print(data_di_riferimento)
             return SpeseMensili.objects.get(data_di_riferimento=data_di_riferimento)
         except DoesNotExist:
             print('SpeseMensili does not exist, proceed with creation')
@@ -471,6 +472,8 @@ class MongoConnection:
     def check_spesa(self,data):
         try:
             mensile = self.get_spese_mensili(self.make_data_ref(data))
+            if not mensile:
+                return False
             for giornaliera in mensile.spese_giornaliere:
                 if giornaliera.spese and giornaliera.data == data:
                     return True

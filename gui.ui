@@ -364,12 +364,17 @@
               </row>
               <row>
                <property name="text">
-                <string>Tasse finora</string>
+                <string>Totale Ospiti</string>
                </property>
               </row>
               <row>
                <property name="text">
-                <string>Netto finora</string>
+                <string>Netto mensile</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Spese mensili</string>
                </property>
               </row>
               <row>
