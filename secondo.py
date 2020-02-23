@@ -9,8 +9,6 @@ from kwidget.dialog_info.dialog_info_main import DialogInfo
 from kwidget.dialog_info.dialog_info_main import DialogInfoSpese as DialogSpese
 from kwidget.dialog_opt.dialog_opt import DialogOption
 from tools.ExpCsv import ExpCsv as excsv
-from tools.databaseMaker import DbMaker as dbm
-from tools.managerprenotazioni import ManagerPreno as Manager
 from traceback import format_exc as fex
 from pprint import pprint
 import inspect
