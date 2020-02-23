@@ -4,6 +4,7 @@
 !gui_basiccolorselector.ui
 !gui_calendar.ui
 !kwidget/dialog_info/*
+!kwidget/mydateedit/*
 !requirements.txt
 *.pkl
 *.csv
