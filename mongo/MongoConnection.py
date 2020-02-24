@@ -1,7 +1,8 @@
 from mongo.mongo_check_connection import *
 from mongo.My_Documents.doc_erbavento import *
 from mongoengine import *
-from PyQt5.QtCore import QDate
+from PyQt5.QtCore import QDate, QThread, pyqtSignal, QObject
+from pymongo.errors import OperationFailure, ServerSelectionTimeoutError
 
 DateExc = DateExc
 OspiteExc = OspiteExc
@@ -9,12 +10,76 @@ OspiteIllegalName = OspiteIllegalName
 SpeseGiornaliere = SpeseGiornaliere
 SpeseMensili = SpeseMensili
 StatiSticheMensili = StatiSticheMensili
+MultiMongoErrs = MultiMongoErrs
 
+class MongoThread(QThread):
+    connection_dict = None
+    CONNECTED = pyqtSignal(bool)
+    def run(self):
+        if self.connection_dict:
+            print('run')
+            host = self.connection_dict.host
+            port = int(self.connection_dict.port)
+            name = self.connection_dict.user
+            password = self.connection_dict.password
+            nome_db = self.connection_dict.nome_db
+            if mongo_check_connection(host=host,
+                                      port=port,
+                                      name=name,
+                                      password=password,
+                                      database=nome_db,
+                                      tentativi=1):
+                _connection = connect(nome_db,
+                                      host=host,
+                                      port=port,
 
-class MongoConnection:
+                                      )
+                self.connection = _connection[self.connection_dict.nome_db]
+                self.connection.authenticate(name=name,
+                                             password=password)
+                self.CONNECTED.emit(True)
+                self.finished.emit()
+        else:
+            self.CONNECTED.emit(False)
 
-    def __init__(self):
-        self.CONNECTED = False
+class ConnectionDict:
+    def __init__(self, host: str='localhost',
+                 port: int=27017,
+                 user: str='admin',
+                 password: str='admin',
+                 nome_db: str='test_db',
+                 time_out=1000,
+                 sleep=1,
+                 tentativi=5):
+
+        self.host = host
+        self.port = port
+        self.user = user
+        self.password = password
+        self.nome_db = nome_db
+        self.time_out = time_out
+        self.tentativi = tentativi
+        self.sleep = sleep
+
+class MongoConnection(QObject):
+    connected = False
+    CONNECTED_segnale = pyqtSignal(bool)
+    def __init__(self, parent, connection_dict:ConnectionDict=ConnectionDict(), flag=True):
+        super(MongoConnection, self).__init__(parent)
+        self.connection_dict = connection_dict
+        self.connected = flag
+        self.flag = flag
+        self.connection_exist = False
+        # self.parent().statusbar.showMessage('successo')
+        # self.connection_thread = MongoThread()
+        # self.connection_thread.connection_dict = connection_dict
+        # self.connection_thread.CONNECTED.connect(self.set_connected)
+        self.make_connection()
+        # self.CONNECTED()
+        # self.connection_thread.start()
+    def set_connected(self,status):
+        print('set_connected mongo ', status)
+        self.connected = status
         self.make_connection()
 
     def make_connection(self):

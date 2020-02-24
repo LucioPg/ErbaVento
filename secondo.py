@@ -3,23 +3,155 @@ from collections import OrderedDict as Od
 from copy import deepcopy as deepc
 from gui import Ui_MainWindow as mainwindow
 # from kwidget.mycalendar.mycalend import MyCalend
+from mongoengine import *
 from kwidget.tableWidgetCalendar.CalendarTableWidget_secondo import CalendarTableWidget as MyCalend
-from mongo.MongoConnection import MongoConnection, DateExc, OspiteExc, OspiteIllegalName
+from mongo.MongoConnection import MongoConnection, DateExc, OspiteExc, OspiteIllegalName, ConnectionDict, MultiMongoErrs
+from pymongo import errors
 from kwidget.dialog_info.dialog_info_main import DialogInfo
 from kwidget.dialog_info.dialog_info_main import DialogInfoSpese as DialogSpese
 from kwidget.dialog_opt.dialog_opt import DialogOption
+# from kwidget.dialog_export.ExportMongo import *
 from tools.ExpCsv import ExpCsv as excsv
 from traceback import format_exc as fex
 from pprint import pprint
 import inspect
 import os
 import sys
+import time
+
 
 
 
 # todo modificare il comportamento del tasto salva quando è già presente una prenotazione, usare il tasto modifica
 # todo con la funzione di preservazione delle prenotazioni già presenti
 # todo aggiungere sistema UNDO
+
+class LifoStack:
+    stack = []
+
+    def push(self,operation):
+        self.stack.append(operation)
+
+    def pull(self):
+        if self.stack:
+            return self.stack[0]
+
+
+
+class Main(QtCore.QObject):
+    def __init__(self):
+        super(Main, self).__init__()
+        self.thread_ui = QtCore.QThread()
+        self.ui = EvInterface()
+        self.ui.moveToThread(self.thread_ui)
+        self.thread_ui.started.connect(self.ui.turn_on)
+        self.thread_mongo = QtCore.QThread()
+
+        # self.Mongo_th =MongoTh()
+        # self.Mongo_th.moveToThread(self.thread_mongo)
+        # self.Mongo_th.finished_.connect(self.thread_mongo.finished)
+        # self.Mongo_th.finished_.connect(self.thread_ui.start)
+        # self.thread_mongo.started.connect(self.Mongo_th.run)
+        # self.thread_mongo.start()
+
+        self.Mongo_th = MongoTh()
+        self.Mongo_th.moveToThread(self.thread_mongo)
+
+        self.Mongo_th.finished_.connect(self.thread_mongo.finished)
+        # self.Mongo_th.finished_.connect(self.thread_ui.start)
+        self.Mongo_th.finished_.connect(self.ui.turn_on)
+        print(self.Mongo_th.receivers(self.Mongo_th.finished_))
+        self.thread_mongo.started.connect(self.Mongo_th.run)
+        self.thread_mongo.start()
+        self.thread_ui.started.connect(lambda: self.Mongo_th.disconnect())
+        self.thread_ui.started.connect(lambda: print(self.Mongo_th.receivers(self.Mongo_th.finished_)))
+
+
+
+
+
+class MongoTh(QtCore.QObject):
+    connected = bool
+    CONNECTED_segnale = QtCore.pyqtSignal(bool)
+    finished_segnale = QtCore.pyqtSignal(bool)
+    finished_ = QtCore.pyqtSignal()
+    completed = bool
+    def __init__(self, connection_dict: ConnectionDict=ConnectionDict(nome_db='test_db',
+                                              host='localhost',
+                                              port=27017,
+                                              user='admin',
+                                              password='admin',
+                                              time_out=1000,
+                                              tentativi=5,
+                                              sleep=1), flag=True):
+        super(MongoTh, self).__init__()
+        self.connection_dict = connection_dict
+        self.connected = False
+        self.flag = flag
+
+    def run(self):
+        """Creates a test connection for to check if the host is on-line
+            :returns True if connection has been established, False otherwise"""
+        # while self.flag:
+        print('Thread')
+        try:
+            self.completed = False
+            host = self.connection_dict.host
+            port = int(self.connection_dict.port)
+            name = self.connection_dict.user
+            password = self.connection_dict.password
+            nome_db = self.connection_dict.nome_db
+            _connection = connect(nome_db,
+                                  host=host,
+                                  port=port,
+                                  serverSelectionTimeoutMS=1000,
+                                  alias='another')
+            self.connection = _connection[self.connection_dict.nome_db]
+            # print(self.connection.authenticate(name=name,
+            #                              password=password))
+            # try:
+            #     print('ping', self.connection.command('ping'))
+            #     self.connected = bool(self.connection.command('ping'))
+            # except Exception as e:
+            #     print('-------------------', e)
+            # self.connection.authenticate(name=name, password=password)
+            self.connection.command('ping')
+            self.CONNECTED_segnale.emit(True)
+            self.connected = True
+        except errors.OperationFailure as e:
+            self.CONNECTED_segnale.emit(False)
+            self.connected = False
+            time.sleep(self.connection_dict.sleep)
+            print(e)
+            # raise MultiMongoErrs(e)
+        except errors.ServerSelectionTimeoutError as e:
+            self.connected = False
+            self.CONNECTED_segnale.emit(False)
+            print('ServerSelectionTimeoutError', e)
+            # raise MultiMongoErrs(e)
+        except OperationError as e:
+            print('OperationError', e)
+            self.connected = False
+            self.CONNECTED_segnale.emit(False)
+            time.sleep(self.connection_dict.sleep)
+            # raise MultiMongoErrs()
+        except ValueError as e:
+            self.connected = False
+            self.CONNECTED_segnale.emit(False)
+            time.sleep(self.connection_dict.sleep)
+            print(e)
+        except errors.NotMasterError as e:
+            self.connected = False
+            self.CONNECTED_segnale.emit(False)
+            time.sleep(self.connection_dict.sleep)
+            print(e)
+        # raise MultiMongoErrs(e)
+        self.finished_segnale.emit(self.connected)
+        self.finished_.emit()
+        self.completed = True
+        time.sleep(10)
+        print('end')
+        return True
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
     """Classe per la creazione gui del gestionale per case vacanze
@@ -31,9 +163,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     noteCheck_signal = QtCore.pyqtSignal(bool)
     spesaCheck_signal = QtCore.pyqtSignal(bool)
 
+
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
 
+    def turn_on(self):
         self.settingsIcon = './Icons/settingsIcon.png'
         self.colors = {}
         self.dateBooking = []
@@ -121,7 +255,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # self.spese = self.initSpeseDb()
         self.spese = ''
         self.config = self.initConfig()
-        self.mongo = MongoConnection()
+        self.mongo = MongoConnection(self, self.connection_dict)
         self.infoSta = None
         # self.infoSta = self.initStatDb()
         self.setMenuMain()
@@ -153,7 +287,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # self.radio_privato.toggled.connect(self.importAdj)
         # self.radioCorrente = self.radio_booking
 
-
         self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
         self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
         self.bot_esporta.clicked.connect(self.exportaDb)
@@ -172,8 +305,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
         self.giornoprecedente = self.giornoCorrente.addDays(-1)
         self.calendario.updateIconsAndBooked()
+        self.show()
         # STATUS BAR
         # self.statusbar.setT
+
 
     @QtCore.pyqtSlot()
     def addNote(self):
@@ -726,8 +861,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.riempiTabellaStat()
 
     def initConfig(self):
-        d = DialogOption()
-        config = d.checkConfigFile()
+        # d = DialogOption()
+        config = DialogOption.checkConfigFile()
+        self.connection_dict = ConnectionDict(host=config['connessione']['host'],
+                                                port=config['connessione']['port'],
+                                                user=config['connessione']['user'],
+                                                password=config['connessione']['password'],
+                                                nome_db=config['connessione']['nome_db'])
         return config
 
     @QtCore.pyqtSlot()
@@ -1107,6 +1247,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    ui = EvInterface()
-    ui.show()
+    main = Main()
+    # ui = EvInterface()
+    # ui.show()
     sys.exit(app.exec_())
