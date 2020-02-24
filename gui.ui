@@ -481,7 +481,7 @@
                    </font>
                   </property>
                   <property name="text">
-                   <string>Stagione: </string>
+                   <string>Status:</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>
@@ -489,7 +489,7 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLabel" name="label_stagione">
+                 <widget class="QLabel" name="label_connessione">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -503,10 +503,11 @@
                    </size>
                   </property>
                   <property name="styleSheet">
-                   <string notr="true"/>
+                   <string notr="true">font: 75 18pt &quot;MS Sans Serif&quot;;
+color: rgb(170, 0, 0);</string>
                   </property>
                   <property name="text">
-                   <string/>
+                   <string>Disconnesso</string>
                   </property>
                   <property name="alignment">
                    <set>Qt::AlignCenter</set>

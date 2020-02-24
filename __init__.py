@@ -1,2 +1,2 @@
 from kwidget import *
-from config_file import *
+from ConfigFile import *

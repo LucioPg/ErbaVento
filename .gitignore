@@ -1,6 +1,6 @@
 
 !gui.ui
-!gui_option.ui
+!kwidget/dialog_opt/gui_option.ui
 !gui_basiccolorselector.ui
 !gui_calendar.ui
 !kwidget/dialog_info/*

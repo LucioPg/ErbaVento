@@ -4,10 +4,12 @@ from copy import deepcopy as deepc
 from gui import Ui_MainWindow as mainwindow
 # from kwidget.mycalendar.mycalend import MyCalend
 from kwidget.tableWidgetCalendar.CalendarTableWidget_secondo import CalendarTableWidget as MyCalend
-from mongo.MongoConnection import MongoConnection, DateExc, OspiteExc, OspiteIllegalName
+from mongo.MongoConnection import MongoConnection, DateExc, OspiteExc, OspiteIllegalName, ConnectionDict, MultiMongoErrs
+from pymongo import errors
 from kwidget.dialog_info.dialog_info_main import DialogInfo
 from kwidget.dialog_info.dialog_info_main import DialogInfoSpese as DialogSpese
 from kwidget.dialog_opt.dialog_opt import DialogOption
+from kwidget.dialog_export.ExportMongo import *
 from tools.ExpCsv import ExpCsv as excsv
 from traceback import format_exc as fex
 from pprint import pprint
@@ -20,6 +22,86 @@ import sys
 # todo modificare il comportamento del tasto salva quando è già presente una prenotazione, usare il tasto modifica
 # todo con la funzione di preservazione delle prenotazioni già presenti
 # todo aggiungere sistema UNDO
+
+class MongoTh(QtCore.QObject):
+    connected = bool
+    CONNECTED_segnale = QtCore.pyqtSignal(bool)
+    finished_segnale = QtCore.pyqtSignal(bool)
+    finished = QtCore.pyqtSignal()
+    completed = bool
+    def __init__(self, connection_dict: ConnectionDict=ConnectionDict(nome_db='test_db',
+                                              host='localhost',
+                                              port=27017,
+                                              user='admin',
+                                              password='admin',
+                                              time_out=1000,
+                                              tentativi=5,
+                                              sleep=1), flag=True):
+        super(MongoTh, self).__init__()
+        self.connection_dict = connection_dict
+        self.connected = False
+        self.flag = flag
+
+    def run(self):
+        """Creates a test connection for to check if the host is on-line
+            :returns True if connection has been established, False otherwise"""
+        # while self.flag:
+        print('Thread')
+        try:
+            self.completed = False
+            host = self.connection_dict.host
+            port = int(self.connection_dict.port)
+            name = self.connection_dict.user
+            password = self.connection_dict.password
+            nome_db = self.connection_dict.nome_db
+            _connection = connect(nome_db,
+                                  host=host,
+                                  port=port,
+                                  serverSelectionTimeoutMS=1000,
+                                  alias='another')
+            self.connection = _connection[self.connection_dict.nome_db]
+            # print(self.connection.authenticate(name=name,
+            #                              password=password))
+            # try:
+            #     print('ping', self.connection.command('ping'))
+            #     self.connected = bool(self.connection.command('ping'))
+            # except Exception as e:
+            #     print('-------------------', e)
+            # self.connection.authenticate(name=name, password=password)
+            self.connection.command('ping')
+            self.CONNECTED_segnale.emit(True)
+            self.connected = True
+        except errors.OperationFailure as e:
+            self.CONNECTED_segnale.emit(False)
+            self.connected = False
+            time.sleep(self.connection_dict.sleep)
+            print(e)
+            # raise MultiMongoErrs(e)
+        except errors.ServerSelectionTimeoutError as e:
+            self.connected = False
+            self.CONNECTED_segnale.emit(False)
+            print('ServerSelectionTimeoutError', e)
+            # raise MultiMongoErrs(e)
+        except OperationError as e:
+            print('OperationError', e)
+            self.connected = False
+            self.CONNECTED_segnale.emit(False)
+            time.sleep(self.connection_dict.sleep)
+            # raise MultiMongoErrs()
+        except ValueError as e:
+            self.connected = False
+            self.CONNECTED_segnale.emit(False)
+            time.sleep(self.connection_dict.sleep)
+            print(e)
+        except errors.NotMasterError as e:
+            self.connected = False
+            self.CONNECTED_segnale.emit(False)
+            time.sleep(self.connection_dict.sleep)
+            print(e)
+        # raise MultiMongoErrs(e)
+        self.finished_segnale.emit(self.connected)
+        self.finished.emit()
+        self.completed = True
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
     """Classe per la creazione gui del gestionale per case vacanze
@@ -35,6 +117,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         super(EvInterface, self).__init__(parent)
 
         self.settingsIcon = './Icons/settingsIcon.png'
+        # self.set_ping(True)
         self.colors = {}
         self.dateBooking = []
         self.dateAirbb = []
@@ -95,6 +178,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.infoTemp = deepc(self.infoModel)
         # r = {"nome": "", "cognome": "", "data partenza": ""}
         self.infoModelRedux = Od({"nome": "", "cognome": "", "data partenza": ""})
+        self.need_update = []
         # self.info_cache = {}
         #  init gui
         self.setupUi(self)
@@ -119,13 +203,45 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # self.database = self.initDatabase()
         self.calendario.currentPageChanged.connect(self.mese_calendario_cambiato)
         # self.spese = self.initSpeseDb()
+        self.ping = bool
         self.spese = ''
         self.config = self.initConfig()
-        self.mongo = MongoConnection()
+        self.mongo_th = QtCore.QThread()
+        self.mongo_th_obj = MongoTh(self.connection_config)
+        self.mongo_th_obj.moveToThread(self.mongo_th)
+        self.mongo_th.started.connect(self.mongo_th_obj.run)
+        self.mongo_th_obj.finished.connect(self.mongo_th.quit)
+        self.mongo_th_obj.CONNECTED_segnale.connect(self.set_label_connessione)
+        self.mongo_th_obj.CONNECTED_segnale.connect(self.set_ping)
+        self.need_update = True
+        self.check_connection()
+        self.mongo_th_obj.run()
+
+        if self.mongo_th_obj.connected:
+            mongoflag = True
+            self.mongo = MongoConnection(self, flag=mongoflag, connection_dict=self.connection_config)
+            self.loadConfig()
+        else:
+            mongoflag = False
+            self.mongo = MongoConnection(self, flag=mongoflag, connection_dict=self.connection_config)
+
+        self.mongo_th_obj.CONNECTED_segnale.connect(self.mongo.set_connected)
+        self.mongo_th.started.connect(lambda :print('thr started'))
+        self.mongo_th.finished.connect(lambda :print('thr ended'))
+
+        # self.mongo.CONNECTED_segnale.connect(self.set_label_connessione)
+
         self.infoSta = None
         # self.infoSta = self.initStatDb()
         self.setMenuMain()
-        self.loadConfig()
+        self.set_label_connessione(self.mongo.connected)
+        # if not self.mongo.CONNECTED:
+        #     self.tabWidget.setEnabled(False)
+        # else:
+        #     self.loadConfig()
+        #     self.tabWidget.setEnabled(True)
+        # if self.ping:
+        #     self.loadConfig()
         cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
         cal_layout.addWidget(self.calendario)
         self.frame_calendar.setLayout(cal_layout)
@@ -172,54 +288,121 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
         self.giornoprecedente = self.giornoCorrente.addDays(-1)
         self.calendario.updateIconsAndBooked()
+
         # STATUS BAR
         # self.statusbar.setT
+
+    def check_connection(self):
+        if self.mongo_th.isRunning():
+            # while self.mongo_th.isRunning():
+            #     if not self.mongo_th.isRunning():
+            #         break
+            print('upper running')
+            self.mongo_th.quit()
+            self.mongo_th.start()
+            # time.sleep(2)
+            # return self.check_connection()
+        else:
+
+            self.mongo_th.start()
+            flag = True
+            while flag:
+                if self.mongo_th.isRunning():
+                    # while self.mongo_th.isRunning():
+                    #     if not self.mongo_th.isRunning():
+                    #         break
+                    if not self.mongo_th_obj.completed:
+                        print('running')
+                    else:
+                        break
+                else:
+                    flag = False
+                    print('not running')
+                # return self.check_connection()
+            # time.sleep(2)
+
+    def set_ping(self,flag=True):
+        print('ping setted ', flag)
+        self.ping = flag
+        self.toggle_all(flag)
+        return flag
+
+    def update_note_dict(self):
+        """note_dict = {data: nota_doc}
+            mese per mese"""
+        self.check_connection()
+        if self.ping:
+            print('updated')
+            data = self.calendario.currentDate
+            mese = data.month()
+            # [nota.data for nota in self.mongo.get_all_note()]
+            self.note_dict ={note_doc.data: note_doc
+                             for note_doc in self.mongo.get_all_note()
+                             if mese == note_doc.data.month()}
+            self.need_update = False
+
+        else:
+            self.statusbar.showMessage('Il salvataggio della nota potrebbe non essere stato effettuato correttamente')
+
 
     @QtCore.pyqtSlot()
     def addNote(self):
         try:
             data = self.calendario.currentDate
-            note_doc = self.mongo.get_note(data,_create=1)
-            text = note_doc.note if note_doc else ''
-            dialog = DialogInfo(testo=text, showBool=True)
-            icona = QtGui.QIcon('./Icons/iconaNote.ico')
-            dialog.setWindowIcon(icona)
-            dialog.guiText.textBrowser_dialog_info.setText(text)
-            if dialog.exec_():
-                nuovoTesto = dialog.guiText.textBrowser_dialog_info.toPlainText()
-                if nuovoTesto != text:
-                    # if not nuovoTesto and text:
-                    prenotazione = self.mongo.get_prenotazione_from_date(data)
-                    note_doc.note = nuovoTesto
-                    self.bot_note.setState(True)
-                    if nuovoTesto == '':
-                        self.bot_note.setState(False)
+            self.check_connection()
+            self.set_ping(self.mongo_th_obj.connected)
+            if self.ping:
+                if not data in self.note_dict:
+
+                    note_doc = self.mongo.get_note(data,_create=1)
+                    # else:
+                    #     # self.toggle_all(False)
+                    #     return
+                else:
+                    note_doc = self.note_dict.get(data, None)
+                    if note_doc is None:
+                        return
+                text = note_doc.note if note_doc else ''
+                dialog = DialogInfo(testo=text, showBool=True)
+                icona = QtGui.QIcon('./Icons/iconaNote.ico')
+                dialog.setWindowIcon(icona)
+                dialog.guiText.textBrowser_dialog_info.setText(text)
+                if dialog.exec_():
+                    nuovoTesto = dialog.guiText.textBrowser_dialog_info.toPlainText()
+                    if nuovoTesto != text:
+                        # if not nuovoTesto and text:
+                        prenotazione = self.mongo.get_prenotazione_from_date(data)
+                        note_doc.note = nuovoTesto
+                        self.bot_note.setState(True)
+                        if nuovoTesto == '':
+                            self.bot_note.setState(False)
+                            if data in self.calendario.dateNote:
+                                self.calendario.dateNote.remove(data)
+                                self.calendario.updateIconsAndBooked()
+                            else:
+                                print('la data della nota non è nella lista del calendario')
+                            note_doc.delete()
+
+                            if prenotazione:
+                                prenotazione.note = None
+                                prenotazione.save()
+                        else:
+                            note_doc.save()
+                            if prenotazione:
+                                prenotazione.note = note_doc
+                                prenotazione.save()
+                            if data not in self.calendario.dateNote:
+                                self.calendario.dateNote = list(set(self.calendario.dateNote))
+                                self.calendario.dateNote.append(data)
+                        self.calendario.updateIconsAndBooked()
+                    elif text == '':
+                        note_doc.delete()
                         if data in self.calendario.dateNote:
                             self.calendario.dateNote.remove(data)
                             self.calendario.updateIconsAndBooked()
                         else:
                             print('la data della nota non è nella lista del calendario')
-                        note_doc.delete()
-
-                        if prenotazione:
-                            prenotazione.note = None
-                            prenotazione.save()
-                    else:
-                        note_doc.save()
-                        if prenotazione:
-                            prenotazione.note = note_doc
-                            prenotazione.save()
-                        if data not in self.calendario.dateNote:
-                            self.calendario.dateNote = list(set(self.calendario.dateNote))
-                            self.calendario.dateNote.append(data)
-                    self.calendario.updateIconsAndBooked()
-                elif text == '':
-                    note_doc.delete()
-                    if data in self.calendario.dateNote:
-                        self.calendario.dateNote.remove(data)
-                        self.calendario.updateIconsAndBooked()
-                    else:
-                        print('la data della nota non è nella lista del calendario')
+                    self.update_note_dict()
         except:
             print(fex())
 
@@ -284,44 +467,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         self.calendario.dateSpese.remove(data)
                 self.calendario.updateIconsAndBooked()
                 self.initStatDb()
-        except:
-            print(fex())
-
-    @QtCore.pyqtSlot()
-    def addSpese_old(self):
-        try:
-            data = self.calendario.currentDate
-            spesa_giornaliera = self.mongo.get_spesa_giornaliera(data)
-            if spesa_giornaliera:
-                spese_dict = {spesa[0]: spesa[1] for spesa in spesa_giornaliera.spese}
-            else:
-                spese_dict = {}
-            dialog = DialogSpese(spese_dict)
-            dialog.setWindowIcon(QtGui.QIcon('./Icons/iconaSpese.png'))
-
-            # dialog.SPESEPRONTE.connect(lambda x: print('spese pronte', x))
-                # dialog.setModal(True)
-            if dialog.exec_():
-                spese_dict_dialog = dialog.ottieniSpese()
-                status_bot = False
-                if spese_dict != spese_dict_dialog:
-                    if spesa_giornaliera:
-                        status_bot = self.mongo.update_spesa_giornaliera(spesa_giornaliera, spese_dict_dialog)
-                    else:
-                        status_bot = self.mongo.create_spesa_giornaliera(data, spese_dict_dialog)
-
-                else:
-                    if spese_dict:
-                        status_bot = True
-                self.bot_spese.setState(status_bot)
-                if status_bot:
-                    if data not in self.calendario.dateSpese:
-                        self.calendario.dateSpese.append(data)
-                else:
-                    if not spese_dict:
-                        if data in self.calendario.dateSpese:
-                            self.calendario.dateSpese.remove(data)
-                self.calendario.updateIconsAndBooked()
         except:
             print(fex())
 
@@ -622,24 +767,49 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 conf = dialog.config
 
             self.config = conf
-            self.loadConfig()
-            self.leggiDatabase()
+            self.initConfig()
+            self.mongo.connection_dict = self.connection_config
+            self.mongo_th_obj.connection_dict = self.connection_config
+            self.check_connection()
+            if self.mongo_th_obj.connected:
+                self.loadConfig()
+            # self.mongo.CONNECTED()
+            # self.toggle_all(self.mongo._connected)
             # todo copiare la variabile self.config
-        except UnboundLocalError:
-            pass
+        except UnboundLocalError as e:
+            print(e)
+        except MultiMongoErrs as e:
+            print('dialog op err ', e)
+            # self.toggle_all(False)
         except:
             print(fex())
 
+    def toggle_all(self,status):
+        try:
+            if status:
+                # self.loadConfig()
+                self.tabWidget.setEnabled(True)
+                self.statusbar.showMessage(f'Connesso al Database {self.connection_config.nome_db}')
+
+            else:
+                self.tabWidget.setEnabled(False)
+                self.statusbar.showMessage('Non Connesso al Database')
+        except AttributeError as e:
+            print(e)
+
+
     def exportaDb(self):
-        anno = self.giornoCorrente.year()
-        db = self.getDatabase()
-        exdb = excsv(db)
-        exdb.makeCsv()
-        self.statusbar.showMessage('Esportazione eseguita con successo')
-        # li = exdb.updateDiz()
-        # print("lunghezza li ",len(li))
-        # print("dal click: \n\t\t",li[9].items())
-        # exdb.checkFile()
+        # dialog = DialogExport(['a','b','c'], self.mongo.connection)
+        dialog = DialogExport(['a','b','c'], self.connection_config)
+        if dialog.exec_():
+            try:
+                dialog.export()
+                self.statusbar.showMessage('Esportazione eseguita con successo')
+            except Exception as e:
+                print(e)
+        else:
+            self.statusbar.showMessage('Esportazione non eseguita')
+
 
     def get_date(self, d):
         # a = self.calendarWidget.dateTextFormat()
@@ -726,8 +896,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.riempiTabellaStat()
 
     def initConfig(self):
-        d = DialogOption()
-        config = d.checkConfigFile()
+        # d = DialogOption()
+        config = DialogOption.checkConfigFile()
+        self.connection_config = ConnectionDict(host=config['connessione']['host'],
+                                                port=config['connessione']['port'],
+                                                user=config['connessione']['user'],
+                                                password=config['connessione']['password'],
+                                                nome_db=config['connessione']['nome_db'])
         return config
 
     @QtCore.pyqtSlot()
@@ -748,6 +923,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def loadConfig(self):
         self.prepare_tab_prenotazioni()
         self.calendario.setSelectedDate(QtCore.QDate().currentDate())
+        self.update_note_dict()
         self.calendario.dateNote += [nota.data for nota in self.mongo.get_all_note()]
         self.datePrenotazioni, self.datePulizie = self.mongo.get_prenotazioni_pulizie()
         self.dateSpese = self.mongo.get_spese_date()
@@ -779,6 +955,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             if platform != '' and self.combo_platformPrenotazioni.findText(platform, QtCore.Qt.MatchExactly) == -1:
                 self.combo_platformPrenotazioni.addItem(platform)
         self.lineEdit_tax.setText(str(self.config['tasse']))
+        return True
 
     def make_datePrenotazioni_template(self, platforms):
         self.datePrenotazioni =  {plat: {} for plat in platforms}
@@ -1043,8 +1220,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.infoTemp = deepc(info)
         return self.infoTemp
 
-    def setLabel_stagione(self, prenotazione):
-        self.label_stagione.setText(prenotazione.stagione)
+    def set_label_connessione(self, status: bool):
+        rosso = """font: 75 18pt "MS Sans Serif";
+                    color: rgb(170, 0, 0);"""
+        verde = """font: 75 18pt "MS Sans Serif";
+                    color: rgb(0, 222, 0);"""
+        if status:
+            self.label_connessione.setText('Connesso')
+            self.label_connessione.setStyleSheet(verde)
+        else:
+            self.label_connessione.setText('Disconnesso')
+            self.label_connessione.setStyleSheet(rosso)
+        self.toggle_all(status)
 
     def setMenuMain(self):
         optionMenuAction = QtWidgets.QAction(QtGui.QIcon(self.settingsIcon), 'opzioni', self)

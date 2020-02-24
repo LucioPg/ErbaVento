@@ -215,18 +215,18 @@ class Ui_MainWindow(object):
         self.label_15.setAlignment(QtCore.Qt.AlignCenter)
         self.label_15.setObjectName("label_15")
         self.horizontalLayout_7.addWidget(self.label_15)
-        self.label_stagione = QtWidgets.QLabel(self.tab1)
+        self.label_connessione = QtWidgets.QLabel(self.tab1)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_stagione.sizePolicy().hasHeightForWidth())
-        self.label_stagione.setSizePolicy(sizePolicy)
-        self.label_stagione.setMinimumSize(QtCore.QSize(90, 0))
-        self.label_stagione.setStyleSheet("")
-        self.label_stagione.setText("")
-        self.label_stagione.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_stagione.setObjectName("label_stagione")
-        self.horizontalLayout_7.addWidget(self.label_stagione)
+        sizePolicy.setHeightForWidth(self.label_connessione.sizePolicy().hasHeightForWidth())
+        self.label_connessione.setSizePolicy(sizePolicy)
+        self.label_connessione.setMinimumSize(QtCore.QSize(90, 0))
+        self.label_connessione.setStyleSheet("font: 75 18pt \"MS Sans Serif\";\n"
+"color: rgb(170, 0, 0);")
+        self.label_connessione.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_connessione.setObjectName("label_connessione")
+        self.horizontalLayout_7.addWidget(self.label_connessione)
         self.verticalLayout_11.addLayout(self.horizontalLayout_7)
         self.verticalLayout_12.addLayout(self.verticalLayout_11)
         self.horizontalLayout_22 = QtWidgets.QHBoxLayout()
@@ -747,6 +747,19 @@ class Ui_MainWindow(object):
         MainWindow.setTabOrder(self.bot_salva, self.bot_annulla)
         MainWindow.setTabOrder(self.bot_annulla, self.bot_checkDisp)
 
+    def set_label_connessione(self, status: bool):
+        rosso = """font: 75 18pt "MS Sans Serif";
+                    color: rgb(170, 0, 0);"""
+        verde = """font: 75 18pt "MS Sans Serif";
+                    color: rgb(0, 222, 0);"""
+        if status:
+            self.label_connessione.setText('Connesso')
+            self.label_connessione.setStyleSheet(verde)
+        else:
+            print('rosso')
+            self.label_connessione.setText('Disconnesso')
+            self.label_connessione.setStyleSheet(rosso)
+
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
@@ -786,7 +799,8 @@ class Ui_MainWindow(object):
         item.setText(_translate("MainWindow", "New Column"))
         self.bot_spese.setText(_translate("MainWindow", "Spese"))
         self.bot_note.setText(_translate("MainWindow", "Note"))
-        self.label_15.setText(_translate("MainWindow", "Stagione: "))
+        self.label_15.setText(_translate("MainWindow", "Status:"))
+        self.label_connessione.setText(_translate("MainWindow", "Disconnesso"))
         self.bot_cancella.setText(_translate("MainWindow", "Cancella Prenotazione"))
         self.bot_prenota.setText(_translate("MainWindow", "Prenota"))
         self.bot_esporta.setText(_translate("MainWindow", "Esporta"))
@@ -831,10 +845,150 @@ from kwidget.myprogressbutton.myprogressbutton_main import ColorButton
 
 
 if __name__ == "__main__":
+    connesso = False
     import sys
+    import time
+    from mongoengine import *
+    from pymongo import errors
+    from mongo.MongoConnection import ConnectionDict
+
+    class Mythread(QtCore.QObject):
+        connected = bool
+        CONNECTED_segnale = QtCore.pyqtSignal(bool)
+        finished_segnale = QtCore.pyqtSignal(bool)
+        finished = QtCore.pyqtSignal()
+        def __init__(self, flag=True):
+            super(Mythread, self).__init__()
+            self.connection_dict = ConnectionDict(nome_db='test_db',
+                           host='localhost',
+                           port=27017,
+                           user='admin',
+                           password ='admin',
+                           time_out=1000,
+                           tentativi=5,
+                           sleep=1)
+            self.flag = flag
+
+        def run(self):
+            """Creates a test connection for to check if the host is on-line
+                :returns True if connection has been established, False otherwise"""
+            # while self.flag:
+            try:
+                host = self.connection_dict.host
+                port = int(self.connection_dict.port)
+                name = self.connection_dict.user
+                password = self.connection_dict.password
+                nome_db = self.connection_dict.nome_db
+                self._connected = bool
+                _connection = connect(nome_db,
+                                      host=host,
+                                      port=port,
+                                      serverSelectionTimeoutMS=1000)
+                self.connection = _connection[self.connection_dict.nome_db]
+                # print(self.connection.authenticate(name=name,
+                #                              password=password))
+                # try:
+                #     print('ping', self.connection.command('ping'))
+                #     self.connected = bool(self.connection.command('ping'))
+                # except Exception as e:
+                #     print('-------------------', e)
+                self.connection.authenticate(name=name, password=password)
+                self.connection.command('ping')
+                self.CONNECTED_segnale.emit(True)
+                self._connected = True
+            except errors.OperationFailure as e:
+                self.CONNECTED_segnale.emit(False)
+                self._connected = False
+                time.sleep(self.connection_dict.sleep)
+                print(e)
+                # raise MultiMongoErrs(e)
+            except errors.ServerSelectionTimeoutError as e:
+                self._connected = False
+                self.CONNECTED_segnale.emit(False)
+                print('ServerSelectionTimeoutError',e)
+                # raise MultiMongoErrs(e)
+            except OperationError as e:
+                print('OperationError',e)
+                self._connected = False
+                self.CONNECTED_segnale.emit(False)
+                time.sleep(self.connection_dict.sleep)
+                # raise MultiMongoErrs()
+            except ValueError as e:
+                self._connected = False
+                self.CONNECTED_segnale.emit(False)
+                time.sleep(self.connection_dict.sleep)
+                print(e)
+            except errors.NotMasterError as e:
+                self._connected = False
+                self.CONNECTED_segnale.emit(False)
+                time.sleep(self.connection_dict.sleep)
+                print(e)
+            # raise MultiMongoErrs(e)
+            self.finished_segnale.emit(self._connected)
+            self.finished.emit()
+            print('start test')
+            # time.sleep(10)
+            print('finished')
+
+
+                # self.flag= False
+
+            # for tentativo_num in range(self.database['tentativi']):
+            #     try:
+            #         client = MongoClient(f'mongodb://{self.database["name"]}:{self.database["password"]}@{self.database["host"]}:{self.database["port"]}',
+            #                              serverSelectionTimeoutMS=self.database["timeout"])
+            #         client[self.database['nome_db']].authenticate(name=self.database["name"], password=self.database["password"])
+            #         client[self.database.].list_collection_names()
+            #         info = client.server_info()
+            #     except errors.OperationFailure:
+            #         # print('spento')
+            #         raise MultiMongoErrs('auth')
+            #     except OperationError:
+            #         print('OperationError')
+            #         raise MultiMongoErrs()
+            #
+            #
+            #     except errors.ServerSelectionTimeoutError:
+            #         e = 'error 2'
+            #         print('timeout', tentativo_num)
+            #         log.warning("Error connecting to mongo, will retry in 1 sec: %r",
+            #                     e)
+            #         time.sleep(sleep)
+            #     else:
+            #         return True
+            #
+            # else:
+            #     print(('Unable to connect'))
+            #     raise MultiMongoErrs('offline')
+
+
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
+    th = Mythread()
+    athread = QtCore.QThread()
+    th.moveToThread(athread)
+    athread.started.connect(th.run)
+    th.finished.connect(athread.quit)
+    th.finished_segnale.connect(lambda x: print('finito dddd',x))
+    def set_connesso(flag):
+        global connesso
+        u = connesso
+        connesso = flag
+        print(connesso, '--------------------------------------------------------')
+    th.CONNECTED_segnale.connect(set_connesso)
+
+    athread.start()
+
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
+    th.CONNECTED_segnale.connect(ui.set_label_connessione)
     MainWindow.show()
+    def stampa():
+        while athread.isRunning():
+            print(ui.label_connessione.text())
+
+    # ui.bot_prenota.clicked.connect(lambda: print(ui.label_connessione.text()))
+    ui.bot_prenota.clicked.connect(stampa)
+    # MainWindow.thread().wait()
+    # athread.wait()
     sys.exit(app.exec_())
