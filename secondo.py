@@ -642,7 +642,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             return tot
         except:
             print(fex())
-
+    @ensure_conn
     def cancellaprenot(self):
         self.cancellaprenot_cleaning(self.un_book())
 
@@ -663,6 +663,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.riempi_campi_prenotazioni()
         self.initStatDb()
 
+    @ensure_conn
     def un_book(self, wrnMode=True):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
@@ -851,25 +852,29 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             dialog = DialogOption(self)
             if dialog.exec_():
                 conf = dialog.config
+            # else:
+            #     return
 
             self.config = conf
             self.loadConfig()
             # todo copiare la variabile self.config
         except UnboundLocalError:
-            pass
+            print('UnboundLocalError')
         except:
             print(fex())
 
     def exportaDb(self):
-        anno = self.giornoCorrente.year()
-        db = self.getDatabase()
-        exdb = excsv(db)
-        exdb.makeCsv()
+        # dialog = DialogExport(['a','b','c'], self.mongo.connection)
+        dialog = DialogExport(['a','b','c'], self.connection_config)
+        if dialog.exec_():
+            try:
+                dialog.export()
         self.statusbar.showMessage('Esportazione eseguita con successo')
-        # li = exdb.updateDiz()
-        # print("lunghezza li ",len(li))
-        # print("dal click: \n\t\t",li[9].items())
-        # exdb.checkFile()
+            except Exception as e:
+                print(e)
+        else:
+            self.statusbar.showMessage('Esportazione non eseguita')
+
 
     def get_date(self, d):
         # a = self.calendarWidget.dateTextFormat()
@@ -1025,7 +1030,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def mese_calendario_cambiato(self):
         """seleziona il primo del mese se si cambia la pagina del calendario"""
         self.initStatDb()
-    @ensure_conn
+
     def modificaESalva(self,*args):
         # print({**self.compilaInfo_mongo()})
         info = deepc(self.infoTemp)
@@ -1296,8 +1301,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.infoTemp = deepc(info)
         return self.infoTemp
 
-    def setLabel_stagione(self, prenotazione):
-        self.label_stagione.setText(prenotazione.stagione)
+    def set_label_connessione(self, status: bool):
+        rosso = """font: 75 18pt "MS Sans Serif";
+                    color: rgb(170, 0, 0);"""
+        verde = """font: 75 18pt "MS Sans Serif";
+                    color: rgb(0, 222, 0);"""
+        if status:
+            self.label_connessione.setText('Connesso')
+            self.label_connessione.setStyleSheet(verde)
+        else:
+            self.label_connessione.setText('Disconnesso')
+            self.label_connessione.setStyleSheet(rosso)
+        self.toggle_all(status)
 
     def setMenuMain(self):
         optionMenuAction = QtWidgets.QAction(QtGui.QIcon(self.settingsIcon), 'opzioni', self)
