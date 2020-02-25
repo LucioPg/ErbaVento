@@ -18,6 +18,7 @@ import inspect
 import os
 import sys
 import time
+from functools import wraps
 
 import kwidget.waiting_spinner.waitingspinnerwidget
 
@@ -142,6 +143,7 @@ class Main(QtCore.QObject):
         super(Main, self).__init__()
         self.all_connected = False
         self.ui = EvInterface()
+        self.ui.setParent(self)
         config, self.connection_dict = self.ui.initConfig()
         self.ui.mongo = MongoConnection(self.ui, self.ui.connection_dict)
         # self.ui.self.mongo = MongoConnection(, self.connection_dict)
@@ -170,7 +172,7 @@ class Main(QtCore.QObject):
         self.mongo_thread.finished.connect(self.thread_ping.start)
         self.mongo_ping.CONNECTED_segnale.connect(self.ui.mongo.make_connection)
         self.mongo_ping.CONNECTED_segnale.connect(self.ui.turn_on)
-        self.thread_ping.start()
+        # self.thread_ping.start()
         self.thread_ui.started.connect(lambda: self.mongo_ping.disconnect())
         self.thread_ping.finished.connect(lambda: print('kkkkk', self.mongo_ping.receivers(self.mongo_ping.finished_)))
         self.thread_ping.finished.connect(self.ui.go_ahead)
@@ -181,9 +183,6 @@ class Main(QtCore.QObject):
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
     """Classe per la creazione gui del gestionale per case vacanze
-
-        print("controllo ", inspect.stack()[0][3])
-        self.cleardisplay()
     """
     MAXOSPITI = 5
     noteCheck_signal = QtCore.pyqtSignal(bool)
@@ -200,6 +199,38 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         self.go_back_waiting()
         self.show()
+
+
+    def setParent(self, parent):
+        self.parent = parent
+        return self.parent
+
+    def ensure_conn(func):
+        @wraps(func)
+        def worker(self,*args, **kwargs ):
+            try:
+                return func(self, *args, **kwargs)
+            except errors.ServerSelectionTimeoutError as e:
+                print(e)
+                self.parent.mongo_thread.quit()
+                self.statusbar.setToolTip(str(e))
+            except OperationError as e:
+                print(e)
+                self.parent.mongo_thread.quit()
+                self.statusbar.setToolTip(str(e))
+            except errors.OperationFailure as e:
+                print(e)
+                self.parent.mongo_thread.quit()
+                self.statusbar.setToolTip(str(e))
+            except errors.AutoReconnect as e:
+                print(e)
+                self.statusbar.setToolTip(str(e))
+                self.parent.mongo_thread.quit()
+        return worker
+        # return true_ensure_conn
+    # ensure_conn = staticmethod(ensure_conn)
+
+
 
     def go_ahead(self):
         if self.initialated:
@@ -310,7 +341,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.calendario.table.clicked.connect(self.getInfoFromCalendar)
             self.calendario.singleClicked.connect(self.getInfoFromCalendar)
             self.calendario.selectionChanged.connect(self.aggiornaInfoData)
-            self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
+            # self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
             # self.calendario.currentPageChanged.connect(self.riportapagina)
 
             self.setDateEdit_dal()
@@ -355,70 +386,57 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         else:
             self.go_back_waiting()
 
-
-    @QtCore.pyqtSlot()
-    def addNote(self):
-        try:
-            data = self.calendario.currentDate
-            note_doc = self.mongo.get_note(data,_create=1)
-            text = note_doc.note if note_doc else ''
-            dialog = DialogInfo(testo=text, showBool=True)
-            icona = QtGui.QIcon('./Icons/iconaNote.ico')
-            dialog.setWindowIcon(icona)
-            dialog.guiText.textBrowser_dialog_info.setText(text)
-            if dialog.exec_():
-                nuovoTesto = dialog.guiText.textBrowser_dialog_info.toPlainText()
-                if nuovoTesto != text:
-                    # if not nuovoTesto and text:
-                    prenotazione = self.mongo.get_prenotazione_from_date(data)
-                    note_doc.note = nuovoTesto
-                    self.bot_note.setState(True)
-                    if nuovoTesto == '':
-                        self.bot_note.setState(False)
-                        if data in self.calendario.dateNote:
-                            self.calendario.dateNote.remove(data)
-                            self.calendario.updateIconsAndBooked()
-                        else:
-                            print('la data della nota non è nella lista del calendario')
-                        note_doc.delete()
-
-                        if prenotazione:
-                            prenotazione.note = None
-                            prenotazione.save()
-                    else:
-                        note_doc.save()
-                        if prenotazione:
-                            prenotazione.note = note_doc
-                            prenotazione.save()
-                        if data not in self.calendario.dateNote:
-                            self.calendario.dateNote = list(set(self.calendario.dateNote))
-                            self.calendario.dateNote.append(data)
-                    self.calendario.updateIconsAndBooked()
-                elif text == '':
-                    note_doc.delete()
+    @ensure_conn
+    def addNote(self, *args, **kwargs):
+        print('go', self)
+        data = self.calendario.currentDate
+        note_doc = self.mongo.get_note(data,_create=1)
+        text = note_doc.note if note_doc else ''
+        dialog = DialogInfo(testo=text, showBool=True)
+        icona = QtGui.QIcon('./Icons/iconaNote.ico')
+        dialog.setWindowIcon(icona)
+        dialog.guiText.textBrowser_dialog_info.setText(text)
+        if dialog.exec_():
+            nuovoTesto = dialog.guiText.textBrowser_dialog_info.toPlainText()
+            if nuovoTesto != text:
+                # if not nuovoTesto and text:
+                prenotazione = self.mongo.get_prenotazione_from_date(data)
+                note_doc.note = nuovoTesto
+                self.bot_note.setState(True)
+                if nuovoTesto == '':
+                    self.bot_note.setState(False)
                     if data in self.calendario.dateNote:
                         self.calendario.dateNote.remove(data)
                         self.calendario.updateIconsAndBooked()
                     else:
                         print('la data della nota non è nella lista del calendario')
-        except errors.ServerSelectionTimeoutError as e:
-            print(e)
-            self.statusbar.setToolTip(str(e))
-        except OperationError as e:
-            print(e)
-            self.statusbar.setToolTip(str(e))
-        except errors.OperationFailure as e:
-            print(e)
-            self.parent().thread_mongo.quit()
-            self.statusbar.setToolTip(str(e))
-        except errors.AutoReconnect as e:
-            print(e)
-            self.statusbar.setToolTip(str(e))
+                    note_doc.delete()
+
+                    if prenotazione:
+                        prenotazione.note = None
+                        prenotazione.save()
+                else:
+                    note_doc.save()
+                    if prenotazione:
+                        prenotazione.note = note_doc
+                        prenotazione.save()
+                    if data not in self.calendario.dateNote:
+                        self.calendario.dateNote = list(set(self.calendario.dateNote))
+                        self.calendario.dateNote.append(data)
+                self.calendario.updateIconsAndBooked()
+            elif text == '':
+                note_doc.delete()
+                if data in self.calendario.dateNote:
+                    self.calendario.dateNote.remove(data)
+                    self.calendario.updateIconsAndBooked()
+                else:
+                    print('la data della nota non è nella lista del calendario')
+
 
         # except errors.ServerSelectionTimeoutError:
 
 
-    @QtCore.pyqtSlot()
+
     def addSpese(self):
         try:
             data = self.calendario.currentDate
@@ -625,29 +643,41 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except:
             print(fex())
 
-    def cancellaprenot(self, wrnMode=True, preserve=False):
+    def cancellaprenot(self):
+        self.cancellaprenot_cleaning(self.un_book())
+
+    def cancellaprenot_cleaning(self, note, preserve=False):
+        info = deepc(self.infoModel)
+        info['note'] = note
+        self.riempiTabellaPrenotazioni(info)
+        self.calendario.setDatesIndicators(self.datePrenotazioni,
+                                           self.datePulizie,
+                                           self.config['colori settati'], '', '')
+        self.calendario.updateIconsAndBooked()
+        self.set_status_msg('Cancellazione effettuata')
+        self.bot_cancella.setEnabled(False)
+        # info = self.mongo.info_from_date(data)
+        # self.setInfoTemp(info)
+        self.setInfoTemp(self.infoModel)
+        if not preserve:
+            self.riempi_campi_prenotazioni()
+        self.initStatDb()
+
+    def un_book(self, wrnMode=True):
         """cancella la prenotazione nella data
             selezionata nel calendario"""
         data = self.calendario.currentDate
         print('cancella prenotazione')
-        info = self.infoTemp
+        info = deepc(self.infoTemp)
         if self.prenotazione_corrente:
-        # if not info:
-        #     info = self.mongo.info_from_date(data)
-        # if info:
-        #     print(info == self.infoTemp)
-        #     prenotazione = info['prenotazione']
             prenotazione = self.prenotazione_corrente
-            # if prenotazione.note:
-            #     note_doc = prenotazione.note
-            #     note = note_doc
             giorni = prenotazione.giorni.giorni
             if wrnMode:
                 if self.warnMsg():
                     note_doc = self.mongo.un_book(prenotazione)
                     self.prenotazione_corrente = None
                 else:
-                    return
+                    return False
             else:
                 note_doc = self.mongo.un_book(prenotazione)
                 self.prenotazione_corrente = None
@@ -661,23 +691,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 if data in self.calendario.dateNote:
                     self.calendario.dateNote.remove(data)
             self.datePulizie.remove(prenotazione.giorno_pulizie)
-            info = deepc(self.infoModel)
-            info['note'] = note
-            self.riempiTabellaPrenotazioni(info)
-            self.calendario.setDatesIndicators(self.datePrenotazioni,
-                                               self.datePulizie,
-                                               self.config['colori settati'], '', '')
-            self.calendario.updateIconsAndBooked()
-            self.set_status_msg('Cancellazione effettuata')
-            self.bot_cancella.setEnabled(False)
-            # info = self.mongo.info_from_date(data)
-            # self.setInfoTemp(info)
-            self.setInfoTemp(self.infoModel)
-            if not preserve:
-                self.riempi_campi_prenotazioni()
-            self.initStatDb()
 
-            return True
+
+            return note
         return False
 
     def checkInfo_line_edit(self):
@@ -736,6 +752,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             colazione = False
         stagione = self.combo_stagionePrenotazioni.currentText()
         importo = float(self.spinBox_importo.value())
+        print('lordo ',self.lineEdit_lordo.text())
         lordo = float(self.lineEdit_lordo.text())
         netto = float(self.lineEdit_netto.text())
         tasse = float(self.lineEdit_tax.text())
@@ -762,14 +779,33 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             else:
 
                 note_doc = self.mongo.create_notes(self.dateEdit_dal.date(), note)
-            # else:
-            #     note_doc = self.mongo.get_note(self.dateEdit_dal.date())
-        # else:
-        #         note_doc = None
-        spese = 0.0
         return nome, cognome, telefono, email, giorni, platform,\
                 stagione, totale_ospiti, totale_bambini, colazione, note_doc,\
                 importo, lordo, netto, tasse
+
+    def build_info(self,nome, cognome, telefono, email, giorni, platform,\
+                stagione, totale_ospiti, totale_bambini, colazione, note_doc,\
+                importo, lordo, netto, tasse, prenotazione):
+        info = {'nome': nome,
+                'cognome': cognome,
+                'telefono': telefono,
+                'email': email,
+                'platform': platform,
+                'data arrivo': giorni[0],
+                'data partenza': giorni[-1],
+                'totale notti': len(giorni),
+                'numero ospiti': totale_ospiti,
+                'bambini': totale_bambini,
+                'spese': '',
+                'colazione': colazione,
+                'stagione': stagione,
+                'importo': importo,
+                'lordo': lordo,
+                'tasse': tasse,
+                'netto': netto,
+                'note': note_doc,
+                'prenotazione': None}
+
 
     def correggiPartenza(self, d):
         """
@@ -850,6 +886,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
         return self.current_date
 
+    @ensure_conn
     def getInfoFromCalendar(self, data):
         # self.cleardisplay()
         # if self.sender() is not None:
@@ -859,14 +896,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         info = self.getInfoFromDate(data)
         if info is None:
             print('info is None from getInfoFromCalendar')
-        self.setInfoFromDate(info)
+            return
+        self.riempiTabellaPrenotazioni(info)
         self.setInfoTemp(info)
         return info
     def set_prenotazione_corrente(self, corrente):
         self.prenotazione_corrente = corrente
 
 
-
+    @ensure_conn
     def getInfoFromDate(self, data):
         # self.cleardisplay()
         # print("controllo ", inspect.stack()[0][3])
@@ -876,8 +914,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             info = self.mongo.info_from_date(data)
             if info is None:
                 info = deepc(self.infoModel)
-            self.toggle_button_prenota(info)
-            self.toggle_button_cancella(info)
             note = self.mongo.get_note(data)
             if note:
                 info['note'] = note.note
@@ -936,18 +972,20 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def lineEditVerifica(self):
         # print('Hola ',self.bot.text())
         # print('ciao ', self.sender().text())
-        listaInfo = [self.infoModel['nome'], self.infoModel['cognome'], self.infoModel['telefono']]
+        # listaInfo = [self.infoModel['nome'], self.infoModel['cognome'], self.infoModel['telefono']]
         testo = self.sender().text()
-        if testo not in listaInfo:
-            self.toggle_modificaOsalva(modifica=False)
-        else:
-            self.toggle_modificaOsalva(modifica=True)
+        # if testo not in listaInfo:
+        #     self.toggle_modificaOsalva(modifica=False)
+        # else:
+        #     self.toggle_modificaOsalva(modifica=True)
         if not self.sender().selector(testo):
             self.sender().clear()
         else:
             self.sender().nextInFocusChain().setFocus()
 
-    def loadConfig(self):
+    # @ensure_conn
+    def loadConfig(self, *args):
+        print('doc')
         self.prepare_tab_prenotazioni()
         self.calendario.setSelectedDate(QtCore.QDate().currentDate())
         self.calendario.dateNote += [nota.data for nota in self.mongo.get_all_note()]
@@ -956,7 +994,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.initStatDb()
         oggi = QtCore.QDate().currentDate()
         info = self.mongo.info_from_date(oggi)
-        self.toggle_button_cancella(info)
         if info and info['nome'] != '':
             # self.info_cache[oggi] = deepc(info)
             self.riempiTabellaPrenotazioni(info)
@@ -988,13 +1025,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def mese_calendario_cambiato(self):
         """seleziona il primo del mese se si cambia la pagina del calendario"""
         self.initStatDb()
-
-    def modificaESalva(self):
+    @ensure_conn
+    def modificaESalva(self,*args):
         # print({**self.compilaInfo_mongo()})
+        info = deepc(self.infoTemp)
         if self.prenotazione_corrente:
-            if self.cancellaprenot(preserve=True):
+            if self.un_book(wrnMode=False):
+                # self.riempi_campi_prenotazioni(info)
                 self.salvaInfo()
-                self.bot_modifica.setEnabled(False)
+                # self.toggle_modificaOsalva(modifica=True)
 
             # self.mongo.un_book(self.prenotazione_corrente)
             # nome, cognome, telefono, email, giorni, platform, \
@@ -1011,14 +1050,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.lineEdit_numeroGiorni.setText(str(giorni))
         self.calcLordoNetto()
 
-    def riempi_campi_prenotazioni(self):
+    def riempi_campi_prenotazioni(self, info=None):
         """ prende le info da inserire nei campi
             della prenotazione a partire dalle info
             nel box nella pagina
             del calendario"""
         # todo aggiungere segnale alle mylineEdit perché si sblocchi il tasto salva o modifica
         try:
-            info = deepc(self.infoTemp)
+            if not info:
+                info = deepc(self.infoTemp)
             if (info['nome'] and info['cognome'] and info['telefono']) == '':
                 self.toggle_modificaOsalva()
             else:
@@ -1060,7 +1100,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             if indiceComboStagione == -1:
                 indiceComboStagione = self.combo_stagionePrenotazioni.findText(self.config['stagione preferita'])
             self.combo_stagionePrenotazioni.setCurrentIndex(indiceComboStagione)
-            self.importAdj()
+            # self.importAdj()
             dataArrivo = info['data arrivo']
             dataPartenza = info['data partenza']
             if (dataArrivo or dataPartenza) is not None:
@@ -1076,6 +1116,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.setDateEdit_dal()
         except:
             print(fex())
+
 
     def riempiTabellaPrenotazioni(self, info):
         """
@@ -1128,6 +1169,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.check_spese(self.calendario.currentDate)
         self.set_prenotazione_corrente(info['prenotazione'])
         # self.modificaESalva()
+        self.riempi_campi_prenotazioni(info=info)
+
+        self.toggle_button_prenota(not info['prenotazione'])
+        self.toggle_button_cancella(not info['prenotazione'])
         return statusBot
 
     def riempiTabellaStat(self):
@@ -1163,8 +1208,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         item = QtWidgets.QTableWidgetItem()
         self.tableWidget_info_ospite.setItem(5, 1, item)
 
+    @ensure_conn
     def salvaInfo(self, flag=None):
-        if not flag:
+        print('salva flag', flag)
+        if not  flag:
             flag = self.checkInfo_line_edit()
         if flag:
             nome, cognome, telefono, email, giorni, platform, \
@@ -1234,6 +1281,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.dateEdit_al.setDate(domani)
         self.dateEdit_al.setMinimumDate(domani)
 
+    @ensure_conn
     def setInfoFromDate(self, info):
         """compila la tabella dal modello infoTemp"""
         # self.updateInfoStat()
@@ -1264,14 +1312,28 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except:
             print(fex)
 
-    def toggle_button_prenota(self, info):
+    def toggle_button_prenota(self, status):
+
+        if status:
+            self.bot_prenota.setText('Prenota')
+        else:
+            self.bot_prenota.setText('Modifica')
+
+    def toggle_button_prenota_old(self, info):
         self.bot_prenota.setText('Prenota')
         if info:
             prenotazione = info.get('prenotazione', None)
             if prenotazione:
                 self.bot_prenota.setText('Modifica')
 
-    def toggle_button_cancella(self, info=None):
+    def toggle_button_cancella(self, status):
+
+        if status:
+            self.bot_cancella.setEnabled(False)
+        else:
+            self.bot_cancella.setEnabled(True)
+
+    def toggle_button_cancella_old(self, info=None):
         self.bot_cancella.setEnabled(False)
         if info:
             prenotazione = info.get('prenotazione', None)
@@ -1291,6 +1353,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.tabWidget.setCurrentIndex(0)
 
     def vaiPrenotaTab(self):
+        self.importAdj()
         self.tabWidget.setCurrentIndex(1)
 
     def warnMsg(self, default=0):
