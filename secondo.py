@@ -10,7 +10,7 @@ from pymongo import errors
 from kwidget.dialog_info.dialog_info_main import DialogInfo
 from kwidget.dialog_info.dialog_info_main import DialogInfoSpese as DialogSpese
 from kwidget.dialog_opt.dialog_opt import DialogOption
-from kwidget.dialog_export import ExportMongo as DialogExport
+from kwidget.dialog_export.ExportMongo import  DialogExport
 # from kwidget.dialog_export.ExportMongo import *
 from tools.ExpCsv import ExpCsv as excsv
 from traceback import format_exc as fex
@@ -866,7 +866,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def exportaDb(self):
         # dialog = DialogExport(['a','b','c'], self.mongo.connection)
-        dialog = DialogExport(['a','b','c'], self.connection_config)
+        dialog = DialogExport(['a','b','c'], self.connection_dict)
         if dialog.exec_():
             try:
                 dialog.export()
