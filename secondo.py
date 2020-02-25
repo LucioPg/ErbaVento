@@ -3,23 +3,160 @@ from collections import OrderedDict as Od
 from copy import deepcopy as deepc
 from gui import Ui_MainWindow as mainwindow
 # from kwidget.mycalendar.mycalend import MyCalend
+from mongoengine import *
 from kwidget.tableWidgetCalendar.CalendarTableWidget_secondo import CalendarTableWidget as MyCalend
-from mongo.MongoConnection import MongoConnection, DateExc, OspiteExc, OspiteIllegalName
+from mongo.MongoConnection import MongoConnection, DateExc, OspiteExc, OspiteIllegalName, ConnectionDict, MultiMongoErrs
+from pymongo import errors
 from kwidget.dialog_info.dialog_info_main import DialogInfo
 from kwidget.dialog_info.dialog_info_main import DialogInfoSpese as DialogSpese
 from kwidget.dialog_opt.dialog_opt import DialogOption
+# from kwidget.dialog_export.ExportMongo import *
 from tools.ExpCsv import ExpCsv as excsv
 from traceback import format_exc as fex
 from pprint import pprint
 import inspect
 import os
 import sys
+import time
 
+import kwidget.waiting_spinner.waitingspinnerwidget
 
 
 # todo modificare il comportamento del tasto salva quando è già presente una prenotazione, usare il tasto modifica
 # todo con la funzione di preservazione delle prenotazioni già presenti
 # todo aggiungere sistema UNDO
+
+class LifoStack:
+    stack = []
+
+    def push(self,operation):
+        self.stack.append(operation)
+
+    def pull(self):
+        if self.stack:
+            return self.stack[0]
+
+
+
+class Main(QtCore.QObject):
+    counter = 0
+    def __init__(self):
+        super(Main, self).__init__()
+        self.thread_ui = QtCore.QThread()
+        self.thread_ui.setObjectName('thread ui')
+        self.ui = EvInterface()
+        self.ui.moveToThread(self.thread_ui)
+        # self.thread_ui.started.connect(self.ui.turn_on)
+        self.counter += 1
+        self.wait_thread = QtCore.QThread()
+
+        self.thread_mongo = QtCore.QThread()
+        self.thread_mongo.setObjectName('thread mongo')
+        self.Mongo_th = MongoTh()
+        self.Mongo_th.moveToThread(self.thread_mongo)
+        self.Mongo_th.finished_.connect(self.thread_mongo.quit)
+        self.thread_mongo.started.connect(self.Mongo_th.run)
+
+        # self.Mongo_th.finished_.connect(self.thread_mongo.finished)
+        # self.Mongo_th.finished_.connect(self.thread_ui.start)
+        self.Mongo_th.CONNECTED_segnale.connect(self.ui.turn_on)
+        print(self.Mongo_th.receivers(self.Mongo_th.finished_))
+        self.thread_mongo.start()
+        self.thread_ui.started.connect(lambda: self.Mongo_th.disconnect())
+        self.thread_mongo.finished.connect(lambda: print('kkkkk',self.Mongo_th.receivers(self.Mongo_th.finished_)))
+
+
+
+
+
+class MongoTh(QtCore.QObject):
+    connected = bool
+    CONNECTED_segnale = QtCore.pyqtSignal(bool)
+    finished_segnale = QtCore.pyqtSignal(bool)
+    finished_ = QtCore.pyqtSignal()
+    completed = bool
+    def __init__(self, connection_dict: ConnectionDict=ConnectionDict(nome_db='test_db',
+                                              host='localhost',
+                                              port=27017,
+                                              user='admin',
+                                              password='admin',
+                                              time_out=1000,
+                                              tentativi=5,
+                                              sleep=1), flag=True):
+        super(MongoTh, self).__init__()
+        self.connection_dict = connection_dict
+        self.connected = False
+        self.flag = flag
+        self.setObjectName('MongoThreaObj')
+
+    def run(self):
+        """Creates a test connection for to check if the host is on-line
+            :returns True if connection has been established, False otherwise"""
+        # while self.flag:
+        print('Thread')
+        try:
+            print(self.sender().objectName())
+        except Exception as e:
+            print(e)
+        for tentativo in range(self.connection_dict.tentativi):
+            try:
+                self.completed = False
+                host = self.connection_dict.host
+                port = int(self.connection_dict.port)
+                name = self.connection_dict.user
+                password = self.connection_dict.password
+                nome_db = self.connection_dict.nome_db
+                _connection = connect(nome_db,
+                                      host=host,
+                                      port=port,
+                                      serverSelectionTimeoutMS=1000,
+                                      alias='another')
+                self.connection = _connection[self.connection_dict.nome_db]
+                # print(self.connection.authenticate(name=name,
+                #                              password=password))
+                # try:
+                #     print('ping', self.connection.command('ping'))
+                #     self.connected = bool(self.connection.command('ping'))
+                # except Exception as e:
+                #     print('-------------------', e)
+                # self.connection.authenticate(name=name, password=password)
+                self.connection.command('ping')
+                self.CONNECTED_segnale.emit(True)
+                self.connected = True
+            except errors.OperationFailure as e:
+                self.CONNECTED_segnale.emit(False)
+                self.connected = False
+                time.sleep(self.connection_dict.sleep)
+                print(e)
+                # raise MultiMongoErrs(e)
+            except errors.ServerSelectionTimeoutError as e:
+                self.connected = False
+                self.CONNECTED_segnale.emit(False)
+                print('ServerSelectionTimeoutError', e)
+                # raise MultiMongoErrs(e)
+            except OperationError as e:
+                print('OperationError', e)
+                self.connected = False
+                self.CONNECTED_segnale.emit(False)
+                time.sleep(self.connection_dict.sleep)
+                # raise MultiMongoErrs()
+            except ValueError as e:
+                self.connected = False
+                self.CONNECTED_segnale.emit(False)
+                time.sleep(self.connection_dict.sleep)
+                print(e)
+            except errors.NotMasterError as e:
+                self.connected = False
+                self.CONNECTED_segnale.emit(False)
+                time.sleep(self.connection_dict.sleep)
+                print(e)
+        # raise MultiMongoErrs(e)
+        self.finished_segnale.emit(self.connected)
+        self.finished_.emit()
+        self.completed = True
+        # time.sleep(5)
+        print('end')
+        return True
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
     """Classe per la creazione gui del gestionale per case vacanze
@@ -31,149 +168,167 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     noteCheck_signal = QtCore.pyqtSignal(bool)
     spesaCheck_signal = QtCore.pyqtSignal(bool)
 
+
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
-
-        self.settingsIcon = './Icons/settingsIcon.png'
-        self.colors = {}
-        self.dateBooking = []
-        self.dateAirbb = []
-        self.datePrivati = []
-        self.datePulizie = []
-        # self.dateSpese = []
-        self.dateSpese = []
-        self.dateNote = []
-        self.listeImporti = {}
-        self.listeProvvigioni = {}
-        self.listeTasse = {}
-        self.tassa = 0
-        self.prenotazione_corrente = None
-        iconaMainWindow = QtGui.QIcon('./Icons/erbavento.ico')
-        datePren = {'platforms': {}}
-        self.datePrenotazioni = Od(datePren)
-        # d = {
-        #     "nome": "",
-        #     "cognome": "",
-        #     "telefono": None,
-        #     "email": '',
-        #     "platform": "",
-        #     "data arrivo": None,
-        #     "data partenza": None,
-        #     'totale notti': 0,
-        #     "numero ospiti": 1,
-        #     "bambini": 0,
-        #     "spese": '',
-        #     "colazione": 'No',
-        #     "stagione": '',
-        #     "importo": 0,
-        #     "lordo": 0,
-        #     "tasse": 0,
-        #     "netto": 0,
-        #     "note": "",
-        # }
-        self.infoModel = Od({
-            "nome": "",
-            "cognome": "",
-            "telefono": None,
-            "email": '',
-            "platform": "",
-            "data arrivo": None,
-            "data partenza": None,
-            'totale notti': '',
-            "numero ospiti": '',
-            "bambini": '',
-            "spese": '',
-            "colazione": 'No',
-            "stagione": '',
-            "importo": 0,
-            "lordo": 0,
-            "tasse": 0,
-            "netto": 0,
-            "note": "",
-            "prenotazione": None,
-        })
-        self.infoTemp = deepc(self.infoModel)
-        # r = {"nome": "", "cognome": "", "data partenza": ""}
-        self.infoModelRedux = Od({"nome": "", "cognome": "", "data partenza": ""})
-        # self.info_cache = {}
-        #  init gui
         self.setupUi(self)
-        self.setWindowModality(QtCore.Qt.WindowModal)
-        self.setWindowTitle('Gestionale ErbaVento')
-        self.setWindowIcon(iconaMainWindow)
-        self.bot_note.setTipo('note')
-        self.statusbar.showMessage("Ready!!!!")
         self.calendario = MyCalend(
             parent=self.frame_calendar
         )
-        # self.calendario = MyCalend(
-        #     self.dateAirbb,
-        #     self.dateBooking,
-        #     self.datePrivati,
-        #     self.datePulizie,
-        #     parent=self.frame_calendar,
-        # )
-        self.lastMonth = None
-        self.current_date = None
-        self.giornoCorrente = QtCore.QDate().currentDate()
-        # self.database = self.initDatabase()
-        self.calendario.currentPageChanged.connect(self.mese_calendario_cambiato)
-        # self.spese = self.initSpeseDb()
-        self.spese = ''
-        self.config = self.initConfig()
-        self.mongo = MongoConnection()
-        self.infoSta = None
-        # self.infoSta = self.initStatDb()
-        self.setMenuMain()
-        self.loadConfig()
         cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
         cal_layout.addWidget(self.calendario)
         self.frame_calendar.setLayout(cal_layout)
+        self.statusbar.showMessage('Waiting for connection...')
+        self.show()
 
-        # self.calendario.table.clicked.connect(self.getInfoFromCalendar)
-        self.calendario.singleClicked.connect(self.getInfoFromCalendar)
-        self.calendario.selectionChanged.connect(self.aggiornaInfoData)
-        self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
-        # self.calendario.currentPageChanged.connect(self.riportapagina)
+    def go_ahead(self):
+        self.stackedWidget.setCurrentIndex(1)
 
-        self.setDateEdit_dal()
-        self.spinBox_importo.setMaximum(9999)
-        self.dateEdit_dal.dateChanged.connect(self.correggiPartenza)
-        self.bot_salva.clicked.connect(self.salvaInfo)
-        self.bot_checkDisp.clicked.connect(self.botFuncCheckAval)
-        self.bot_cancella.clicked.connect(self.cancellaprenot)
-        self.bot_modifica.clicked.connect(self.modificaESalva)
-        self.spinBox_ospiti.valueChanged.connect(self.totOspitiAdj)
-        self.spinBox_bambini.valueChanged.connect(self.totOspitiAdj)
-        self.spinBox_importo.valueChanged.connect(self.calcLordoNetto)
-        self.combo_platformPrenotazioni.currentTextChanged.connect(self.importAdj)
-        self.combo_stagionePrenotazioni.currentTextChanged.connect(self.importAdj)
-        # self.radio_booking.toggled.connect(self.importAdj)
-        # self.radio_air.toggled.connect(self.importAdj)
-        # self.radio_privato.toggled.connect(self.importAdj)
-        # self.radioCorrente = self.radio_booking
+    def go_back_waiting(self):
+        self.stackedWidget.setCurrentIndex(0)
 
+    def turn_on(self, status):
+        if status:
+            self.go_ahead()
+            self.settingsIcon = './Icons/settingsIcon.png'
+            self.colors = {}
+            self.dateBooking = []
+            self.dateAirbb = []
+            self.datePrivati = []
+            self.datePulizie = []
+            # self.dateSpese = []
+            self.dateSpese = []
+            self.dateNote = []
+            self.listeImporti = {}
+            self.listeProvvigioni = {}
+            self.listeTasse = {}
+            self.tassa = 0
+            self.prenotazione_corrente = None
+            iconaMainWindow = QtGui.QIcon('./Icons/erbavento.ico')
+            datePren = {'platforms': {}}
+            self.datePrenotazioni = Od(datePren)
+            # d = {
+            #     "nome": "",
+            #     "cognome": "",
+            #     "telefono": None,
+            #     "email": '',
+            #     "platform": "",
+            #     "data arrivo": None,
+            #     "data partenza": None,
+            #     'totale notti': 0,
+            #     "numero ospiti": 1,
+            #     "bambini": 0,
+            #     "spese": '',
+            #     "colazione": 'No',
+            #     "stagione": '',
+            #     "importo": 0,
+            #     "lordo": 0,
+            #     "tasse": 0,
+            #     "netto": 0,
+            #     "note": "",
+            # }
+            self.infoModel = Od({
+                "nome": "",
+                "cognome": "",
+                "telefono": None,
+                "email": '',
+                "platform": "",
+                "data arrivo": None,
+                "data partenza": None,
+                'totale notti': '',
+                "numero ospiti": '',
+                "bambini": '',
+                "spese": '',
+                "colazione": 'No',
+                "stagione": '',
+                "importo": 0,
+                "lordo": 0,
+                "tasse": 0,
+                "netto": 0,
+                "note": "",
+                "prenotazione": None,
+            })
+            self.infoTemp = deepc(self.infoModel)
+            # r = {"nome": "", "cognome": "", "data partenza": ""}
+            self.infoModelRedux = Od({"nome": "", "cognome": "", "data partenza": ""})
+            # self.info_cache = {}
+            #  init gui
 
-        self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
-        self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
-        self.bot_esporta.clicked.connect(self.exportaDb)
-        self.bot_prenota.clicked.connect(self.vaiPrenotaTab)
-        self.bot_annulla.clicked.connect(self.vaiCalendario)
-        self.bot_spese.clicked.connect(self.addSpese)
-        self.bot_note.clicked.connect(self.addNote)
-        self.lineEdit_nome.returnPressed.connect(self.lineEditVerifica)
-        self.lineEdit_cognome.returnPressed.connect(self.lineEditVerifica)
-        self.lineEdit_telefono.returnPressed.connect(self.lineEditVerifica)
-        self.lineEdit_email.returnPressed.connect(self.lineEditVerifica)
-        self.lineEdit_nome.TABPRESSED.connect(self.lineEditVerifica)
-        self.lineEdit_cognome.TABPRESSED.connect(self.lineEditVerifica)
-        self.lineEdit_telefono.TABPRESSED.connect(self.lineEditVerifica)
-        self.lineEdit_email.TABPRESSED.connect(self.lineEditVerifica)
-        self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
-        self.giornoprecedente = self.giornoCorrente.addDays(-1)
-        self.calendario.updateIconsAndBooked()
-        # STATUS BAR
-        # self.statusbar.setT
+            self.setWindowModality(QtCore.Qt.WindowModal)
+            self.setWindowTitle('Gestionale ErbaVento')
+            self.setWindowIcon(iconaMainWindow)
+            self.bot_note.setTipo('note')
+            self.statusbar.showMessage("Ready!!!!")
+
+            # self.calendario = MyCalend(
+            #     self.dateAirbb,
+            #     self.dateBooking,
+            #     self.datePrivati,
+            #     self.datePulizie,
+            #     parent=self.frame_calendar,
+            # )
+            self.lastMonth = None
+            self.current_date = None
+            self.giornoCorrente = QtCore.QDate().currentDate()
+            # self.database = self.initDatabase()
+            self.calendario.currentPageChanged.connect(self.mese_calendario_cambiato)
+            # self.spese = self.initSpeseDb()
+            self.spese = ''
+            self.config = self.initConfig()
+            self.mongo = MongoConnection(self, self.connection_dict)
+            self.infoSta = None
+            # self.infoSta = self.initStatDb()
+            self.setMenuMain()
+            self.loadConfig()
+            cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
+            cal_layout.addWidget(self.calendario)
+            self.frame_calendar.setLayout(cal_layout)
+
+            # self.calendario.table.clicked.connect(self.getInfoFromCalendar)
+            self.calendario.singleClicked.connect(self.getInfoFromCalendar)
+            self.calendario.selectionChanged.connect(self.aggiornaInfoData)
+            self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
+            # self.calendario.currentPageChanged.connect(self.riportapagina)
+
+            self.setDateEdit_dal()
+            self.spinBox_importo.setMaximum(9999)
+            self.dateEdit_dal.dateChanged.connect(self.correggiPartenza)
+            self.bot_salva.clicked.connect(self.salvaInfo)
+            self.bot_checkDisp.clicked.connect(self.botFuncCheckAval)
+            self.bot_cancella.clicked.connect(self.cancellaprenot)
+            self.bot_modifica.clicked.connect(self.modificaESalva)
+            self.spinBox_ospiti.valueChanged.connect(self.totOspitiAdj)
+            self.spinBox_bambini.valueChanged.connect(self.totOspitiAdj)
+            self.spinBox_importo.valueChanged.connect(self.calcLordoNetto)
+            self.combo_platformPrenotazioni.currentTextChanged.connect(self.importAdj)
+            self.combo_stagionePrenotazioni.currentTextChanged.connect(self.importAdj)
+            # self.radio_booking.toggled.connect(self.importAdj)
+            # self.radio_air.toggled.connect(self.importAdj)
+            # self.radio_privato.toggled.connect(self.importAdj)
+            # self.radioCorrente = self.radio_booking
+
+            self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
+            self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
+            self.bot_esporta.clicked.connect(self.exportaDb)
+            self.bot_prenota.clicked.connect(self.vaiPrenotaTab)
+            self.bot_annulla.clicked.connect(self.vaiCalendario)
+            self.bot_spese.clicked.connect(self.addSpese)
+            self.bot_note.clicked.connect(self.addNote)
+            self.lineEdit_nome.returnPressed.connect(self.lineEditVerifica)
+            self.lineEdit_cognome.returnPressed.connect(self.lineEditVerifica)
+            self.lineEdit_telefono.returnPressed.connect(self.lineEditVerifica)
+            self.lineEdit_email.returnPressed.connect(self.lineEditVerifica)
+            self.lineEdit_nome.TABPRESSED.connect(self.lineEditVerifica)
+            self.lineEdit_cognome.TABPRESSED.connect(self.lineEditVerifica)
+            self.lineEdit_telefono.TABPRESSED.connect(self.lineEditVerifica)
+            self.lineEdit_email.TABPRESSED.connect(self.lineEditVerifica)
+            self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
+            self.giornoprecedente = self.giornoCorrente.addDays(-1)
+            self.calendario.updateIconsAndBooked()
+            self.show()
+            #             # STATUS BAR
+            #             # self.statusbar.setT
+
 
     @QtCore.pyqtSlot()
     def addNote(self):
@@ -726,8 +881,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.riempiTabellaStat()
 
     def initConfig(self):
-        d = DialogOption()
-        config = d.checkConfigFile()
+        # d = DialogOption()
+        config = DialogOption.checkConfigFile()
+        self.connection_dict = ConnectionDict(host=config['connessione']['host'],
+                                                port=config['connessione']['port'],
+                                                user=config['connessione']['user'],
+                                                password=config['connessione']['password'],
+                                                nome_db=config['connessione']['nome_db'])
         return config
 
     @QtCore.pyqtSlot()
@@ -1107,6 +1267,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    ui = EvInterface()
-    ui.show()
+    main = Main()
+    # ui = EvInterface()
+    # ui.show()
     sys.exit(app.exec_())
