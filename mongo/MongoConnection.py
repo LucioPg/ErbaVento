@@ -74,15 +74,30 @@ class MongoConnection(QObject):
         # self.connection_thread = MongoThread()
         # self.connection_thread.connection_dict = connection_dict
         # self.connection_thread.CONNECTED.connect(self.set_connected)
-        self.make_connection()
+        # self.make_connection()
         # self.CONNECTED()
         # self.connection_thread.start()
     def set_connected(self,status):
         print('set_connected mongo ', status)
         self.connected = status
-        self.make_connection()
+        self.make_connection(status)
 
-    def make_connection(self):
+    def make_connection(self, status):
+        if  status:
+            host = self.connection_dict.host
+            port = int(self.connection_dict.port)
+            name = self.connection_dict.user
+            password = self.connection_dict.password
+            nome_db = self.connection_dict.nome_db
+            _connection = connect(nome_db,
+                        host=host,
+                        port=port,
+                        serverSelectionTimeoutMS=1000,
+                        )
+            _connection[nome_db].authenticate(name=name,
+                    password=password)
+
+    def make_connection_old(self):
         if  mongo_check_connection():
             self.CONNECTED = True
             _connection = connect('test_db',
@@ -179,7 +194,7 @@ class MongoConnection(QObject):
              colazione=False, importo = 0.0, note='', lordo=0.0,
              netto=0.0, tasse=0.0
              ):
-        if not self.CONNECTED:
+        if not self.connected:
             return print('Not connected')
         if dates:  # it checks if dates are present before confirm the creation of an useless user
             if not ospite:
@@ -241,7 +256,7 @@ class MongoConnection(QObject):
             return print('dates are mandatory, if an instance of user was present it has been aborted')
 
     def un_book(self,prenotazione, preserve=False):
-        if not self.CONNECTED:
+        if not self.connected:
             return print('Not connected')
         ospite = prenotazione.ospite_id
         dates = prenotazione.giorni
@@ -268,7 +283,7 @@ class MongoConnection(QObject):
         return note
 
     def delete_ospite(self,ospite=None, identificativo=None):
-        if not self.CONNECTED:
+        if not self.connected:
             return print('Not connected')
         if not ospite and identificativo:
             ospite = self.queries_ospite(identificativo=identificativo)
@@ -302,7 +317,7 @@ class MongoConnection(QObject):
     def get_prenotazioni_pulizie(self):
         datePrenotate = {}
         datePulizie = []
-        if self.CONNECTED:
+        if self.connected:
             print('Connesso')
             for prenotazione in Prenotazione.objects:
                 platform = prenotazione.platform

@@ -38,40 +38,8 @@ class LifoStack:
 
 
 
-class Main(QtCore.QObject):
-    counter = 0
-    def __init__(self):
-        super(Main, self).__init__()
-        self.all_connected = False
-        self.thread_ui = QtCore.QThread()
-        self.thread_ui.setObjectName('thread ui')
-        self.ui = EvInterface()
-        self.ui.moveToThread(self.thread_ui)
-        # self.thread_ui.started.connect(self.ui.turn_on)
-        self.counter += 1
-        self.wait_thread = QtCore.QThread()
 
-        self.thread_mongo = QtCore.QThread()
-        self.thread_mongo.setObjectName('thread mongo')
-        self.Mongo_th = MongoTh()
-        self.Mongo_th.moveToThread(self.thread_mongo)
-        self.Mongo_th.finished_.connect(self.thread_mongo.quit)
-        self.thread_mongo.started.connect(self.Mongo_th.run)
-
-        # self.Mongo_th.finished_.connect(self.thread_mongo.finished)
-        # self.Mongo_th.finished_.connect(self.thread_ui.start)
-        self.Mongo_th.CONNECTED_segnale.connect(self.ui.turn_on)
-        print(self.Mongo_th.receivers(self.Mongo_th.finished_))
-        self.thread_mongo.start()
-        self.thread_ui.started.connect(lambda: self.Mongo_th.disconnect())
-        self.thread_mongo.finished.connect(lambda: print('kkkkk',self.Mongo_th.receivers(self.Mongo_th.finished_)))
-
-    def set_all_connected(self, status):
-        self.all_connected = status
-
-
-
-class MongoTh(QtCore.QObject):
+class MongoPing(QtCore.QObject):
     connected = bool
     CONNECTED_segnale = QtCore.pyqtSignal(bool)
     finished_segnale = QtCore.pyqtSignal(bool)
@@ -85,7 +53,7 @@ class MongoTh(QtCore.QObject):
                                               time_out=1000,
                                               tentativi=5,
                                               sleep=1), flag=True):
-        super(MongoTh, self).__init__()
+        super(MongoPing, self).__init__()
         self.connection_dict = connection_dict
         self.connected = False
         self.flag = flag
@@ -100,14 +68,15 @@ class MongoTh(QtCore.QObject):
             print(self.sender().objectName())
         except Exception as e:
             print(e)
+        host = self.connection_dict.host
+        port = int(self.connection_dict.port)
+        name = self.connection_dict.user
+        password = self.connection_dict.password
+        nome_db = self.connection_dict.nome_db
         for tentativo in range(self.connection_dict.tentativi):
             try:
                 self.completed = False
-                host = self.connection_dict.host
-                port = int(self.connection_dict.port)
-                name = self.connection_dict.user
-                password = self.connection_dict.password
-                nome_db = self.connection_dict.nome_db
+
                 _connection = connect(nome_db,
                                       host=host,
                                       port=port,
@@ -153,12 +122,62 @@ class MongoTh(QtCore.QObject):
                 time.sleep(self.connection_dict.sleep)
                 print(e)
         # raise MultiMongoErrs(e)
+        if not self.connected:
+            return self.run()
+            # if self.retry_counter < self.connection_dict.tentativi:
+            #     self.retry_counter += 1
+            #     return self.run()
+        # print('time.sleep()')
+        time.sleep(self.connection_dict.sleep)
         self.finished_segnale.emit(self.connected)
         self.finished_.emit()
         self.completed = True
-        # time.sleep(5)
+
         print('end')
         return True
+
+class Main(QtCore.QObject):
+    counter = 0
+    def __init__(self):
+        super(Main, self).__init__()
+        self.all_connected = False
+        self.ui = EvInterface()
+        config, self.connection_dict = self.ui.initConfig()
+        self.ui.mongo = MongoConnection(self.ui, self.ui.connection_dict)
+        # self.ui.self.mongo = MongoConnection(, self.connection_dict)
+
+        ##### thread mongo
+        self.mongo_thread = QtCore.QThread()
+        self.ui.mongo.moveToThread(self.mongo_thread)
+        # self.mongo_thread.start()
+        #### thred ui
+        self.thread_ui = QtCore.QThread()
+        self.thread_ui.setObjectName('thread ui')
+        self.ui.moveToThread(self.thread_ui)
+        # self.thread_ui.started.connect(self.ui.turn_on)
+        self.counter += 1
+        #### thread ping
+        self.thread_ping = QtCore.QThread()
+        self.thread_ping.setObjectName('thread mongo')
+        self.mongo_ping = MongoPing(connection_dict=self.connection_dict)
+        self.mongo_ping.moveToThread(self.thread_ping)
+        self.thread_ping.start()
+
+        #### connection
+        self.thread_ping.started.connect(self.mongo_ping.run)
+        self.mongo_ping.finished_.connect(self.thread_ping.quit)
+        self.thread_ping.finished.connect(self.mongo_thread.start)
+        self.mongo_thread.finished.connect(self.thread_ping.start)
+        self.mongo_ping.CONNECTED_segnale.connect(self.ui.mongo.make_connection)
+        self.mongo_ping.CONNECTED_segnale.connect(self.ui.turn_on)
+        self.thread_ping.start()
+        self.thread_ui.started.connect(lambda: self.mongo_ping.disconnect())
+        self.thread_ping.finished.connect(lambda: print('kkkkk', self.mongo_ping.receivers(self.mongo_ping.finished_)))
+        self.thread_ping.finished.connect(self.ui.go_ahead)
+
+    def set_all_connected(self, status):
+        self.all_connected = status
+
 
 class EvInterface(mainwindow, QtWidgets.QMainWindow):
     """Classe per la creazione gui del gestionale per case vacanze
@@ -169,30 +188,30 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     MAXOSPITI = 5
     noteCheck_signal = QtCore.pyqtSignal(bool)
     spesaCheck_signal = QtCore.pyqtSignal(bool)
+    err_conn_signal = QtCore.pyqtSignal()
 
 
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
         self.initialated = False
         self.setupUi(self)
-        self.calendario = MyCalend(
-            parent=self.frame_calendar
-        )
-        cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
-        cal_layout.addWidget(self.calendario)
-        self.frame_calendar.setLayout(cal_layout)
-        self.statusbar.showMessage('Waiting for connection...')
+
+
+
+        self.go_back_waiting()
         self.show()
 
     def go_ahead(self):
-        self.stackedWidget.setCurrentIndex(1)
+        if self.initialated:
+            self.stackedWidget.setCurrentIndex(1)
 
-    def go_back_waiting(self):
+    def go_back_waiting(self, message='Waiting for connection...'):
         self.stackedWidget.setCurrentIndex(0)
+        self.statusbar.showMessage(message)
 
     def turn_on(self, status):
-        if not self.initialated:
-            self.go_ahead()
+        if not self.initialated and status:
+            # self.go_ahead()
             self.settingsIcon = './Icons/settingsIcon.png'
             self.colors = {}
             self.dateBooking = []
@@ -262,14 +281,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.setWindowIcon(iconaMainWindow)
             self.bot_note.setTipo('note')
             self.statusbar.showMessage("Ready!!!!")
-
-            # self.calendario = MyCalend(
-            #     self.dateAirbb,
-            #     self.dateBooking,
-            #     self.datePrivati,
-            #     self.datePulizie,
-            #     parent=self.frame_calendar,
-            # )
+            self.calendario = MyCalend(
+                parent=self.frame_calendar
+            )
+            cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
+            cal_layout.addWidget(self.calendario)
+            self.frame_calendar.setLayout(cal_layout)
             self.lastMonth = None
             self.current_date = None
             self.giornoCorrente = QtCore.QDate().currentDate()
@@ -277,8 +294,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.calendario.currentPageChanged.connect(self.mese_calendario_cambiato)
             # self.spese = self.initSpeseDb()
             self.spese = ''
-            self.config = self.initConfig()
-            self.mongo = MongoConnection(self, self.connection_dict)
+            # self.config = self.initConfig()
+            # self.config, self.connection_dict = self.initConfig()
+            # self.mongo = MongoConnection(self, self.connection_dict)
+            # self.mongo_thread = QtCore.QThread()
+            # self.mongo.moveToThread(self.mongo_thread)
             self.infoSta = None
             # self.infoSta = self.initStatDb()
             self.setMenuMain()
@@ -332,6 +352,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.show()
             #             # STATUS BAR
             #             # self.statusbar.setT
+        else:
+            self.go_back_waiting()
 
 
     @QtCore.pyqtSlot()
@@ -379,8 +401,22 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         self.calendario.updateIconsAndBooked()
                     else:
                         print('la data della nota non è nella lista del calendario')
-        except:
-            print(fex())
+        except errors.ServerSelectionTimeoutError as e:
+            print(e)
+            self.statusbar.setToolTip(str(e))
+        except OperationError as e:
+            print(e)
+            self.statusbar.setToolTip(str(e))
+        except errors.OperationFailure as e:
+            print(e)
+            self.parent().thread_mongo.quit()
+            self.statusbar.setToolTip(str(e))
+        except errors.AutoReconnect as e:
+            print(e)
+            self.statusbar.setToolTip(str(e))
+
+        # except errors.ServerSelectionTimeoutError:
+
 
     @QtCore.pyqtSlot()
     def addSpese(self):
@@ -829,6 +865,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def set_prenotazione_corrente(self, corrente):
         self.prenotazione_corrente = corrente
 
+
+
     def getInfoFromDate(self, data):
         # self.cleardisplay()
         # print("controllo ", inspect.stack()[0][3])
@@ -883,15 +921,16 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.infoSta = {}
         self.riempiTabellaStat()
 
+    @classmethod
     def initConfig(self):
         # d = DialogOption()
-        config = DialogOption.checkConfigFile()
-        self.connection_dict = ConnectionDict(host=config['connessione']['host'],
-                                                port=config['connessione']['port'],
-                                                user=config['connessione']['user'],
-                                                password=config['connessione']['password'],
-                                                nome_db=config['connessione']['nome_db'])
-        return config
+        self.config = DialogOption.checkConfigFile()
+        self.connection_dict = ConnectionDict(host=self.config['connessione']['host'],
+                                                port=self.config['connessione']['port'],
+                                                user=self.config['connessione']['user'],
+                                                password=self.config['connessione']['password'],
+                                                nome_db=self.config['connessione']['nome_db'])
+        return self.config, self.connection_dict
 
     @QtCore.pyqtSlot()
     def lineEditVerifica(self):
@@ -1169,6 +1208,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                     self.set_prenotazione_corrente(prenotazione)
                 except :
                     print(fex())
+
+    def set_ping(self, status):
+        self.ping = status
 
     def set_status_msg(self, st=""):
         self.statusbar.showMessage(st)
