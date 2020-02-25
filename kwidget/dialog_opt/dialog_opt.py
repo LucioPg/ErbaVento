@@ -1,13 +1,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from gui_option import Ui_Dialog_opt as DialogOptionGui
-from kwidget.basiccolorselector.mybcolors import MyBcolors
-from kwidget.basiccolorselector.mybcolors import MyBcolors_2
+from kwidget.dialog_opt.gui_option import Ui_Dialog_opt as DialogOptionGui
 from kwidget.singleline.singleline import MySimpleLinEditDialog as SimpleLine
 # from kwidget.mylineEdit.mylineEdit import MySimpleLineEdit as SimpleLine
 import json
 from copy import deepcopy
 from traceback import format_exc as fex
-import config_file
+import ConfigFile
 # from config_file import (fileConf,
 #                          defaultTasse,
 #                          defaultTasseAttive,
@@ -82,7 +80,7 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
                     self.config['stagione'][sta]['importi'][platAddPlat] = importi
                 self.config['provvigioni'][platAddPlat] = 0.0
                 self.config['tasse attive'][platAddPlat] = self.radio_attivaTassa.isChecked()
-                self.saveConfig(config_file.fileConf, self.config)
+                self.saveConfig(ConfigFile.fileConf, self.config)
                 self.chooseColor(platAddPlat)
                 self.setComboPlat()
                 self.combo_platform.setCurrentIndex(self.combo_platform.findText(platAddPlat))
@@ -101,16 +99,16 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     @classmethod
     def checkConfigFile(cls):
         try:
-            fileConf = os.path.join(os.getcwd(), config_file.fileConf)
+            fileConf = os.path.join(os.getcwd(), ConfigFile.fileConf)
 
             with open(fileConf, 'r') as fileconfig:
                 config = json.load(fileconfig)
                 cls.config = config
             # print(self.config)
         except FileNotFoundError:
-            config = deepcopy(config_file.defaultConfig)
+            config = deepcopy(ConfigFile.defaultConfig)
             cls.config = config
-            cls.saveConfig(config_file.fileConf, cls.config)
+            cls.saveConfig(ConfigFile.fileConf, cls.config)
             print('File di configurazione creato')
         return config
 
@@ -197,10 +195,23 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
         platform = self.combo_platform.currentText()
         return stagione, platform
 
+    def load_connection_settings(self):
+        self.lineEdit_host.setText(self.config['connessione']['host'])
+        self.lineEdit_port.setText(str(self.config['connessione']['port']))
+        self.lineEdit_user.setText(self.config['connessione']['user'])
+        self.lineEdit_password.setText(self.config['connessione']['password'])
+        self.lineEdit_nome_db.setText(self.config['connessione']['nome_db'])
 
+    def get_connection_settings(self):
+        self.config['connessione']['host'] = self.lineEdit_host.text()
+        self.config['connessione']['port'] = self.lineEdit_port.text()
+        self.config['connessione']['user'] = self.lineEdit_user.text()
+        self.config['connessione']['password'] = self.lineEdit_password.text()
+        self.config['connessione']['nome_db'] = self.lineEdit_nome_db.text()
 
     def loadConfig(self):
         if self.checkConfigFile() is not None:
+            self.load_connection_settings()
             self.spinbox_provvigione.setSingleStep(0.5)
             self.spinbox_tasse.setSingleStep(0.5)
             self.setNumeroLetti(str(self.config['numero letti']))
@@ -239,7 +250,8 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
 
     def saveConfigBot(self):
         # fileConf = os.path.join(os.getcwd(), self.fileConf)
-        self.saveConfig(config_file.fileConf, self.config)
+        self.get_connection_settings()
+        self.saveConfig(ConfigFile.fileConf, self.config)
 
     def setColor(self):
         plat = self.combo_platform.currentText()

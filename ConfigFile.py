@@ -30,5 +30,10 @@ defaultConfig = {'numero letti': 5,
                  'stagione preferita': 'Media',
                  'tasse': defaultTasse,
                  'tasse attive': defaultTasseAttive,
-                 'colori settati': deepcopy(defaultPlatforms)
+                 'colori settati': deepcopy(defaultPlatforms),
+                 'connessione': {'host': 'localhost',
+                                 'port': 27017,
+                                 'user': 'admin',
+                                 'password': 'admin',
+                                 'nome_db': 'test_db'}
                  }

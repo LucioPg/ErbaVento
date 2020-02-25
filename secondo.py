@@ -42,6 +42,7 @@ class Main(QtCore.QObject):
     counter = 0
     def __init__(self):
         super(Main, self).__init__()
+        self.all_connected = False
         self.thread_ui = QtCore.QThread()
         self.thread_ui.setObjectName('thread ui')
         self.ui = EvInterface()
@@ -65,7 +66,8 @@ class Main(QtCore.QObject):
         self.thread_ui.started.connect(lambda: self.Mongo_th.disconnect())
         self.thread_mongo.finished.connect(lambda: print('kkkkk',self.Mongo_th.receivers(self.Mongo_th.finished_)))
 
-
+    def set_all_connected(self, status):
+        self.all_connected = status
 
 
 
@@ -171,6 +173,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
         super(EvInterface, self).__init__(parent)
+        self.initialated = False
         self.setupUi(self)
         self.calendario = MyCalend(
             parent=self.frame_calendar
@@ -188,7 +191,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.stackedWidget.setCurrentIndex(0)
 
     def turn_on(self, status):
-        if status:
+        if not self.initialated:
             self.go_ahead()
             self.settingsIcon = './Icons/settingsIcon.png'
             self.colors = {}
@@ -280,9 +283,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.infoSta = self.initStatDb()
             self.setMenuMain()
             self.loadConfig()
-            cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
-            cal_layout.addWidget(self.calendario)
-            self.frame_calendar.setLayout(cal_layout)
+            # cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
+            # cal_layout.addWidget(self.calendario)
+            # self.frame_calendar.setLayout(cal_layout)
 
             # self.calendario.table.clicked.connect(self.getInfoFromCalendar)
             self.calendario.singleClicked.connect(self.getInfoFromCalendar)
@@ -325,7 +328,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
             self.giornoprecedente = self.giornoCorrente.addDays(-1)
             self.calendario.updateIconsAndBooked()
-            self.show()
+            self.initialated = True
+            # self.show()
             #             # STATUS BAR
             #             # self.statusbar.setT
 
@@ -778,7 +782,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
             self.config = conf
             self.loadConfig()
-            self.leggiDatabase()
             # todo copiare la variabile self.config
         except UnboundLocalError:
             pass
@@ -853,7 +856,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.spinBox_bambini.setMaximum(maxOspiti - self.spinBox_ospiti.value())
         self.tassa = self.config['tasse']
         self.calcLordoNetto()
-        indice = totOspiti - 1
+        indice = totOspiti - 1 if totOspiti > 0 else 0
         platform = self.combo_platformPrenotazioni.currentText()
         self.buildListeIPT()
         try:
