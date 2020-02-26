@@ -236,6 +236,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def go_ahead(self):
         if self.initialated:
             self.stackedWidget.setCurrentIndex(1)
+            self.getInfoFromCalendar()
 
     def go_back_waiting(self, message='Waiting for connection...'):
         self.stackedWidget.setCurrentIndex(0)
@@ -341,7 +342,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
             # self.calendario.table.clicked.connect(self.getInfoFromCalendar)
             self.calendario.singleClicked.connect(self.getInfoFromCalendar)
-            self.calendario.selectionChanged.connect(self.aggiornaInfoData)
             # self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
             # self.calendario.currentPageChanged.connect(self.riportapagina)
 
@@ -437,8 +437,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # except errors.ServerSelectionTimeoutError:
 
 
-
-    def addSpese(self):
+    @ensure_conn
+    def addSpese(self, *args):
         try:
             data = self.calendario.currentDate
             spesa_mensile = self.mongo.get_spesa_mensile(self.mongo.make_data_ref(data))
@@ -538,15 +538,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 self.calendario.updateIconsAndBooked()
         except:
             print(fex())
-
-    def aggiornaInfoData(self):
-        data = self.calendario.currentDate
-        self.setInfoTemp(self.getInfoFromDate(data))
-        if self.infoTemp['data arrivo'] is None:
-            self.bot_cancella.setEnabled(False)
-        else:
-            self.bot_cancella.setEnabled(True)
-        self.setDateEdit_dal()
 
     def botFuncCheckAval(self):
         dal = self.dateEdit_dal.date()
@@ -893,18 +884,27 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         return self.current_date
 
     @ensure_conn
-    def getInfoFromCalendar(self, data):
+    def getInfoFromCalendar(self, data=None):
         # self.cleardisplay()
         # if self.sender() is not None:
         #     sender = self.sender().objectName()
         #     print(f"{inspect.stack()[0][3]} mandato da {self.sender().objectName()}")
-        self.calendario.currentDate = data
+        if not data:
+            data = self.calendario.currentDate
+        else:
+            self.calendario.currentDate = data
+            print('current date: ', data)
         info = self.getInfoFromDate(data)
         if info is None:
             print('info is None from getInfoFromCalendar')
             return
         self.riempiTabellaPrenotazioni(info)
         self.setInfoTemp(info)
+        if self.infoTemp['data arrivo'] is None:
+            self.bot_cancella.setEnabled(False)
+        else:
+            self.bot_cancella.setEnabled(True)
+        self.setDateEdit_dal()
         return info
     def set_prenotazione_corrente(self, corrente):
         self.prenotazione_corrente = corrente
