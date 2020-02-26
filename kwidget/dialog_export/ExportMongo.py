@@ -14,11 +14,12 @@ class DialogExport(Dialog, QtWidgets.QDialog):
 
     EXPORT_END = QtCore.pyqtSignal()
 
-    def __init__(self, collections:List, connection_dict, parent=None):
+    def __init__(self, lista_collezioni:List, connection_dict, parent=None):
         super(DialogExport, self).__init__(parent)
         self.setupUi(self)
-        self.collections = collections
-        self.connection = connection_dict
+        self.lista_collezioni = lista_collezioni
+        self.selected = []
+        self.connection_dict = connection_dict
         self.fill_list()
 
     def clear_all(self):
@@ -27,25 +28,56 @@ class DialogExport(Dialog, QtWidgets.QDialog):
 
     def fill_list(self):
         self.listWidget.clear()
-        for row, collection in enumerate(self.collections):
+        for row, collection in enumerate(self.lista_collezioni):
             item = QtWidgets.QListWidgetItem(collection)
             self.listWidget.insertItem(row, item)
 
-    def write_file_field(self, nome_file, campi:List):
-        with open(nome_file, 'w') as f:
-            stringa = ''
+    def get_selected(self):
+        rows = self.listWidget.count()
+        self.selected.clear()
+        for row in range(rows):
+            campo = self.listWidget.item(row)
+            if campo.isSelected():
+                print(campo.text())
+                self.selected.append(campo.text())
 
-            f.write(str(campi))
+        return self.selected
+
+    def write_file_field(self, campi:List):
+        self.nome_file = self.connection_dict.nome_db + '_fields.txt'
+        # campi = self.selected
+        if campi:
+            with open(self.nome_file, 'w') as f:
+                stringa = ''.join([str(campo)+',' for campo in campi]).strip(',')
+                f.write(stringa)
+            return True
+        else:
+            return False
 
     def export(self):
-        thread = ExportThread()
-        thread.finished.connect(self.export_end)
-        thread.start()
+        if self.write_file_field(campi=self.get_selected()):
+            print('sto esportando...')
+            try:
+                self.export_thread = ExportThread()
+                self.export_engine = ExportEngine(self.nome_file, self.connection_dict)
+                self.export_engine.moveToThread(self.export_thread)
+                #### il thread va spostato fuori dalla classe
+                self.export_thread.started.connect(self.export_engine.run)
+                self.export_thread.start()
+                self.export_thread.start()
+            except Exception as e:
+                print(e)
+        else:
+            print('lista selezionati da esportare vuota')
 
     def export_end(self):
-        self.EXPORT_END.emit()
-        l = [1, 2, 3]
-        stringa = ''.join([str(x)+',' for x in l]).strip(',')
+        try:
+            self.export_thread.quit()
+            self.EXPORT_END.emit()
+            l = [1, 2, 3]
+            stringa = ''.join([str(x)+',' for x in l]).strip(',')
+        except Exception as e:
+            print(e)
 
 
 
@@ -55,7 +87,7 @@ class ExportThread(QtCore.QThread):
         count = 0
         while count < 5:
             time.sleep(1)
-            print("A Increasing ", count)
+            print("sto esportando... ", count)
             count += 1
 
     # def finished(self) -> None:
@@ -65,8 +97,10 @@ class ExportEngine(QtCore.QObject):
 
     FINISHED = QtCore.pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, nome_file: str, connection_dict: dict):
         super(ExportEngine, self).__init__()
+        self.nome_file = nome_file
+        self.connection_dict = connection_dict
 
     def run(self):
         pass
