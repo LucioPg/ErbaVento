@@ -52,7 +52,8 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
 
         # funzioni comboBoxes
         self.combo_platform.currentTextChanged.connect(self.displayImporti)
-        self.combo_stagione.currentIndexChanged.connect(self.displayImporti)
+        # self.combo_stagione.currentIndexChanged.connect(self.displayImporti)
+        self.combo_stagione.currentTextChanged.connect(self.displayImporti)
 
         # funzioni spinbox_provvigioni e tasse
         self.spinbox_provvigione.valueChanged.connect(self.setProvvigione)
@@ -153,6 +154,8 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
     def displayImporti(self, t=None):
         if t is not None:
             print('testo passato: ', t)
+        else:
+            print('testo passato in None ')
         try:
             rows = int(self.label_numeroLetti.text())
             self.tableWidget__importi.setRowCount(rows)
@@ -215,13 +218,15 @@ class DialogOption(DialogOptionGui, QtWidgets.QDialog):
             self.spinbox_provvigione.setSingleStep(0.5)
             self.spinbox_tasse.setSingleStep(0.5)
             self.setNumeroLetti(str(self.config['numero letti']))
-            self.displayImporti()
             self.setProvvigione()
             self.setTasse(self.config['tasse'])
-            self.combo_stagione.setCurrentIndex(self.combo_stagione.findText(self.config['stagione preferita']))
+            combo_index_stagione_preferita = self.combo_stagione.findText(self.config['stagione preferita'])
+            print('combo_index_stagione_preferita',combo_index_stagione_preferita)
+            self.combo_stagione.setCurrentIndex(combo_index_stagione_preferita)
             self.setComboPlat()
             self.displayTasseAttive()
             self.setColor()
+            self.displayImporti()
 
 
     def on_context_menu(self, point):

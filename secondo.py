@@ -441,67 +441,64 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     @ensure_conn
     def addSpese(self, *args):
-        try:
-            data = self.calendario.currentDate
-            spesa_mensile = self.mongo.get_spesa_mensile(self.mongo.make_data_ref(data))
-            spesa_giornaliera = self.mongo.get_spesa_giornaliera(data, spesa_mensile)
+        data = self.calendario.currentDate
+        spesa_mensile = self.mongo.get_spesa_mensile(self.mongo.make_data_ref(data))
+        spesa_giornaliera = self.mongo.get_spesa_giornaliera(data, spesa_mensile)
 
-            if not spesa_giornaliera and not spesa_mensile:
-                return
-            statistiche = self.mongo.get_stat(data=data, data_doc=None, spese_mensili=spesa_mensile, _create=1)
-            # spesa_mensile = self.mongo.creat
+        if not spesa_giornaliera and not spesa_mensile:
+            return
+        statistiche = self.mongo.get_stat(data=data, data_doc=None, spese_mensili=spesa_mensile, _create=1)
+        # spesa_mensile = self.mongo.creat
 
-            spese_dict = spesa_giornaliera.spese
-            dialog = DialogSpese(spese_dict)
-            dialog.setWindowIcon(QtGui.QIcon('./Icons/iconaSpese.png'))
+        spese_dict = spesa_giornaliera.spese
+        dialog = DialogSpese(spese_dict)
+        dialog.setWindowIcon(QtGui.QIcon('./Icons/iconaSpese.png'))
 
-            # dialog.SPESEPRONTE.connect(lambda x: print('spese pronte', x))
-            # dialog.setModal(True)
-            if dialog.exec_():
-                spese_dict_dialog = dialog.ottieniSpese()
-                status_bot = False
-                if spese_dict != spese_dict_dialog:
-                    if spese_dict_dialog:
-                        if spesa_giornaliera:
-                            spesa_giornaliera.set_spese(spese_dict_dialog)
-                            spesa_mensile.save()
-                            status_bot = True
-                            statistiche.save()
-                        else:
-                            print('dfafadfafadfaddddddddddddd')
-                            status_bot = False
-                    else:
-                        if spesa_giornaliera in spesa_mensile.spese_giornaliere:
-                            spesa_mensile.spese_giornaliere.remove(spesa_giornaliera)
-                            spesa_mensile.save()
-                        if not spesa_mensile.spese_giornaliere:
-                            spesa_mensile.delete()
-                            statistiche.spese_mensili_obj = None
-                        statistiche.save()
-                else:
-                    if not spese_dict:
-                        if spesa_giornaliera in spesa_mensile.spese_giornaliere:
-                            spesa_mensile.spese_giornaliere.remove(spesa_giornaliera)
-                            spesa_mensile.save()
-                        if not spesa_mensile.spese_giornaliere:
-                            spesa_mensile.delete()
-                            statistiche.spese_mensili_obj = None
-                        statistiche.save()
-                        status_bot = False
-                    else:
+        # dialog.SPESEPRONTE.connect(lambda x: print('spese pronte', x))
+        # dialog.setModal(True)
+        if dialog.exec_():
+            spese_dict_dialog = dialog.ottieniSpese()
+            status_bot = False
+            if spese_dict != spese_dict_dialog:
+                if spese_dict_dialog:
+                    if spesa_giornaliera:
+                        spesa_giornaliera.set_spese(spese_dict_dialog)
+                        spesa_mensile.save()
                         status_bot = True
-
-                self.bot_spese.setState(status_bot)
-                if status_bot:
-                    if data not in self.calendario.dateSpese:
-                        self.calendario.dateSpese.append(data)
+                        statistiche.save()
+                    else:
+                        print('dfafadfafadfaddddddddddddd')
+                        status_bot = False
                 else:
-                    if data in self.calendario.dateSpese:
-                        self.calendario.dateSpese.remove(data)
-                self.calendario.updateIconsAndBooked()
-                self.initStatDb()
-        except:
-            print(fex())
+                    if spesa_giornaliera in spesa_mensile.spese_giornaliere:
+                        spesa_mensile.spese_giornaliere.remove(spesa_giornaliera)
+                        spesa_mensile.save()
+                    if not spesa_mensile.spese_giornaliere:
+                        spesa_mensile.delete()
+                        statistiche.spese_mensili_obj = None
+                    statistiche.save()
+            else:
+                if not spese_dict:
+                    if spesa_giornaliera in spesa_mensile.spese_giornaliere:
+                        spesa_mensile.spese_giornaliere.remove(spesa_giornaliera)
+                        spesa_mensile.save()
+                    if not spesa_mensile.spese_giornaliere:
+                        spesa_mensile.delete()
+                        statistiche.spese_mensili_obj = None
+                    statistiche.save()
+                    status_bot = False
+                else:
+                    status_bot = True
+
+            self.bot_spese.setState(status_bot)
+            if status_bot:
+                if data not in self.calendario.dateSpese:
+                    self.calendario.dateSpese.append(data)
+            else:
+                if data in self.calendario.dateSpese:
+                    self.calendario.dateSpese.remove(data)
+            self.calendario.updateIconsAndBooked()
+            self.initStatDb()
 
     @QtCore.pyqtSlot()
     def addSpese_old(self):
@@ -570,27 +567,28 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         e delle provvigioni
         :return:
         """
-        try:
-            importo = self.spinBox_importo.value()
-            chiave = self.combo_platformPrenotazioni.currentText()
-            ospiti = self.spinBox_ospiti.value() + self.spinBox_bambini.value()
-            giorni = self.dateEdit_dal.date().daysTo(self.dateEdit_al.date())
+        # try:
+        importo = self.spinBox_importo.value()
+        chiave = self.combo_platformPrenotazioni.currentText()
+        ospiti = self.spinBox_ospiti.value() + self.spinBox_bambini.value()
+        giorni = self.dateEdit_dal.date().daysTo(self.dateEdit_al.date())
+        tassa = 0
+        if self.listeTasse[chiave]:
             tassa = 0
-            if self.listeTasse[chiave]:
-                tassa = 0
-            else:
-                tassa = self.calcTax()
-                # tassa = 0
+        else:
+            tassa = self.calcTax()
+            # tassa = 0
 
-            lordo = importo * giorni + tassa
-            # print("lordo: ", lordo)
-            netto = (lordo * (1 - self.listeProvvigioni[chiave])) - tassa
-            # print("netto: ", netto)
-            self.lineEdit_lordo.setText(str(lordo))
-            self.lineEdit_netto.setText(str(round(netto)))
-            self.lineEdit_tax.setText(str(tassa))
-        except:
-            print("fallimento funz calcolo lordonetto")
+        lordo = importo * giorni + tassa
+        # print("lordo: ", lordo)
+        netto = (lordo * (1 - self.listeProvvigioni[chiave])) - tassa
+        # print("netto: ", netto)
+        self.lineEdit_lordo.setText(str(lordo))
+        self.lineEdit_netto.setText(str(round(netto)))
+        self.lineEdit_tax.setText(str(tassa))
+        # except Exception as e:
+        #     print("fallimento funz calcolo lordonetto")
+        #     print(e)
             # print(fex())
 
     def calcTax(self):
@@ -937,10 +935,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.spinBox_ospiti.setMaximum(maxOspiti)
         self.spinBox_bambini.setMaximum(maxOspiti - self.spinBox_ospiti.value())
         self.tassa = self.config['tasse']
+        self.buildListeIPT()
         self.calcLordoNetto()
         indice = totOspiti - 1 if totOspiti > 0 else 0
         platform = self.combo_platformPrenotazioni.currentText()
-        self.buildListeIPT()
         try:
             self.spinBox_importo.setValue(self.listeImporti['importi'][platform][indice])
             # print('value: ', self.listeImporti['importi'][platform][indice])
@@ -1033,16 +1031,19 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         numeroOspiti = self.config['numero letti']
         self.spinBox_ospiti.setMaximum(numeroOspiti)
         self.spinBox_bambini.setMaximum(numeroOspiti - 1)
+        plats = self.config['platforms']
+        self.combo_platformPrenotazioni.blockSignals(True)
+        self.combo_platformPrenotazioni.clear()
+        for platform in plats.keys():
+            if platform != '' and self.combo_platformPrenotazioni.findText(platform, QtCore.Qt.MatchExactly) == -1:
+                self.combo_platformPrenotazioni.addItem(platform)
+        self.combo_platformPrenotazioni.blockSignals(False)
         self.buildListeIPT()
         self.colors = deepc(self.config['colori settati'])
         # database = self.getDatabase()
         # self.leggiDatabase(database)
         # self.infoModel
-        plats = self.config['platforms']
-        self.combo_platformPrenotazioni.clear()
-        for platform in plats.keys():
-            if platform != '' and self.combo_platformPrenotazioni.findText(platform, QtCore.Qt.MatchExactly) == -1:
-                self.combo_platformPrenotazioni.addItem(platform)
+
         self.lineEdit_tax.setText(str(self.config['tasse']))
 
     def make_datePrenotazioni_template(self, platforms):

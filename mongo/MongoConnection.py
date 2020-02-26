@@ -508,6 +508,7 @@ class MongoConnection(QObject):
             return SpeseMensili.objects.get(data_di_riferimento=self.make_data_ref(data))
         except DoesNotExist:
             return self.create_spesa_mensile(data)
+
     def create_em_spesa_giornaliera(self, data, spese_dict):
         try:
             return SpeseGiornaliere(data=data, spese_dict=spese_dict)
