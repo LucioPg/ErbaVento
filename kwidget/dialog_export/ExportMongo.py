@@ -19,6 +19,7 @@ class DialogExport(Dialog, QtWidgets.QDialog):
         self.setupUi(self)
         self.collections = collections
         self.connection = connection_dict
+        self.fill_list()
 
     def clear_all(self):
         for row in range(self.listWidget.count()):

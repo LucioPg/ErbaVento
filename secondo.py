@@ -46,6 +46,7 @@ class MongoPing(QtCore.QObject):
     CONNECTED_segnale = QtCore.pyqtSignal(bool)
     finished_segnale = QtCore.pyqtSignal(bool)
     finished_ = QtCore.pyqtSignal()
+    list_collections_segnale = QtCore.pyqtSignal(list)
     completed = bool
     def __init__(self, connection_dict: ConnectionDict=ConnectionDict(nome_db='test_db',
                                               host='localhost',
@@ -85,14 +86,8 @@ class MongoPing(QtCore.QObject):
                                       serverSelectionTimeoutMS=1000,
                                       alias='another')
                 self.connection = _connection[self.connection_dict.nome_db]
-                # print(self.connection.authenticate(name=name,
-                #                              password=password))
-                # try:
-                #     print('ping', self.connection.command('ping'))
-                #     self.connected = bool(self.connection.command('ping'))
-                # except Exception as e:
-                #     print('-------------------', e)
-                # self.connection.authenticate(name=name, password=password)
+                self.connection.authenticate(name=name,
+                                             password=password)
                 self.connection.command('ping')
                 self.CONNECTED_segnale.emit(True)
                 self.connected = True
@@ -123,13 +118,20 @@ class MongoPing(QtCore.QObject):
                 self.CONNECTED_segnale.emit(False)
                 time.sleep(self.connection_dict.sleep)
                 print(e)
+
         # raise MultiMongoErrs(e)
         if not self.connected:
             return self.run()
             # if self.retry_counter < self.connection_dict.tentativi:
             #     self.retry_counter += 1
             #     return self.run()
+        try:
+            lista_collezione = self.connection.list_collection_names()
+            self.list_collections_segnale.emit(lista_collezione)
+        except Exception as e:
+            print(e)
         # print('time.sleep()')
+
         time.sleep(self.connection_dict.sleep)
         self.finished_segnale.emit(self.connected)
         self.finished_.emit()
@@ -366,7 +368,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
             self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
             self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
-            self.bot_esporta.clicked.connect(self.exportaDb)
+            self.bot_esporta.clicked.connect(self.prepare_export)
+            # self.bot_esporta.clicked.connect(self.exportaDb)
             self.bot_prenota.clicked.connect(self.vai_prenota_tab)
             self.bot_annulla.clicked.connect(self.vaiCalendario)
             self.bot_spese.clicked.connect(self.addSpese)
@@ -855,9 +858,21 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except:
             print(fex())
 
+    def get_lista_collezioni(self, collezione):
+        print('lista collezione')
+        self.lista_collezioni = collezione
+
+    def prepare_export(self):
+        self.parent.mongo_ping.list_collections_segnale.connect(self.get_lista_collezioni)
+        self.parent.thread_ping.start()
+        self.parent.thread_ping.finished.connect(self.exportaDb)
+
+
+
     def exportaDb(self):
         # dialog = DialogExport(['a','b','c'], self.mongo.connection)
-        dialog = DialogExport(['a','b','c'], self.connection_dict)
+        self.parent.thread_ping.finished.disconnect(self.exportaDb)
+        dialog = DialogExport(self.lista_collezioni, self.connection_dict)
         if dialog.exec_():
             try:
                 dialog.export()
