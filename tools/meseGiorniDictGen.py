@@ -29,34 +29,6 @@ class GiorniDelMese(QObject):
         return listaGiorni
 
     @staticmethod
-    def sendDict_old(dataDaLavorare) -> dict:
-        tot = dataDaLavorare.daysInMonth()
-        giorniLista = [d for d in range(1,tot+1)]
-        def colDict(lista=[]):
-            """deve ritornare un dizionario"""
-            listaCopiata = lista.copy()
-            listaTemp = []
-            diz = {}
-            while len(listaCopiata):
-                try:
-                    listaTroncata = listaCopiata[:7]
-                    for x in listaTroncata:
-                        ind = listaCopiata.index(x)
-                        if x not in listaTemp:
-                            estratto = listaCopiata.pop(ind)
-                            chiave = estratto % 7
-                            if chiave == 0:
-                                chiave = 7
-                            if chiave not in diz.keys():
-                                diz[chiave] = []
-                            listaTemp.append(estratto)
-                            diz[chiave].append(estratto)
-                except:
-                    print(fex())
-            return diz
-        return colDict(giorniLista)
-
-    @staticmethod
     def sendDict(dataDaLavorare) -> dict:
         def getQDate(giorno):
             return QDate(dataDaLavorare.year(), dataDaLavorare.month(), giorno)
