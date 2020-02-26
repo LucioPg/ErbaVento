@@ -237,6 +237,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         if self.initialated:
             self.stackedWidget.setCurrentIndex(1)
             self.getInfoFromCalendar()
+            self.statusbar.showMessage(f'Ready! Connected to: {self.connection_dict.nome_db}')
+            self.statusbar.setToolTip(f'{self.connection_dict.host} : {self.connection_dict.port}')
 
     def go_back_waiting(self, message='Waiting for connection...'):
         self.stackedWidget.setCurrentIndex(0)
@@ -365,18 +367,18 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
             self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
             self.bot_esporta.clicked.connect(self.exportaDb)
-            self.bot_prenota.clicked.connect(self.vaiPrenotaTab)
+            self.bot_prenota.clicked.connect(self.vai_prenota_tab)
             self.bot_annulla.clicked.connect(self.vaiCalendario)
             self.bot_spese.clicked.connect(self.addSpese)
             self.bot_note.clicked.connect(self.addNote)
-            self.lineEdit_nome.returnPressed.connect(self.lineEditVerifica)
-            self.lineEdit_cognome.returnPressed.connect(self.lineEditVerifica)
-            self.lineEdit_telefono.returnPressed.connect(self.lineEditVerifica)
-            self.lineEdit_email.returnPressed.connect(self.lineEditVerifica)
-            self.lineEdit_nome.TABPRESSED.connect(self.lineEditVerifica)
-            self.lineEdit_cognome.TABPRESSED.connect(self.lineEditVerifica)
-            self.lineEdit_telefono.TABPRESSED.connect(self.lineEditVerifica)
-            self.lineEdit_email.TABPRESSED.connect(self.lineEditVerifica)
+            self.lineEdit_nome.returnPressed.connect(self.line_edit_verifica)
+            self.lineEdit_cognome.returnPressed.connect(self.line_edit_verifica)
+            self.lineEdit_telefono.returnPressed.connect(self.line_edit_verifica)
+            self.lineEdit_email.returnPressed.connect(self.line_edit_verifica)
+            self.lineEdit_nome.TABPRESSED.connect(self.line_edit_verifica)
+            self.lineEdit_cognome.TABPRESSED.connect(self.line_edit_verifica)
+            self.lineEdit_telefono.TABPRESSED.connect(self.line_edit_verifica)
+            self.lineEdit_email.TABPRESSED.connect(self.line_edit_verifica)
             self.calendario.table.doubleClicked.connect(self.bot_prenota.click)
             self.giornoprecedente = self.giornoCorrente.addDays(-1)
             self.calendario.updateIconsAndBooked()
@@ -689,11 +691,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             return note
         return False
 
-    def checkInfo_line_edit(self):
+    def check_line_edits(self):
         # print(type(self.listaWGen))
         listaW = [self.lineEdit_nome, self.lineEdit_cognome, self.lineEdit_telefono]
         for w in listaW:
-            if w.text() == '':
+            if w.text() == '' or not w.selector():
                 w.setFocus()
                 w.selectAll()
                 return False
@@ -943,10 +945,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.spinBox_importo.setValue(self.listeImporti['importi'][platform][indice])
             # print('value: ', self.listeImporti['importi'][platform][indice])
         except KeyError:
-            print('self.listeImporti\n \t', self.listeImporti)
-            for v in self.listeImporti.keys():
-                print(len(v))
-            print('err key: ', len(platform))
+            pass
 
     def initStatDb(self):
         data = QtCore.QDate(self.calendario.currentYear, self.calendario.currentMonth, 1)
@@ -974,20 +973,41 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                                                 nome_db=self.config['connessione']['nome_db'])
         return self.config, self.connection_dict
 
+    def lineEdits_generator(self):
+        # lineEdits = ['lineEdit_nome', 'lineEdit_cognome', 'lineEdit_telefono', 'lineEdit_email']
+        lineEdits = ['lineEdit_nome', 'lineEdit_cognome', 'lineEdit_telefono']
+        for lineEdit in lineEdits:
+            yield self.findChild(type(self.lineEdit_cognome), lineEdit)
+
+
     @QtCore.pyqtSlot()
-    def lineEditVerifica(self):
+    def line_edit_verifica(self):
         # print('Hola ',self.bot.text())
         # print('ciao ', self.sender().text())
         # listaInfo = [self.infoModel['nome'], self.infoModel['cognome'], self.infoModel['telefono']]
-        testo = self.sender().text()
+        try:
+            lineEdit = next(self.lineEdit_generator)
+            lineEdit.setFocus()
+            lineEdit.selectAll()
+        except StopIteration:
+            print('StopIteration')
+            if self.bot_salva.isEnabled():
+                self.bot_salva.setFocus()
+
+            elif self.bot_modifica.isEnabled():
+                self.bot_modifica.setFocus()
+            else:
+                print('non ho trovato il pulsate per il focus dopo le lineEdit')
+            self.lineEdit_generator = self.lineEdits_generator()
         # if testo not in listaInfo:
         #     self.toggle_modificaOsalva(modifica=False)
         # else:
         #     self.toggle_modificaOsalva(modifica=True)
-        if not self.sender().selector(testo):
-            self.sender().clear()
-        else:
-            self.sender().nextInFocusChain().setFocus()
+        # if not self.sender().selector():
+        #     self.sender().clear()
+        # else:
+        #     print('self.sender().nextInFocusChain().objectName() ', self.sender().nextInFocusChain().objectName())
+        #     self.sender().nextInFocusChain().setFocus()
 
     # @ensure_conn
     def loadConfig(self, *args):
@@ -1221,7 +1241,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def salvaInfo(self, flag=None):
         print('salva flag', flag)
         if not  flag:
-            flag = self.checkInfo_line_edit()
+            flag = self.check_line_edits()
         if flag:
             nome, cognome, telefono, email, giorni, platform, \
             stagione, totale_ospiti, totale_bambini, colazione, note, \
@@ -1364,6 +1384,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         flagMod = modifica
         flagSalva = not modifica
         self.bot_salva.setEnabled(flagSalva)
+        self.bot_salva.setDefault(flagSalva)
+        self.bot_modifica.setDefault(flagMod)
         self.bot_modifica.setEnabled(flagMod)
 
     def totOspitiAdj(self, p):
@@ -1372,9 +1394,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def vaiCalendario(self):
         self.tabWidget.setCurrentIndex(0)
 
-    def vaiPrenotaTab(self):
+    def vai_prenota_tab(self):
         self.importAdj()
+        self.lineEdit_generator = self.lineEdits_generator()
+        lineEdit_nome = next(self.lineEdit_generator)
         self.tabWidget.setCurrentIndex(1)
+        lineEdit_nome.setFocus()
+        lineEdit_nome.selectAll()
 
     def warnMsg(self, default=0):
         """ Finestra di avviso, nome + 'ciò che è scritto sul bottone' + già esistente"""

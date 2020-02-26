@@ -35,7 +35,7 @@ class MyLineEdit(QLineEdit):
     @QtCore.pyqtSlot()
     def do_something(self):
         print("do_something")
-        flag = self.selector(self.text())
+        flag = self.selector()
         if not flag:
             self.clear()
         self.TABPRESSED.emit(flag)
@@ -54,13 +54,14 @@ class MyLineEdit(QLineEdit):
         if self.sender() is None:
             self.clear()
 
-    def selector(self, text):
+    def selector(self):
         """
         sceglie quale funzione sarà usata dal segnale
         returPressed in base al testo passato nell'istanza
         :return:
         """
         # print("mylineedit selector : ", text)
+        text = self.text()
         if text == '':
             return False
         if self.objectName() == 'lineEdit_nome' or self.objectName() == 'lineEdit_cognome':
@@ -69,23 +70,18 @@ class MyLineEdit(QLineEdit):
             else:
                 return False
         elif self.objectName() == 'lineEdit_telefono':
-            if self.filtraTelefono(text):
-                return True
-            else:
-                return False
+            return self.filtraTelefono(text)
+
         elif self.objectName() == 'lineEdit_email':
-            if self.filtraEmail(text):
-                return True
-            else:
-                return False
+            return self.filtraEmail(text)
         else:
             self.setText('')
-        self.setText(text)
+            return False
         # print(f"type func {self._text}: ",type(func))
 
     def filtraLettere(self, text):
         lista = list(text)
-        print(text)
+        print('filtraLettere', text)
         for ch in lista:
             if ('a' <= ch <= 'z') or ('A' <= ch <= 'Z') or ch == ' ' or ch == "'":
                 pass
@@ -102,7 +98,7 @@ class MyLineEdit(QLineEdit):
                     pass
                 else:
                     return False
-            print("t'appost")
+            print("tel'appost")
             return True
 
         else:
@@ -120,7 +116,6 @@ class MyLineEdit(QLineEdit):
                         return False
                     else:
                         prec = n
-                        print("carattere precedente: ", prec)
 
                 else:
                     return False
