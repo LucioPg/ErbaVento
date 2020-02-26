@@ -1146,6 +1146,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         checkIn = info["data arrivo"]
         numeroNotti = info['totale notti']
         note = info['note']
+        stagione = info['stagione']
+        self.set_label_stagione(stagione)
         if type(checkIn) is QtCore.QDate:
             checkIn = info["data arrivo"].toString("ddd dd/MM/yyyy")
         checkOut = info["data partenza"]
@@ -1174,6 +1176,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.check_note(note)
         self.check_spese(self.calendario.currentDate)
         self.set_prenotazione_corrente(info['prenotazione'])
+        self.set_label_stagione
         # self.modificaESalva()
         self.riempi_campi_prenotazioni(info=info)
 
@@ -1302,18 +1305,19 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.infoTemp = deepc(info)
         return self.infoTemp
 
-    def set_label_connessione(self, status: bool):
+    def set_label_stagione(self, stagione):
         rosso = """font: 75 18pt "MS Sans Serif";
-                    color: rgb(170, 0, 0);"""
+                            color: rgb(170, 0, 0);"""
         verde = """font: 75 18pt "MS Sans Serif";
-                    color: rgb(0, 222, 0);"""
-        if status:
-            self.label_connessione.setText('Connesso')
-            self.label_connessione.setStyleSheet(verde)
-        else:
-            self.label_connessione.setText('Disconnesso')
-            self.label_connessione.setStyleSheet(rosso)
-        self.toggle_all(status)
+                            color: rgb(0, 222, 0);"""
+        arancione = """font: 75 18pt "MS Sans Serif";
+                            color: rgb(236, 157, 0);"""
+        stagione_color = {'Alta': verde,
+                          'Bassa': rosso,
+                          'Media': arancione}
+        self.label_stagione.setText(stagione)
+        if stagione:
+            self.label_stagione.setStyleSheet(stagione_color[stagione])
 
     def setMenuMain(self):
         optionMenuAction = QtWidgets.QAction(QtGui.QIcon(self.settingsIcon), 'opzioni', self)

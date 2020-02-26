@@ -587,7 +587,7 @@
                        </font>
                       </property>
                       <property name="text">
-                       <string>Status:</string>
+                       <string>Stagione:</string>
                       </property>
                       <property name="alignment">
                        <set>Qt::AlignCenter</set>
@@ -595,7 +595,7 @@
                      </widget>
                     </item>
                     <item>
-                     <widget class="QLabel" name="label_connessione">
+                     <widget class="QLabel" name="label_stagione">
                       <property name="sizePolicy">
                        <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                         <horstretch>0</horstretch>
