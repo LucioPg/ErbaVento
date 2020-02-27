@@ -4,9 +4,9 @@ from pprint import pprint
 tops = ['a', 'b', 'c', 'd']
 dic = {ind: [str(ord(ind)), str(ord(ind)+5)] for ind in tops}
 
-class MyListWidget(QtWidgets.QTreeWidget):
+class MyTreeWidget(QtWidgets.QTreeWidget):
     def __init__(self, *args, **kwargs):
-        super(MyListWidget, self).__init__(*args, **kwargs)
+        super(MyTreeWidget, self).__init__(*args, **kwargs)
         self.setMinimumSize(400,400)
         self.setDefaultDropAction(QtCore.Qt.IgnoreAction)
         self.setAlternatingRowColors(False)
@@ -84,7 +84,7 @@ if __name__ == '__main__':
     ui = QtWidgets.QMainWindow()
     ui.setMinimumSize(400,400)
     grid = QtWidgets.QGridLayout(ui)
-    my = MyListWidget(ui)
+    my = MyTreeWidget(ui)
     for top in dic:
         item = QtWidgets.QTreeWidgetItem()
         item.setText(0, top)

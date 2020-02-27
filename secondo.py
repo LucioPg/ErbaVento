@@ -46,7 +46,7 @@ class MongoPing(QtCore.QObject):
     CONNECTED_segnale = QtCore.pyqtSignal(bool)
     finished_segnale = QtCore.pyqtSignal(bool)
     finished_ = QtCore.pyqtSignal()
-    list_collections_segnale = QtCore.pyqtSignal(list)
+    collections_dict_segnale = QtCore.pyqtSignal(dict)
     completed = bool
     def __init__(self, connection_dict: ConnectionDict=ConnectionDict(nome_db='test_db',
                                               host='localhost',
@@ -125,18 +125,23 @@ class MongoPing(QtCore.QObject):
             # if self.retry_counter < self.connection_dict.tentativi:
             #     self.retry_counter += 1
             #     return self.run()
-        try:
-            lista_collezione = self.connection.list_collection_names()
-            self.list_collections_segnale.emit(lista_collezione)
-        except Exception as e:
-            print(e)
+
         # print('time.sleep()')
 
         time.sleep(self.connection_dict.sleep)
         self.finished_segnale.emit(self.connected)
-        self.finished_.emit()
-        self.completed = True
 
+        self.completed = True
+        if self.connected:
+            try:
+                dict_collezioni = {collezione: self.connection[collezione].find_one().keys()
+                                   for collezione in self.connection.list_collection_names()
+                                   if self.connection[collezione].find_one()}
+                pprint(dict_collezioni)
+                self.collections_dict_segnale.emit(dict_collezioni)
+            except Exception as e:
+                print(e)
+        self.finished_.emit()
         print('end')
         return True
 
@@ -177,7 +182,7 @@ class Main(QtCore.QObject):
         self.mongo_ping.CONNECTED_segnale.connect(self.ui.turn_on)
         # self.thread_ping.start()
         self.thread_ui.started.connect(lambda: self.mongo_ping.disconnect())
-        self.thread_ping.finished.connect(lambda: print('kkkkk', self.mongo_ping.receivers(self.mongo_ping.finished_)))
+        # self.thread_ping.finished.connect(lambda: print('kkkkk', self.mongo_ping.receivers(self.mongo_ping.finished_)))
         self.thread_ping.finished.connect(self.ui.go_ahead)
 
     def set_all_connected(self, status):
@@ -858,12 +863,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         except:
             print(fex())
 
-    def get_lista_collezioni(self, collezione):
-        print('lista collezione')
-        self.lista_collezioni = collezione
+    def get_dict_collezioni(self, dict_collezioni):
+        print('dict collezione')
+        self.dict_collezioni = dict_collezioni
 
     def prepare_export(self):
-        self.parent.mongo_ping.list_collections_segnale.connect(self.get_lista_collezioni)
+        self.parent.mongo_ping.collections_dict_segnale.connect(self.get_dict_collezioni)
         self.parent.thread_ping.start()
         self.parent.thread_ping.finished.connect(self.exportaDb)
 
@@ -872,7 +877,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def exportaDb(self):
         # dialog = DialogExport(['a','b','c'], self.mongo.connection)
         self.parent.thread_ping.finished.disconnect(self.exportaDb)
-        dialog = DialogExport(self.lista_collezioni, self.connection_dict)
+        dialog = DialogExport(self.dict_collezioni, self.connection_dict)
         if dialog.exec_():
             try:
                 dialog.export()

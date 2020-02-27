@@ -1,6 +1,8 @@
 from mongo.My_Documents.doc_erbavento import *
 from mongoengine import *
+from pymongo import MongoClient
 from PyQt5.QtCore import QDate
+from pprint import pprint
 
 class Gusti(EmbeddedDocument):
     cibo = StringField()
@@ -29,12 +31,16 @@ def show(doc):
 
 
 if __name__ == '__main__':
-    _connection = connect('test_db',
-            host='localhost',
-            port=27017
-            )
-    _connection['test_db'].authenticate(name='admin',
-            password='admin')
+    # _connection = connect('test_db',
+    #         host='localhost',
+    #         port=27017
+    #         )
+    # c = _connection['test_db'].authenticate(name='admin',
+    #         password='admin')
+
+    # clt = MongoClient("mongodb://admin:admin@localhost:27017/")
+    # db = clt['test_db']
+    # doc = db['prenotazione']
 
     gusti = Gusti(cibo='pizza', data=datetime.today(), numero=12)
 
@@ -42,11 +48,20 @@ if __name__ == '__main__':
     uno = Uno(nome='Lucio', eta=37, gusti=gusti)
     due = Due(nome='Antonella', eta=38, gusti=gusti)
 
+    clt = MongoClient(host='localhost', port=27017)
+    clt['test_db'].authenticate(name='admin',password='admin')
+    db = clt['test_db']['prenotazione']
+    # db = clt['test_db']['prenotazione'].find_one()
+    for x in db.find():
+        print(x)
+    # doc = db['c']
     # uno.gusti['cibo'] = 'pasta'
     try:
         uno.save()
         due.save()
     except NotUniqueError:
+        pass
+    except :
         pass
     # show(uno)
     # show(due)
@@ -59,10 +74,27 @@ if __name__ == '__main__':
                 due.delete()
 
     # del_docs()
+    # _connection
+    # # tre = Uno.objects(nome='Lucio')
+    # print(tre)
+    # show(tre[0])
+    # quattro = Uno.objects.get(nome='Lucio')
+    # show(quattro)
+    # del_docs()
+    # coll_names = _connection['test_db'].list_collection_names(nameOnly=False)
 
-    tre = Uno.objects(nome='Lucio')
-    print(tre)
-    show(tre[0])
-    quattro = Uno.objects.get(nome='Lucio')
-    show(quattro)
-    del_docs()
+    # print(coll_names)
+    # pprint(doc)
+    # pprint(db)
+
+    # docs = []
+    # docs =_connection['test_db'].collections
+
+
+    # _connection.get_document('prenotazione')
+    # for coll in coll_names:
+    #     docs.append(common.get_document(coll))
+    # print(_connection['test_db']['prenotazione'].objects())
+    # print(_connection['test_db']['prenotazione'])
+    # pprint(docs)
+    # print(_connection['test_db']['prenotazione'].list_collection_names())
