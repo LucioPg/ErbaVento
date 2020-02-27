@@ -877,7 +877,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def exportaDb(self):
         # dialog = DialogExport(['a','b','c'], self.mongo.connection)
         self.parent.thread_ping.finished.disconnect(self.exportaDb)
-        dialog = DialogExport(self.dict_collezioni, self.connection_dict)
+        dialog = DialogExport(parent=self,collezioni_dict=self.dict_collezioni, connection_dict=self.connection_dict)
         if dialog.exec_():
             try:
                 dialog.export()

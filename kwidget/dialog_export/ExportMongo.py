@@ -18,6 +18,7 @@ class DialogExport(Dialog, QtWidgets.QDialog):
     def __init__(self, collezioni_dict: dict, connection_dict, parent=None):
         super(DialogExport, self).__init__(parent)
         self.setupUi(self)
+        self.setWindowModality(QtCore.Qt.WindowModal)
         self.current_date = QtCore.QDate().currentDate()
         self.current_month = self.current_date.month()
         self.current_year = self.current_date.year()
