@@ -35,7 +35,7 @@ class Ui_My_dateedit_3(object):
         self.dateEdit.setMaximumSize(QtCore.QSize(65, 34))
         self.dateEdit.setFrame(True)
         self.dateEdit.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
-        self.dateEdit.setReadOnly(True)
+        self.dateEdit.setReadOnly(False)
         self.dateEdit.setButtonSymbols(QtWidgets.QAbstractSpinBox.NoButtons)
         self.dateEdit.setObjectName("dateEdit")
         self.widget = QtWidgets.QWidget(self.splitter)
@@ -67,6 +67,8 @@ class Ui_My_dateedit_3(object):
         self.bot_decrease.setObjectName("bot_decrease")
         self.verticalLayout.addWidget(self.bot_decrease)
         self.gridLayout.addWidget(self.splitter, 0, 0, 1, 1)
+
+
 
         self.retranslateUi(my_dateedit_3)
         QtCore.QMetaObject.connectSlotsByName(my_dateedit_3)

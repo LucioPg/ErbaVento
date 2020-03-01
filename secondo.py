@@ -573,8 +573,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             print(fex())
 
     def botFuncCheckAval(self):
-        dal = self.dateEdit_dal.date()
-        al = self.dateEdit_al.date()
+        dal = self.dateEdit_dal.date
+        al = self.dateEdit_al.date
         # print(self.checkAval(dal, al))
 
     def buildListeIPT(self):
@@ -765,11 +765,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         email = self.lineEdit_email.text()
         platform = self.combo_platformPrenotazioni.currentText()
         giorni = []
-        giorno = self.dateEdit_dal.date()
-        while giorno < self.dateEdit_al.date():
+        giorno = self.dateEdit_dal.date
+        while giorno < self.dateEdit_al.date:
             giorni.append(giorno)
             giorno = giorno.addDays(1)
-        totale_notti = str(self.dateEdit_dal.date().daysTo(self.dateEdit_al.date()))
+        totale_notti = str(self.dateEdit_dal.date.daysTo(self.dateEdit_al.date))
         totale_ospiti = self.spinBox_ospiti.value()
         totale_bambini = self.spinBox_bambini.value()
 
@@ -788,7 +788,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         #         note_doc = self.mongo.create_notes(self.dateEdit_dal.date(), note)
         # else:
         #         note_doc = None
-        note_doc = self.mongo.get_note(self.dateEdit_dal.date())
+        note_doc = self.mongo.get_note(self.dateEdit_dal.date)
         filtro = 'Note Prenotazione:\n'
         nuove_note = self.plainTextEdit_note.toPlainText()
         if nuove_note:
@@ -805,7 +805,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 note_doc.save()
             else:
 
-                note_doc = self.mongo.create_notes(self.dateEdit_dal.date(), note)
+                note_doc = self.mongo.create_notes(self.dateEdit_dal.date, note)
         return nome, cognome, telefono, email, giorni, platform,\
                 stagione, totale_ospiti, totale_bambini, colazione, note_doc,\
                 importo, lordo, netto, tasse
@@ -842,8 +842,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         :return:
         """
 
-        al = self.dateEdit_al.date()
-        md = self.dateEdit_al.minimumDate()
+        al = self.dateEdit_al.date
+        md = self.dateEdit_al.minimumDate
 
         if al <= d:
             al = d.addDays(1)
@@ -1117,8 +1117,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             #            importo=importo, lordo=lordo, netto=netto, tasse=tasse, note=note_doc)
 
     def periodoCambiato(self, p):
-        d = self.dateEdit_dal.date()
-        a = self.dateEdit_al.date()
+        d = self.dateEdit_dal.date
+        a = self.dateEdit_al.date
         giorni = d.daysTo(a)
         self.lineEdit_numeroGiorni.setText(str(giorni))
         self.calcLordoNetto()
