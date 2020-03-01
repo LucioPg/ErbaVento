@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 from mongoengine import *
 from mongo.MongoConnection import MongoConnection
 from kwidget.dialog_export.export_gui import Ui_Dialog_exp_fields as Dialog
-from kwidget.mydateedit.my_dateedit_3 import My_dateedit_3
+from kwidget.mydateedit.mydate_edit_3_main import My_dateedit_3
 from typing import *
 from pymongo import MongoClient
 import time
