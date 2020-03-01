@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 from mongoengine import *
 from mongo.MongoConnection import MongoConnection
 from kwidget.dialog_export.export_gui import Ui_Dialog_exp_fields as Dialog
+from kwidget.mydateedit.my_dateedit_3 import My_dateedit_3
 from typing import *
 from pymongo import MongoClient
 import time
@@ -18,11 +19,14 @@ class DialogExport(Dialog, QtWidgets.QDialog):
     def __init__(self, collezioni_dict: dict, connection_dict, parent=None):
         super(DialogExport, self).__init__(parent)
         self.setupUi(self)
+        self.prepare_date_edits()
         self.setWindowModality(QtCore.Qt.WindowModal)
         self.current_date = QtCore.QDate().currentDate()
         self.current_month = self.current_date.month()
         self.current_year = self.current_date.year()
         self.dateEdit_exp_dal.setDate(self.current_date.addMonths(-1))
+        # self.dateEdit_exp_dal.dateEdit.setDate(self.current_date.addMonths(-1))
+        # self.dateEdit_exp_al.dateEdit.setDate(self.current_date)
         self.dateEdit_exp_al.setDate(self.current_date)
         self.collezioni_dict = collezioni_dict
         self.selected = []
@@ -34,6 +38,23 @@ class DialogExport(Dialog, QtWidgets.QDialog):
         self.bot_canc_export.clicked.connect(self.reject)
         self.status_toggle_all = True
         # self.test()
+
+    def prepare_date_edits(self):
+        self.dateEdit_exp_dal = My_dateedit_3(self.dateEdit_exp_dal_wid)
+        self.dateEdit_exp_al = My_dateedit_3(self.dateEdit_exp_al_wid)
+        lay_dal = QtWidgets.QGridLayout()
+        lay_dal.addWidget(self.dateEdit_exp_dal)
+        self.dateEdit_exp_dal_wid.setLayout(lay_dal)
+        lay_al = QtWidgets.QGridLayout()
+        lay_al.addWidget(self.dateEdit_exp_al)
+        self.dateEdit_exp_al_wid.setLayout(lay_al)
+        self.dateEdit_exp_dal.dateEdit.dateChanged.connect(self.adjust_dates)
+        # self.dateEdit_exp_al.dateEdit.setMinimumDate(self.dateEdit_exp_dal.date.addMonths(1))
+
+    def adjust_dates(self):
+        self.dateEdit_exp_al.dateEdit.setMinimumDate(self.dateEdit_exp_dal.date.addMonths(1))
+        if self.dateEdit_exp_dal.date == self.dateEdit_exp_al.date:
+            self.dateEdit_exp_al.setDate(self.dateEdit_exp_dal.date.addMonths(1))
 
     def test(self):
         tops = ['a', 'b', 'c', 'd']

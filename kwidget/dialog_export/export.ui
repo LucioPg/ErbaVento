@@ -160,11 +160,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QDateEdit" name="dateEdit_exp_dal">
-                 <property name="displayFormat">
-                  <string>MM/yyyy</string>
-                 </property>
-                </widget>
+                <widget class="QWidget" name="dateEdit_exp_dal_wid" native="true"/>
                </item>
               </layout>
              </item>
@@ -178,11 +174,7 @@
                 </widget>
                </item>
                <item>
-                <widget class="QDateEdit" name="dateEdit_exp_al">
-                 <property name="displayFormat">
-                  <string>MM/yyyy</string>
-                 </property>
-                </widget>
+                <widget class="QWidget" name="dateEdit_exp_al_wid" native="true"/>
                </item>
               </layout>
              </item>
