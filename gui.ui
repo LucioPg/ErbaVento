@@ -1795,31 +1795,10 @@ color: rgb(170, 0, 0);</string>
                     <property name="text">
                      <string>dal:</string>
                     </property>
-                    <property name="buddy">
-                     <cstring>dateEdit_dal</cstring>
-                    </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="MyDateEdit" name="dateEdit_dal">
-                    <property name="dateTime">
-                     <datetime>
-                      <hour>0</hour>
-                      <minute>0</minute>
-                      <second>0</second>
-                      <year>2019</year>
-                      <month>7</month>
-                      <day>14</day>
-                     </datetime>
-                    </property>
-                    <property name="minimumDate">
-                     <date>
-                      <year>2019</year>
-                      <month>7</month>
-                      <day>14</day>
-                     </date>
-                    </property>
-                   </widget>
+                   <widget class="QWidget" name="date_edit_dal_wid" native="true"/>
                   </item>
                   <item>
                    <spacer name="horizontalSpacer">
@@ -1842,34 +1821,10 @@ color: rgb(170, 0, 0);</string>
                     <property name="text">
                      <string>al:</string>
                     </property>
-                    <property name="buddy">
-                     <cstring>dateEdit_al</cstring>
-                    </property>
                    </widget>
                   </item>
                   <item>
-                   <widget class="MyDateEdit" name="dateEdit_al">
-                    <property name="dateTime">
-                     <datetime>
-                      <hour>0</hour>
-                      <minute>0</minute>
-                      <second>0</second>
-                      <year>2019</year>
-                      <month>7</month>
-                      <day>14</day>
-                     </datetime>
-                    </property>
-                    <property name="minimumDateTime">
-                     <datetime>
-                      <hour>0</hour>
-                      <minute>0</minute>
-                      <second>0</second>
-                      <year>2019</year>
-                      <month>7</month>
-                      <day>14</day>
-                     </datetime>
-                    </property>
-                   </widget>
+                   <widget class="QWidget" name="date_edit_al_wid" native="true"/>
                   </item>
                   <item>
                    <spacer name="horizontalSpacer_4">
@@ -1955,11 +1910,6 @@ color: rgb(170, 0, 0);</string>
    <class>MyLineEdit</class>
    <extends>QLineEdit</extends>
    <header>kwidget.mylineEdit.mylineEdit</header>
-  </customwidget>
-  <customwidget>
-   <class>MyDateEdit</class>
-   <extends>QDateEdit</extends>
-   <header location="global">kwidget.mydateedit.mydateedit</header>
   </customwidget>
   <customwidget>
    <class>ColorButton</class>

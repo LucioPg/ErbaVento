@@ -11,6 +11,7 @@ from kwidget.dialog_info.dialog_info_main import DialogInfo
 from kwidget.dialog_info.dialog_info_main import DialogInfoSpese as DialogSpese
 from kwidget.dialog_opt.dialog_opt import DialogOption
 from kwidget.dialog_export.ExportMongo import  DialogExport
+from kwidget.mydateedit.mydate_edit_3_main import My_dateedit_3
 # from kwidget.dialog_export.ExportMongo import *
 from tools.ExpCsv import ExpCsv as excsv
 from traceback import format_exc as fex
@@ -202,12 +203,37 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         super(EvInterface, self).__init__(parent)
         self.initialated = False
         self.setupUi(self)
+        self.prepare_date_edits()
 
 
 
         self.go_back_waiting()
         self.show()
 
+    def prepare_date_edits(self):
+        self.dateEdit_dal = My_dateedit_3(self.date_edit_dal_wid, daily=True)
+        self.dateEdit_al = My_dateedit_3(self.date_edit_al_wid, daily=True)
+        self.dateEdit_dal.dateEdit.setDisplayFormat('dd/MM/yyyy')
+        self.dateEdit_al.dateEdit.setDisplayFormat('dd/MM/yyyy')
+        lay_dal = QtWidgets.QGridLayout()
+        lay_dal.addWidget(self.dateEdit_dal)
+        self.date_edit_dal_wid.setLayout(lay_dal)
+        lay_al = QtWidgets.QGridLayout()
+        lay_al.addWidget(self.dateEdit_al)
+        self.date_edit_al_wid.setLayout(lay_al)
+        current_date = QtCore.QDate().currentDate()
+        self.dateEdit_dal.setDate(current_date)
+        tomorrow = current_date.addDays(1)
+        self.dateEdit_al.setDate(tomorrow)
+        self.dateEdit_dal.dateEdit.dateChanged.connect(self.adjust_dates)
+
+    def adjust_dates(self):
+        self.dateEdit_al.dateEdit.setMinimumDate(self.dateEdit_dal.date.addDays(1))
+        if self.dateEdit_dal.date == self.dateEdit_al.date:
+            self.dateEdit_al.setDate(self.dateEdit_dal.date.addDays(1))
+        giorni = self.dateEdit_dal.date.daysTo(self.dateEdit_al.date)
+        self.lineEdit_numeroGiorni.setText(str(giorni))
+        self.calcLordoNetto()
 
     def setParent(self, parent):
         self.parent = parent
@@ -354,9 +380,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
             # self.calendario.currentPageChanged.connect(self.riportapagina)
 
-            self.setDateEdit_dal()
+            # self.setDateEdit_dal()
             self.spinBox_importo.setMaximum(9999)
-            self.dateEdit_dal.dateChanged.connect(self.correggiPartenza)
+            # self.dateEdit_dal.dateChanged.connect(self.correggiPartenza)
             self.bot_salva.clicked.connect(self.salvaInfo)
             self.bot_checkDisp.clicked.connect(self.botFuncCheckAval)
             self.bot_cancella.clicked.connect(self.cancellaprenot)
@@ -371,8 +397,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.radio_privato.toggled.connect(self.importAdj)
             # self.radioCorrente = self.radio_booking
 
-            self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
-            self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
+            # self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
+            # self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
             self.bot_esporta.clicked.connect(self.prepare_export)
             # self.bot_esporta.clicked.connect(self.exportaDb)
             self.bot_prenota.clicked.connect(self.vai_prenota_tab)
@@ -579,7 +605,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         importo = self.spinBox_importo.value()
         chiave = self.combo_platformPrenotazioni.currentText()
         ospiti = self.spinBox_ospiti.value() + self.spinBox_bambini.value()
-        giorni = self.dateEdit_dal.date().daysTo(self.dateEdit_al.date())
+        giorni = self.dateEdit_dal.date.daysTo(self.dateEdit_al.date)
         tassa = 0
         if self.listeTasse[chiave]:
             tassa = 0
@@ -610,15 +636,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         :return:
         """
         try:
-            dal = self.dateEdit_dal.date()
+            dal = self.dateEdit_dal.date
             mese_dal = dal.month()
-            al = self.dateEdit_al.date()
+            al = self.dateEdit_al.date
             mese_al = al.month()
             permanenza = dal.daysTo(al)
             ospiti = self.spinBox_ospiti.value()
             topay = 3
             fee = self.tassa
-            oggi = self.dateEdit_dal.date()
+            oggi = self.dateEdit_dal.date
             listaDate = []
             flag = oggi != al
             while flag:
@@ -924,7 +950,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.bot_cancella.setEnabled(False)
         else:
             self.bot_cancella.setEnabled(True)
-        self.setDateEdit_dal()
+        # self.setDateEdit_dal()
         return info
     def set_prenotazione_corrente(self, corrente):
         self.prenotazione_corrente = corrente
@@ -1151,13 +1177,13 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             dataArrivo = info['data arrivo']
             dataPartenza = info['data partenza']
             if (dataArrivo or dataPartenza) is not None:
-                self.dateEdit_dal.blockSignals(True)
-                self.dateEdit_al.blockSignals(True)
-                self.dateEdit_dal.setDate(dataArrivo)
-                self.dateEdit_al.setMinimumDate(dataArrivo.addDays(1))
-                self.dateEdit_al.setDate(dataPartenza)
-                self.dateEdit_dal.blockSignals(False)
-                self.dateEdit_al.blockSignals(False)
+                self.dateEdit_dal.dateEdit.blockSignals(True)
+                self.dateEdit_al.dateEdit.blockSignals(True)
+                self.dateEdit_dal.dateEdit.setDate(dataArrivo)
+                self.dateEdit_al.dateEdit.setMinimumDate(dataArrivo.addDays(1))
+                self.dateEdit_al.dateEdit.setDate(dataPartenza)
+                self.dateEdit_dal.dateEdit.blockSignals(False)
+                self.dateEdit_al.dateEdit.blockSignals(False)
                 self.lineEdit_numeroGiorni.setText(str(info['totale notti']))
             else:
                 self.setDateEdit_dal()
@@ -1326,10 +1352,10 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         anno = data.year()
         if anno < 2018 or anno > 2028:
             return
-        self.dateEdit_dal.setMinimumDate(QtCore.QDate(2018, 1, 1))
+        # self.dateEdit_dal.setMinimumDate(QtCore.QDate(2018, 1, 1))
         self.dateEdit_dal.setDate(data)
         self.dateEdit_al.setDate(domani)
-        self.dateEdit_al.setMinimumDate(domani)
+        # self.dateEdit_al.setMinimumDate(domani)
 
     @ensure_conn
     def setInfoFromDate(self, info):

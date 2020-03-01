@@ -718,21 +718,17 @@ class Ui_MainWindow(object):
         self.label_5 = QtWidgets.QLabel(self.tab2)
         self.label_5.setObjectName("label_5")
         self.horizontalLayout_18.addWidget(self.label_5)
-        self.dateEdit_dal = MyDateEdit(self.tab2)
-        self.dateEdit_dal.setDateTime(QtCore.QDateTime(QtCore.QDate(2019, 7, 14), QtCore.QTime(0, 0, 0)))
-        self.dateEdit_dal.setMinimumDate(QtCore.QDate(2019, 7, 14))
-        self.dateEdit_dal.setObjectName("dateEdit_dal")
-        self.horizontalLayout_18.addWidget(self.dateEdit_dal)
+        self.date_edit_dal_wid = QtWidgets.QWidget(self.tab2)
+        self.date_edit_dal_wid.setObjectName("date_edit_dal_wid")
+        self.horizontalLayout_18.addWidget(self.date_edit_dal_wid)
         spacerItem28 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_18.addItem(spacerItem28)
         self.label_6 = QtWidgets.QLabel(self.tab2)
         self.label_6.setObjectName("label_6")
         self.horizontalLayout_18.addWidget(self.label_6)
-        self.dateEdit_al = MyDateEdit(self.tab2)
-        self.dateEdit_al.setDateTime(QtCore.QDateTime(QtCore.QDate(2019, 7, 14), QtCore.QTime(0, 0, 0)))
-        self.dateEdit_al.setMinimumDateTime(QtCore.QDateTime(QtCore.QDate(2019, 7, 14), QtCore.QTime(0, 0, 0)))
-        self.dateEdit_al.setObjectName("dateEdit_al")
-        self.horizontalLayout_18.addWidget(self.dateEdit_al)
+        self.date_edit_al_wid = QtWidgets.QWidget(self.tab2)
+        self.date_edit_al_wid.setObjectName("date_edit_al_wid")
+        self.horizontalLayout_18.addWidget(self.date_edit_al_wid)
         spacerItem29 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
         self.horizontalLayout_18.addItem(spacerItem29)
         self.verticalLayout_7.addLayout(self.horizontalLayout_18)
@@ -779,8 +775,6 @@ class Ui_MainWindow(object):
         self.label_3.setBuddy(self.lineEdit_cognome)
         self.label_4.setBuddy(self.lineEdit_telefono)
         self.label_email.setBuddy(self.lineEdit_email)
-        self.label_5.setBuddy(self.dateEdit_dal)
-        self.label_6.setBuddy(self.dateEdit_al)
 
         self.retranslateUi(MainWindow)
         self.stackedWidget.setCurrentIndex(1)
@@ -866,7 +860,6 @@ class Ui_MainWindow(object):
         self.menuMenu.setTitle(_translate("MainWindow", "Menu"))
 
 
-from kwidget.mydateedit.mydateedit import MyDateEdit
 from kwidget.mylineEdit.mylineEdit import MyLineEdit
 from kwidget.myprogressbutton.myprogressbutton_main import ColorButton
 from kwidget.waiting_spinner.waitingspinnerwidget import MySp
