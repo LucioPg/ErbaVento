@@ -109,7 +109,6 @@ class ProgressButton(QProgressBar):
         # self.MPB_signal.emit(self.info)
         # todo da rimuovere il print
         if self.act_status:
-            print("CIAOOO da ", self.text())
             self.MPB_signal.emit(self._text)
 
 

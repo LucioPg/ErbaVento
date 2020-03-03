@@ -41,11 +41,6 @@ class MyTableWidget(QTableWidget):
         else:
             super(MyTableWidget, self).keyPressEvent(event)
 
-    def stampa(self, row):
-        if type(row) is tuple:
-            print('MyTableWidget stampa row:', type(row[0]))
-        else:
-            print('MyTableWidget stampa row:', row)
 
 
 if __name__ == "__main__":

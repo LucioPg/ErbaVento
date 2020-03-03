@@ -138,7 +138,6 @@ class DialogInfoSpese(GuiTable, QDialog):
                 self.tableWidget.setCurrentCell(row, 0)
                 # self.bot_removeLine.blockSignals(True)
                 self.tableWidget.editItem(self.tableWidget.item(row, 0))
-            print('row Count: ', self.tableWidget.rowCount())
 
 
         except:
@@ -149,7 +148,7 @@ class DialogInfoSpese(GuiTable, QDialog):
 
     def cancellaSpesa(self):
         row = self.tableWidget.currentRow()
-        print('cancella ', row)
+        print('spesa cancellata ', row)
         row_count = self.tableWidget.rowCount()
         if row_count:
             self.tableWidget.removeRow(row)
@@ -158,16 +157,13 @@ class DialogInfoSpese(GuiTable, QDialog):
             self.addNewLine()
 
     def gotoLine(self, row):
-        print('go to line in row: ', row)
         try:
             line = self.tableWidget.cellWidget(row, 1)
             line.setFocus()
             line.selectAll()
-            # if self.bot_removeLine.signalsBlocked():
-            #     self.bot_removeLine.blockSignals(False)
         except:
             print(fex())
-        pass
+
 
     def ottieniSpese(self):
         rows = self.tableWidget.rowCount()

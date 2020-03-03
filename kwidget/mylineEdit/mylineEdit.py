@@ -27,14 +27,13 @@ class MyLineEdit(QLineEdit):
         self.nomeCognome = None
         # self.lineEdit = QLineEdit(self._text,self)
         self.setObjectName(self._nome)
-        print(self.objectName())
         self.func = None
         shortcut = QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Tab), self,
                              context=QtCore.Qt.WidgetWithChildrenShortcut, activated=self.do_something)
 
     @QtCore.pyqtSlot()
     def do_something(self):
-        print("do_something")
+        # print("do_something")
         flag = self.selector()
         if not flag:
             self.clear()
@@ -81,7 +80,7 @@ class MyLineEdit(QLineEdit):
 
     def filtraLettere(self, text):
         lista = list(text)
-        print('filtraLettere', text)
+        # print('filtraLettere', text)
         for ch in lista:
             if ('a' <= ch <= 'z') or ('A' <= ch <= 'Z') or ch == ' ' or ch == "'":
                 pass
@@ -98,7 +97,6 @@ class MyLineEdit(QLineEdit):
                     pass
                 else:
                     return False
-            print("tel'appost")
             return True
 
         else:
@@ -141,7 +139,3 @@ class MyLineEdit(QLineEdit):
             print('input invalido\n')
             return False
 
-
-class Dumb:
-    def stampa(self):
-        print("dumb")

@@ -278,12 +278,10 @@ class SpeseGiornaliere(EmbeddedDocument):
     old_spese = None
 
     def clean(self):
-        print('clean emb')
         # self.validate_spese()
         self._compute_tot_spese_giornaliere()
 
     def set_spese(self, _spese):
-        print('setspese emb')
         self.old_spese = self.spese
         self.spese = _spese
         try:
@@ -357,8 +355,14 @@ class StatiSticheMensili(Document):
         if self.spese_mensili_obj:
             try:
                 self.spese_mensili = self.spese_mensili_obj.spese_mensili
-            except:
+                print('spese mensili obj in statistiche: ', self.spese_mensili_obj)
+            except Exception as e:
+                print('statistiche spese mensili except')
+                print(e)
                 self.spese_mensili = None
+        else:
+            print('statistiche spese mensili none, doc_Erb')
+            self.spese_mensili = 0.0
 
     def _compute_from_prenotazioni(self):
         self.totale_notti = 0

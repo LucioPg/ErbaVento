@@ -69,7 +69,7 @@ class MongoPing(QtCore.QObject):
         # while self.flag:
         print('Thread')
         try:
-            print(self.sender().objectName())
+            print('MongoPing', self.sender().objectName())
         except Exception as e:
             print(e)
         host = self.connection_dict.host
@@ -143,7 +143,7 @@ class MongoPing(QtCore.QObject):
             except Exception as e:
                 print(e)
         self.finished_.emit()
-        print('end')
+        print('MongoPing run end')
         return True
 
 class Main(QtCore.QObject):
@@ -183,7 +183,6 @@ class Main(QtCore.QObject):
         self.mongo_ping.CONNECTED_segnale.connect(self.ui.turn_on)
         # self.thread_ping.start()
         self.thread_ui.started.connect(lambda: self.mongo_ping.disconnect())
-        # self.thread_ping.finished.connect(lambda: print('kkkkk', self.mongo_ping.receivers(self.mongo_ping.finished_)))
         self.thread_ping.finished.connect(self.ui.go_ahead)
 
     def set_all_connected(self, status):
@@ -389,7 +388,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     @ensure_conn
     def addNote(self, *args, **kwargs):
-        print('go', self)
+        print('AddNote ', self)
         data = self.calendario.currentDate
         note_doc = self.mongo.get_note(data,_create=1)
         text = note_doc.note if note_doc else ''
@@ -440,10 +439,12 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     @ensure_conn
     def addSpese(self, *args):
         data = self.calendario.currentDate
-        spesa_mensile = self.mongo.get_spesa_mensile(self.mongo.make_data_ref(data))
+        # spesa_mensile = self.mongo.get_spesa_mensile(self.mongo.make_data_ref(data))
+        spesa_mensile = self.mongo.get_spesa_mensile(data)
         spesa_giornaliera = self.mongo.get_spesa_giornaliera(data, spesa_mensile)
 
         if not spesa_giornaliera and not spesa_mensile:
+            print(' no spesa_giornaliera and not mensile')
             return
         statistiche = self.mongo.get_stat(data=data, data_doc=None, spese_mensili=spesa_mensile, _create=1)
         # spesa_mensile = self.mongo.creat
@@ -465,15 +466,15 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                         status_bot = True
                         statistiche.save()
                     else:
-                        print('dfafadfafadfaddddddddddddd')
                         status_bot = False
                 else:
                     if spesa_giornaliera in spesa_mensile.spese_giornaliere:
                         spesa_mensile.spese_giornaliere.remove(spesa_giornaliera)
                         spesa_mensile.save()
-                    if not spesa_mensile.spese_giornaliere:
-                        spesa_mensile.delete()
-                        statistiche.spese_mensili_obj = None
+                    # if not spesa_mensile.spese_giornaliere:
+                    #     spesa_mensile.delete()
+                    #     statistiche.spese_mensili_obj = None
+                    #     print('spesa mensile setted to none in add spese')
                     statistiche.save()
             else:
                 if not spese_dict:
@@ -539,7 +540,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
     def botFuncCheckAval(self):
         dal = self.dateEdit_dal.date
         al = self.dateEdit_al.date
-        # print(self.checkAval(dal, al))
 
     def buildListeIPT(self):
         # self.listeImporti = {'Booking': [72, 74, 92, 111, 130],
@@ -744,7 +744,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             colazione = False
         stagione = self.combo_stagionePrenotazioni.currentText()
         importo = float(self.spinBox_importo.value())
-        print('lordo ',self.lineEdit_lordo.text())
         lordo = float(self.lineEdit_lordo.text())
         netto = float(self.lineEdit_netto.text())
         tasse = float(self.lineEdit_tax.text())
@@ -901,7 +900,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             data = self.calendario.currentDate
         else:
             self.calendario.currentDate = data
-            print('current date: ', data)
         info = self.getInfoFromDate(data)
         if info is None:
             print('info is None from getInfoFromCalendar')
@@ -1016,7 +1014,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     # @ensure_conn
     def loadConfig(self, *args):
-        print('doc')
         self.prepare_tab_prenotazioni()
         self.calendario.setSelectedDate(QtCore.QDate().currentDate())
         self.calendario.dateNote += [nota.data for nota in self.mongo.get_all_note()]
@@ -1078,7 +1075,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             #            importo=importo, lordo=lordo, netto=netto, tasse=tasse, note=note_doc)
 
     def periodoCambiato(self, p):
-        print('periodo ', p)
         d = self.dateEdit_dal.date
         a = self.dateEdit_al.date
         giorni = d.daysTo(a)
@@ -1205,7 +1201,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.check_note(note)
         self.check_spese(self.calendario.currentDate)
         self.set_prenotazione_corrente(info['prenotazione'])
-        self.set_label_stagione
+        # self.set_label_stagione()
         # self.modificaESalva()
         self.riempi_campi_prenotazioni(info=info)
 
@@ -1248,7 +1244,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
 
     @ensure_conn
     def salvaInfo(self, flag=None):
-        print('salva flag', flag)
         if not  flag:
             flag = self.check_line_edits()
         if flag:
@@ -1324,7 +1319,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         """compila la tabella dal modello infoTemp"""
         # self.updateInfoStat()
         # self.riempiTabellaStat()
-        statusBot = self.riempiTabellaPrenotazioni(info)
+        self.riempiTabellaPrenotazioni(info)
 
     def setInfoTemp(self, info):
 

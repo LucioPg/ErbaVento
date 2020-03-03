@@ -17,7 +17,7 @@ class MongoThread(QThread):
     CONNECTED = pyqtSignal(bool)
     def run(self):
         if self.connection_dict:
-            print('run')
+            print('MongoThread run')
             host = self.connection_dict.host
             port = int(self.connection_dict.port)
             name = self.connection_dict.user
@@ -251,7 +251,7 @@ class MongoConnection(QObject):
                 prenotazione.save()
                 return prenotazione
             except NotUniqueError as e:
-                print(e, 'interno')
+                print(e, 'interno book')
                 if not len(ospite.prenotazioni):
                     self.delete_ospite(ospite=ospite)
                 raise DateExc('Date Occupate')
@@ -321,7 +321,7 @@ class MongoConnection(QObject):
         datePrenotate = {}
         datePulizie = []
         if self.connected:
-            print('Connesso')
+            print('get prenotazioni e pulizie: Connesso')
             for prenotazione in Prenotazione.objects:
                 platform = prenotazione.platform
                 for giorno in prenotazione.giorni.giorni:
@@ -330,7 +330,7 @@ class MongoConnection(QObject):
 
             return datePrenotate, datePulizie
         else:
-            print('Non Connesso')
+            print('get prenotazioni e pulizie: Non Connesso')
             self.make_connection()
             return self.get_prenotazioni_pulizie()
 
@@ -440,7 +440,7 @@ class MongoConnection(QObject):
 
     def get_spese_mensili(self, data):
         try:
-            print(data)
+            print('get_spese_mensili for ', data)
             return SpeseMensili.objects.get(data=data)
         except DoesNotExist:
             print('SpeseMensili does not exist, proceed with creation')
@@ -492,7 +492,7 @@ class MongoConnection(QObject):
         anno, mese = data.year(), data.month()
         # emb_spesa_giornaliera = SpeseGiornaliere()
         try:
-            spesa_mensile = SpeseMensili(anno=anno, mese=mese, data=self.make_data_ref(data)).save()
+            return SpeseMensili(anno=anno, mese=mese, data=self.make_data_ref(data)).save()
 
         except NotUniqueError as e:
             print(e)
@@ -567,10 +567,11 @@ class MongoConnection(QObject):
                     return True
                 elif not giornaliera.spese:
                     mensile.spese_giornaliere.remove(giornaliera)
-                    if mensile.spese_giornaliere:
-                        mensile.save()
-                    else:
-                        mensile.delete()
+                    # if mensile.spese_giornaliere:
+                    #     mensile.save()
+                    # else:
+                    #     mensile.delete()
+                    mensile.save()
             return False
         except DoesNotExist:
             return False
@@ -593,7 +594,8 @@ class MongoConnection(QObject):
             if data_doc and data_doc not in stat.date_prenotate:
                 print('get_stat ',data_doc)
                 stat.date_prenotate.append(data_doc)
-                stat.save()
+            stat.save()
+
             return stat
         except DoesNotExist:
             if _create:

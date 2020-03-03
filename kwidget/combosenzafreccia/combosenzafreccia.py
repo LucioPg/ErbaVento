@@ -42,10 +42,8 @@ class ComboSenzaFreccia(QtWidgets.QComboBox):
             print(fex())
 
     def setAlign(self):
-        print('called')
         for i in range(self.count()):
             data = self.itemText(i)
-            print(data)
             self.setItemData(i,QtCore.Qt.AlignCenter, QtCore.Qt.TextAlignmentRole)
 
 

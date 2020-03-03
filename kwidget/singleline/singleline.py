@@ -30,11 +30,6 @@ class MySimpleLineEdit(QLineEdit):
             text = self.getText()
             self.ECCETESTE.emit(text)
 
-            # print("ecceteste: ",self.text())
-        else:
-            print(a0)
-            # self.parent().close()
-
     def getText(self):
         text = self.text()
         return text
