@@ -264,8 +264,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         # return true_ensure_conn
     # ensure_conn = staticmethod(ensure_conn)
 
-
-
     def go_ahead(self):
         if self.initialated:
             self.stackedWidget.setCurrentIndex(1)
@@ -297,26 +295,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             iconaMainWindow = QtGui.QIcon('./Icons/erbavento.ico')
             datePren = {'platforms': {}}
             self.datePrenotazioni = Od(datePren)
-            # d = {
-            #     "nome": "",
-            #     "cognome": "",
-            #     "telefono": None,
-            #     "email": '',
-            #     "platform": "",
-            #     "data arrivo": None,
-            #     "data partenza": None,
-            #     'totale notti': 0,
-            #     "numero ospiti": 1,
-            #     "bambini": 0,
-            #     "spese": '',
-            #     "colazione": 'No',
-            #     "stagione": '',
-            #     "importo": 0,
-            #     "lordo": 0,
-            #     "tasse": 0,
-            #     "netto": 0,
-            #     "note": "",
-            # }
             self.infoModel = Od({
                 "nome": "",
                 "cognome": "",
@@ -362,25 +340,11 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.calendario.currentPageChanged.connect(self.mese_calendario_cambiato)
             # self.spese = self.initSpeseDb()
             self.spese = ''
-            # self.config = self.initConfig()
-            # self.config, self.connection_dict = self.initConfig()
-            # self.mongo = MongoConnection(self, self.connection_dict)
-            # self.mongo_thread = QtCore.QThread()
-            # self.mongo.moveToThread(self.mongo_thread)
             self.infoSta = None
             # self.infoSta = self.initStatDb()
             self.setMenuMain()
             self.loadConfig()
-            # cal_layout = QtWidgets.QGridLayout(self.frame_calendar)
-            # cal_layout.addWidget(self.calendario)
-            # self.frame_calendar.setLayout(cal_layout)
-
-            # self.calendario.table.clicked.connect(self.getInfoFromCalendar)
             self.calendario.singleClicked.connect(self.getInfoFromCalendar)
-            # self.tabWidget.currentChanged.connect(self.riempi_campi_prenotazioni)
-            # self.calendario.currentPageChanged.connect(self.riportapagina)
-
-            # self.setDateEdit_dal()
             self.spinBox_importo.setMaximum(9999)
             # self.dateEdit_dal.dateChanged.connect(self.correggiPartenza)
             self.bot_salva.clicked.connect(self.salvaInfo)
@@ -397,8 +361,8 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             # self.radio_privato.toggled.connect(self.importAdj)
             # self.radioCorrente = self.radio_booking
 
-            # self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
-            # self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
+            self.dateEdit_al.dateChanged.connect(self.periodoCambiato)
+            self.dateEdit_dal.dateChanged.connect(self.periodoCambiato)
             self.bot_esporta.clicked.connect(self.prepare_export)
             # self.bot_esporta.clicked.connect(self.exportaDb)
             self.bot_prenota.clicked.connect(self.vai_prenota_tab)
@@ -668,6 +632,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             return tot
         except:
             print(fex())
+
     @ensure_conn
     def cancellaprenot(self):
         self.cancellaprenot_cleaning(self.un_book())
@@ -833,7 +798,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
                 'note': note_doc,
                 'prenotazione': None}
 
-
     def correggiPartenza(self, d):
         """
         adegua la spinbox della partenza a quella dell'arrivo
@@ -898,21 +862,19 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         self.parent.thread_ping.start()
         self.parent.thread_ping.finished.connect(self.exportaDb)
 
-
-
     def exportaDb(self):
         # dialog = DialogExport(['a','b','c'], self.mongo.connection)
         self.parent.thread_ping.finished.disconnect(self.exportaDb)
         dialog = DialogExport(parent=self,collezioni_dict=self.dict_collezioni, connection_dict=self.connection_dict)
         if dialog.exec_():
             try:
-                dialog.export()
+                # dialog.export()
+                dialog.export_test()
                 self.statusbar.showMessage('Esportazione eseguita con successo')
             except Exception as e:
                 print(e)
         else:
             self.statusbar.showMessage('Esportazione non eseguita')
-
 
     def get_date(self, d):
         # a = self.calendarWidget.dateTextFormat()
@@ -952,9 +914,9 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             self.bot_cancella.setEnabled(True)
         # self.setDateEdit_dal()
         return info
+
     def set_prenotazione_corrente(self, corrente):
         self.prenotazione_corrente = corrente
-
 
     @ensure_conn
     def getInfoFromDate(self, data):
@@ -1022,7 +984,6 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
         lineEdits = ['lineEdit_nome', 'lineEdit_cognome', 'lineEdit_telefono']
         for lineEdit in lineEdits:
             yield self.findChild(type(self.lineEdit_cognome), lineEdit)
-
 
     @QtCore.pyqtSlot()
     def line_edit_verifica(self):
@@ -1117,6 +1078,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             #            importo=importo, lordo=lordo, netto=netto, tasse=tasse, note=note_doc)
 
     def periodoCambiato(self, p):
+        print('periodo ', p)
         d = self.dateEdit_dal.date
         a = self.dateEdit_al.date
         giorni = d.daysTo(a)
@@ -1296,7 +1258,7 @@ class EvInterface(mainwindow, QtWidgets.QMainWindow):
             try:
                 prenotazione = self.mongo.book(nome=nome,cognome=cognome,telefono=telefono,dates=giorni,platform=platform, stagione=stagione,
                        totale_ospiti=totale_ospiti, totale_bambini=totale_bambini,colazione=colazione,
-                       importo=importo, lordo=lordo, netto=netto, tasse=tasse, note=note)
+                       importo=importo, lordo=lordo, netto=netto, tasse=tasse, note=note, data=giorni[0])
                 self.datePrenotazioni, self.datePulizie = self.mongo.get_prenotazioni_pulizie()
             except DateExc as e:
                 self.set_status_msg(f'Prenotazione non andata a buon fine, {e.message}')

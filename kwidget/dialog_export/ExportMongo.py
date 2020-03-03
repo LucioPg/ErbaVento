@@ -6,6 +6,8 @@ from kwidget.mydateedit.mydate_edit_3_main import My_dateedit_3
 from typing import *
 from pymongo import MongoClient
 import time
+from pprint import pprint
+import csv
 from dataclasses import dataclass
 
 
@@ -107,17 +109,10 @@ class DialogExport(Dialog, QtWidgets.QDialog):
             self.listWidget.insertItem(row, item)
 
     def get_selected(self):
-        rows = self.listWidget.count()
-        self.selected.clear()
-        for row in range(rows):
-            campo = self.listWidget.item(row)
-            if campo.isSelected():
-                print(campo.text())
-                self.selected.append(campo.text())
-
+        self.selected = self.treeWidget.get_selected()
         return self.selected
 
-    def write_file_field(self, campi:List):
+    def write_file_field(self,doc, campi:List):
         self.nome_file = self.connection_dict.nome_db + '_fields.txt'
         # campi = self.selected
         if campi:
@@ -127,6 +122,12 @@ class DialogExport(Dialog, QtWidgets.QDialog):
             return True
         else:
             return False
+
+    def export_test(self):
+        self.get_selected()
+        pprint(self.selected)
+        for doc, fields in self.selected.items():
+            pass
 
     def export(self):
         if self.write_file_field(campi=self.get_selected()):
@@ -171,9 +172,10 @@ class ExportEngine(QtCore.QObject):
 
     FINISHED = QtCore.pyqtSignal()
 
-    def __init__(self, nome_file: str, connection_dict: dict):
+    def __init__(self, selected: dict, dates: List, connection_dict: dict):
         super(ExportEngine, self).__init__()
-        self.nome_file = nome_file
+        self.selected = selected
+        self.dates = dates
         self.connection_dict = connection_dict
         self.host = self.connection_dict['host']
         self.port = int(self.connection_dict['port'])
@@ -185,3 +187,17 @@ class ExportEngine(QtCore.QObject):
         myclient = MongoClient(host=self.host, port=27017)
         myclient[self.nome_db].authenticate(name=self.name, password=self.password)
         # db = myclient[self.nome_db]['prenotazione'].find_one()
+        for doc, fields in self.selected.items():
+            row = {}
+            for field in fields:
+                row[field] = []
+
+    def set_file_name(self, doc, dates):
+        return f'{doc}_{dates[0]}-{dates[1]}.csv'
+
+    def get_info(self, doc, dates, fields):
+        data_gen = self.dates_generator(dates[0])
+
+
+    def dates_generator(self,first: QtCore.QDate):
+        yield first.addMonths(1)

@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from kwidget.mydateedit.my_dateedit_3 import Ui_My_dateedit_3
 
 class My_dateedit_3(Ui_My_dateedit_3, QtWidgets.QWidget):
+    dateChanged = QtCore.pyqtSignal(QtCore.QDate, QtCore.QDate)
     def __init__(self, parent=None, daily=False):
         super(My_dateedit_3, self).__init__(parent)
         self.daily = daily
@@ -11,7 +12,10 @@ class My_dateedit_3(Ui_My_dateedit_3, QtWidgets.QWidget):
         self.bot_decrease.clicked.connect(self.decrease)
 
     def setDate(self,date:QtCore.QDate):
-        return self.dateEdit.setDate(date)
+        prec = self.date
+        new = date
+        self.dateEdit.setDate(date)
+        self.dateChanged.emit(new, prec)
 
     @property
     def date(self):

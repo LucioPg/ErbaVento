@@ -107,11 +107,12 @@ class MongoConnection(QObject):
             _connection['test_db'].authenticate(name='admin',
                     password='admin')
 
-    def create_ospite(self,nome, cognome, telefono):
-        ospite = Ospite(nome=nome, cognome=cognome, telefono=telefono)
+    def create_ospite(self,nome, cognome, telefono, data):
+        ospite = Ospite(nome=nome, cognome=cognome, telefono=telefono, data=data)
         return ospite  # it does not save for checking for dates during booking
 
     def create_prenotazione_doc(self,ospite,
+                                data,
                                 date_document,
                                 platform,
                                 stagione,
@@ -123,7 +124,7 @@ class MongoConnection(QObject):
                                 lordo,
                                 netto,
                                 tasse):
-        return Prenotazione(ospite_id=ospite, giorni=date_document,
+        return Prenotazione(ospite_id=ospite, data=data, giorni=date_document,
                             totale_ospiti=totale_ospiti, totale_bambini=totale_bambini,
                             importo=importo, platform=platform, stagione=stagione, note=note, colazione=colazione,
                             lordo=lordo, netto=netto, tasse=tasse).save()
@@ -159,7 +160,7 @@ class MongoConnection(QObject):
         if dates:
             return Prenotazione.objects.get(giorni=dates)
 
-    def create_prenotazione(self,ospite, dates, platform, stagione,importo,
+    def create_prenotazione(self,ospite, data, dates, platform, stagione,importo,
                                     totale_ospiti,
                                     totale_bambini,
                                     note,
@@ -169,6 +170,7 @@ class MongoConnection(QObject):
                                     tasse,
                                     ):
         prenotazione = self.create_prenotazione_doc(ospite,
+                                                    data,
                                                     dates,
                                                     platform,
                                                     stagione,
@@ -188,6 +190,7 @@ class MongoConnection(QObject):
         return prenotazione
 
     def book(self,ospite=None, identificativo=None,
+             data=None,
              nome=None, cognome=None, telefono=None,
              dates=None, platform='Privato', stagione='alta',
              totale_ospiti=0, totale_bambini=0,
@@ -199,7 +202,7 @@ class MongoConnection(QObject):
         if dates:  # it checks if dates are present before confirm the creation of an useless user
             if not ospite:
                 try:
-                    ospite = self.create_ospite(nome=nome, cognome=cognome, telefono=telefono)
+                    ospite = self.create_ospite(nome=nome, cognome=cognome, telefono=telefono, data=dates[0])
                     ospite.save()  # ospite needs to be saved before creating a referenced doc
                 except OspiteExc as e:
                     print('ospexc ',e)
@@ -224,7 +227,8 @@ class MongoConnection(QObject):
                     giorni=dates,
                     ospite=ospite,
                 ).save()
-                prenotazione = self.create_prenotazione(ospite,
+                prenotazione = self.create_prenotazione(ospite,data,
+
                                     date_document,
                                     platform,
                                     stagione,
@@ -236,7 +240,6 @@ class MongoConnection(QObject):
                                     lordo,
                                     netto,
                                     tasse,
-
                                     )
 
                 date_document.prenotazione = prenotazione
@@ -435,13 +438,13 @@ class MongoConnection(QObject):
         except Exception as e:
             print(e)
 
-    def get_spese_mensili(self, data_di_riferimento):
+    def get_spese_mensili(self, data):
         try:
-            print(data_di_riferimento)
-            return SpeseMensili.objects.get(data_di_riferimento=data_di_riferimento)
+            print(data)
+            return SpeseMensili.objects.get(data=data)
         except DoesNotExist:
             print('SpeseMensili does not exist, proceed with creation')
-            return self.create_spesa_mensile(data_di_riferimento)
+            return self.create_spesa_mensile(data)
 
     def get_spesa_giornaliera(self, data, spesa_mensile):
         try:
@@ -489,12 +492,12 @@ class MongoConnection(QObject):
         anno, mese = data.year(), data.month()
         # emb_spesa_giornaliera = SpeseGiornaliere()
         try:
-            spesa_mensile = SpeseMensili(anno=anno, mese=mese, data_di_riferimento=self.make_data_ref(data)).save()
+            spesa_mensile = SpeseMensili(anno=anno, mese=mese, data=self.make_data_ref(data)).save()
 
         except NotUniqueError as e:
             print(e)
             try:
-                return SpeseMensili.objects.get(data_di_riferimento=self.make_data_ref(data))
+                return SpeseMensili.objects.get(data=self.make_data_ref(data))
             except DoesNotExist as e:
                 print(e)
                 return None
@@ -505,7 +508,7 @@ class MongoConnection(QObject):
 
     def get_spesa_mensile(self, data):
         try:
-            return SpeseMensili.objects.get(data_di_riferimento=self.make_data_ref(data))
+            return SpeseMensili.objects.get(data=self.make_data_ref(data))
         except DoesNotExist:
             return self.create_spesa_mensile(data)
 
@@ -519,7 +522,7 @@ class MongoConnection(QObject):
     def update_emb_spesa_giornaliera(self, data, spese_dict):
         try:
             data_ref = QDate(data.year(), data.month(), 1)
-            mensile = SpeseMensili.objects(data_di_riferimento=data_ref)
+            mensile = SpeseMensili.objects(data=data_ref)
             giornaliera = [doc for doc in mensile.spese_giornaliere if doc.data == data][0]
             if giornaliera:
                 giornaliera.set_spese(spese_dict)
@@ -532,8 +535,8 @@ class MongoConnection(QObject):
         if spese_dict:
             spesa_giornaliera = SpeseGiornaliere(data=data, spese=[(nome, spesa) for nome, spesa in spese_dict.items()]).save()
             if spesa_giornaliera:
-                data_di_riferimento = QDate(data.year(), data.month(), 1)
-                spesa_mensile = self.get_spese_mensili(data_di_riferimento)
+                data = QDate(data.year(), data.month(), 1)
+                spesa_mensile = self.get_spese_mensili(data)
                 if spesa_mensile:
                     if spesa_giornaliera not in spesa_mensile.spese_giornaliere:
                         spesa_mensile.spese_giornaliere.append(spesa_giornaliera)
@@ -546,7 +549,7 @@ class MongoConnection(QObject):
                 else:
                     spesa_mensile = SpeseMensili(anno=data.year(),
                                              mese=data.month(),
-                                             data_di_riferimento=data_di_riferimento,
+                                             data=data,
                                              spese_giornaliere=[spesa_giornaliera]).save()
                 return True
             else:
@@ -586,7 +589,7 @@ class MongoConnection(QObject):
     def get_stat(self, data, data_doc=None, spese_mensili=None, _create=0):
         try:
             # stat = StatiSticheMensili.objects.get(anno=anno, mese=mese)
-            stat = StatiSticheMensili.objects.get(identificativo=self.make_data_ref(data))
+            stat = StatiSticheMensili.objects.get(data=self.make_data_ref(data))
             if data_doc and data_doc not in stat.date_prenotate:
                 print('get_stat ',data_doc)
                 stat.date_prenotate.append(data_doc)

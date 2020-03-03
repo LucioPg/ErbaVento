@@ -84,7 +84,7 @@ class Prenotazione(Document):
         'Media',
         'Bassa'
     ]
-
+    data = QDateField(required=1)
     statistiche = ReferenceField('StatiSticheMensili')
     ospite_id = ReferenceField('Ospite', required=True)
     giorni = ReferenceField('DatePrenotazioni',required=True)
@@ -114,6 +114,7 @@ class Prenotazione(Document):
         self.check_max_bambini()
         self._compute_giorni()
         self._compute_arrivo()
+        self._compute_data()
         self._compute_ultima_notte()
         self._compute_giorno_pulizie()
         self._compute_totale_notti()
@@ -137,10 +138,14 @@ class Prenotazione(Document):
     #### COMPUTED #####
 
     def _compute_giorni(self):
+
         self._giorni = self.giorni.giorni
 
     def _compute_arrivo(self):
         self.arrivo = min(self._giorni)
+
+    def _compute_data(self):
+        self.data = self.arrivo
 
     def _compute_ultima_notte(self):
         self.ultima_notte = max(self._giorni)
@@ -191,11 +196,11 @@ class Ospite(Document):
     nome = StringField(required=True)
     cognome = StringField(required=True)
     telefono = StringField(required=1)
-    identificativo = StringField(required=True, unique=True)  #needs to be computed
+    identificativo = StringField(required=True, unique=True)
+    data = QDateField(required=1)
     email = EmailField()
     prenotazioni = ListField(ReferenceField('Prenotazione'), reverse_delete_rule=CASCADE)
-    arrivo = QDateField(required=False, unique=1, sparse=1)  # needs to be referenced
-    partenza = QDateField(required=False)  # needs to be  referenced
+    data = QDateField(required=1)
     # cliente = BooleanField(default=False)
 
     def clean(self):
@@ -309,7 +314,7 @@ class SpeseMensili(Document):
 
     anno = IntField(required=1)
     mese = IntField(required=1)
-    data_di_riferimento = QDateField(required=1, unique=1)
+    data = QDateField(required=1, unique=1)
     # spese_giornaliere = ListField(ReferenceField('SpeseGiornaliere'))
     spese_giornaliere = EmbeddedDocumentListField(SpeseGiornaliere)
     spese_mensili = FloatField(default=0.0)
@@ -327,7 +332,7 @@ class StatiSticheMensili(Document):
 
     anno = IntField(required=1)
     mese = IntField(required=1)
-    identificativo = QDateField(required=1, unique=1)
+    data = QDateField(required=1, unique=1)
     date_prenotate = ListField(ReferenceField('DatePrenotazioni'), default=[])
     notti_3 = IntField(required=1, default=0)  # da prenotazioni
     notti_2 = IntField(required=1, default=0)  # da prenotazioni
@@ -341,12 +346,12 @@ class StatiSticheMensili(Document):
     totale_bambini = IntField(required=1, default=0)  # da prenotazioni
 
     def clean(self):
-        self._compute_identificativo()
+        self._compute_data()
         self._compute_spese_mensili()
         self._compute_from_prenotazioni()
 
-    def _compute_identificativo(self):
-        self.identificativo = QDate(self.anno, self.mese, 1)
+    def _compute_data(self):
+        self.data = QDate(self.anno, self.mese, 1)
 
     def _compute_spese_mensili(self):
         if self.spese_mensili_obj:

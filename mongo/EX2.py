@@ -51,9 +51,10 @@ if __name__ == '__main__':
     clt = MongoClient(host='localhost', port=27017)
     clt['test_db'].authenticate(name='admin',password='admin')
     db = clt['test_db']['prenotazione']
+    # print(db['arrivo'].find_one())
     # db = clt['test_db']['prenotazione'].find_one()
     for x in db.find():
-        print(x)
+        print(x['arrivo'])
     # doc = db['c']
     # uno.gusti['cibo'] = 'pasta'
     try:

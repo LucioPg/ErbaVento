@@ -5,6 +5,7 @@ tops = ['a', 'b', 'c', 'd']
 dic = {ind: [str(ord(ind)), str(ord(ind)+5)] for ind in tops}
 
 class MyTreeWidget(QtWidgets.QTreeWidget):
+
     def __init__(self, *args, **kwargs):
         super(MyTreeWidget, self).__init__(*args, **kwargs)
         self.setMinimumSize(400,400)
@@ -38,24 +39,35 @@ class MyTreeWidget(QtWidgets.QTreeWidget):
                 if child.childCount() > 0:
                     stack.append(child)
 
+    def get_selected(self):
+        selected = {}
+        items_count = self.topLevelItemCount()
+        for row in range(items_count):
+            root = self.topLevelItem(row)
+            children_num = root.childCount()
+            children_ = [root.child(num).text(0) for num in range(children_num) if root.child(num).isSelected()]
+            if children_:
+                selected[root.text(0)] = children_
+        return selected
+
     def root_selections(self,current, column):
         """ de/seleziona tutti i figli se si seleziona il root,
         se tutti i figli sono selezionati ma non tramite root (uno alla volta)
         anche il root viene selezionato allo scopo di facilitare la deselezione
         di tutti i figli quando viene deselezionato il root"""
-        item = current
-        has_dad = item.parent()
-        children_num = item.childCount() if not has_dad else 0
-        children = [item.child(num) for num in range(children_num) if not has_dad]
+        item_ = current
+        has_dad = item_.parent()
+        children_num = item_.childCount() if not has_dad else 0
+        children_ = [item_.child(num) for num in range(children_num) if not has_dad]
         if has_dad:
             siblings = [has_dad.child(num) for num in range(has_dad.childCount())]
-            siblings.remove(item)
+            siblings.remove(item_)
         else:
             siblings = []
-        if not item.isSelected():
-            if children:
-                for child in children:
-                    child.setSelected(False)
+        if not item_.isSelected():
+            if children_:
+                for child_ in children_:
+                    child_.setSelected(False)
             else:
                 tutti = True
                 for it in siblings:
@@ -64,9 +76,9 @@ class MyTreeWidget(QtWidgets.QTreeWidget):
                 if tutti:
                     has_dad.setSelected(False)
         else:
-            if children:
-                for child in children:
-                    child.setSelected(True)
+            if children_:
+                for child_ in children_:
+                    child_.setSelected(True)
             else:
                 tutti = True
                 for it in siblings:
