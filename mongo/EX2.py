@@ -57,13 +57,7 @@ if __name__ == '__main__':
         print(x['arrivo'])
     # doc = db['c']
     # uno.gusti['cibo'] = 'pasta'
-    try:
-        uno.save()
-        due.save()
-    except NotUniqueError:
-        pass
-    except :
-        pass
+
     # show(uno)
     # show(due)
     def del_docs():

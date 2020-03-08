@@ -21,6 +21,7 @@ class DialogExport(Dialog, QtWidgets.QDialog):
     def __init__(self, collezioni_dict: dict, connection_dict, parent=None):
         super(DialogExport, self).__init__(parent)
         self.setupUi(self)
+        self.radio_exp_all.setChecked(True)
         self.prepare_date_edits()
         self.setWindowModality(QtCore.Qt.WindowModal)
         self.current_date = QtCore.QDate().currentDate()
@@ -31,8 +32,9 @@ class DialogExport(Dialog, QtWidgets.QDialog):
         # self.dateEdit_exp_al.dateEdit.setDate(self.current_date)
         self.dateEdit_exp_al.setDate(self.current_date)
         self.collezioni_dict = collezioni_dict
-        self.selected = []
+        self.selected = {}
         self.connection_dict = connection_dict
+        print('----------------------------------------------', connection_dict)
         self.fill_list()
         self.bot_toggle_select_all.clicked.connect(self.toggle_select_all)
         # self.bot_toggle_select_all.clicked.connect(self.toggle_select_all)
@@ -125,25 +127,64 @@ class DialogExport(Dialog, QtWidgets.QDialog):
 
     def export_test(self):
         self.get_selected()
-        pprint(self.selected)
-        for doc, fields in self.selected.items():
-            pass
+        # pprint(self.selected)
+        # for doc, fields in self.selected.items():
+        #     pass
+        print('sto esportando...')
+        try:
+            # self.export_thread = ExportThread()
+            self.export_thread = QtCore.QThread()
 
-    def export(self):
-        if self.write_file_field(campi=self.get_selected()):
-            print('sto esportando...')
-            try:
-                self.export_thread = ExportThread()
-                self.export_engine = ExportEngine(self.nome_file, self.connection_dict)
-                self.export_engine.moveToThread(self.export_thread)
-                #### il thread va spostato fuori dalla classe
-                self.export_thread.started.connect(self.export_engine.run)
+            def start():
                 self.export_thread.start()
-                # self.export_thread.start()
-            except Exception as e:
-                print(e)
-        else:
-            print('lista selezionati da esportare vuota')
+
+            # todo configure dates on the radio
+            if self.radio_exp_all.isChecked():
+                dates = []
+            elif self.radio_exp_just_this_month:
+                dates = []
+            elif self.radio_exp_untill_this_month:
+                dates = []
+            else:
+                dates = []
+            self.export_engine = ExportEngine(self.selected, dates, self.connection_dict)
+            self.export_engine.moveToThread(self.export_thread)
+            #### il thread va spostato fuori dalla classe
+            start()
+            self.export_thread.started.connect(self.export_engine.run)
+            self.export_engine.FINISHED.connect(self.export_thread.quit)
+            # self.export_thread.start()
+        except Exception as e:
+            print(e)
+
+
+    # def export(self):
+    #     if self.write_file_field(campi=self.get_selected()):
+    #         print('sto esportando...')
+    #         try:
+    #             # self.export_thread = ExportThread()
+    #             self.export_thread = QtCore.QThread()
+    #             def start():
+    #                 self.export_thread.start()
+    #             # todo configure dates on the radio
+    #             if self.radio_exp_all.isChecked():
+    #                 dates = []
+    #             elif self.radio_exp_just_this_month:
+    #                 dates = []
+    #             elif self.radio_exp_untill_this_month:
+    #                 dates = []
+    #             self.export_engine = ExportEngine(self.nome_file, dates, self.connection_dict)
+    #             self.export_engine.moveToThread(self.export_thread)
+    #             #### il thread va spostato fuori dalla classe
+    #             self.export_thread.started.connect(self.export_engine.run)
+    #             # self.export_engine.FINISHED.connect(self.export_thread.quit)
+    #             start()
+    #
+    #             # self.export_thread.start()
+    #         except Exception as e:
+    #             print(e)
+    #     else:
+    #         print('lista selezionati da esportare vuota')
 
     def export_end(self):
         try:
@@ -156,14 +197,18 @@ class DialogExport(Dialog, QtWidgets.QDialog):
 
 
 
-class ExportThread(QtCore.QThread):
-    """ """
-    def run(self):
-        count = 0
-        while count < 5:
-            time.sleep(1)
-            print("sto esportando... ", count)
-            count += 1
+# class ExportThread(QtCore.QThread):
+#
+#     """ """
+#     pass
+    # def run(self):
+    #     while True:
+    #         pass
+        # count = 0
+        # while count < 5:
+        #     time.sleep(1)
+        #     print("sto esportando... ", count)
+        #     count += 1
 
     # def finished(self) -> None:
     #     super(ExportThread, self).finished()
@@ -172,32 +217,52 @@ class ExportEngine(QtCore.QObject):
 
     FINISHED = QtCore.pyqtSignal()
 
-    def __init__(self, selected: dict, dates: List, connection_dict: dict):
+    def __init__(self, selected: dict, dates: List, connection_dict):
         super(ExportEngine, self).__init__()
         self.selected = selected
         self.dates = dates
         self.connection_dict = connection_dict
-        self.host = self.connection_dict['host']
-        self.port = int(self.connection_dict['port'])
-        self.name = self.connection_dict['user']
-        self.password = self.connection_dict['password']
-        self.nome_db = self.connection_dict['nome_db']
+        self.host = self.connection_dict.host
+        self.port = int(self.connection_dict.port)
+        self.name = self.connection_dict.user
+        self.password = self.connection_dict.password
+        self.nome_db = self.connection_dict.nome_db
 
     def run(self):
+        print('run export engine')
         myclient = MongoClient(host=self.host, port=27017)
         myclient[self.nome_db].authenticate(name=self.name, password=self.password)
         # db = myclient[self.nome_db]['prenotazione'].find_one()
-        for doc, fields in self.selected.items():
-            row = {}
-            for field in fields:
-                row[field] = []
+        time.sleep(2)
+        db = myclient['test_db']['prenotazione']
+
+        for x in db.find():
+            print(x['arrivo'])
+        # for doc, fields in self.selected.items():
+        #     print(doc, type(doc))
+        #     db = myclient['test_db']['prenotazione']
+        #     # print(db['arrivo'].find_one())
+        #     # db = clt['test_db']['prenotazione'].find_one()
+        #     for x in db.find():
+        #         print(x['ultima_notte'])
+        #     # value = myclient[self.nome_db][doc].find()
+        #     # for field in fields:
+        #     #     print('\t'* len(doc), field)
+        #     #     result = value[field]
+        #     #     print(f'exported {doc}-{field}: {result}')
+        self.FINISHED.emit()
+        print('end export engine')
 
     def set_file_name(self, doc, dates):
-        return f'{doc}_{dates[0]}-{dates[1]}.csv'
+        if dates:
+            return f'{doc}_{dates[0]}-{dates[1]}.csv'
+        else:
+            return f'{doc}_all.csv'
 
     def get_info(self, doc, dates, fields):
         data_gen = self.dates_generator(dates[0])
 
 
     def dates_generator(self,first: QtCore.QDate):
+        """ used for generate dates untill the selected upper limit"""
         yield first.addMonths(1)
